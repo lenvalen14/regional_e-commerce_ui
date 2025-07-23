@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SiteHeader } from "@/components/sections/Header";
 import { SiteFooter } from "@/components/sections/Footer";
 import { ProductReviews, StarRating } from "@/components/sections/ProductReviews";
@@ -70,6 +70,43 @@ export default function ProductDetailPage() {
   const [variant, setVariant] = useState(VARIANTS[0]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Theo dõi scroll để cập nhật active thumbnail
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      
+      imageRefs.current.forEach((ref, index) => {
+        if (ref) {
+          const rect = ref.getBoundingClientRect();
+          const imageTop = rect.top + scrollY;
+          const imageBottom = imageTop + rect.height;
+          
+          // Nếu ảnh đang hiển thị trong viewport (ít nhất 50%)
+          if (scrollY + windowHeight * 0.3 >= imageTop && scrollY + windowHeight * 0.7 <= imageBottom) {
+            setSelectedImageIndex(index);
+          }
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Click thumbnail để scroll tới ảnh tương ứng
+  const scrollToImage = (index: number) => {
+    setSelectedImageIndex(index);
+    if (imageRefs.current[index]) {
+      imageRefs.current[index]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+  };
 
   if (!product) {
     return <div className="text-center py-20">Sản phẩm không tồn tại.</div>;
@@ -83,97 +120,123 @@ export default function ProductDetailPage() {
     <>
       <SiteHeader />
       <main className="py-16 min-h-screen">
-        {/* Phần trên: Grid 2 cột cho ảnh và thông tin sản phẩm */}
-        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-20 items-start mb-16">
+        <div className="max-w-6xl mx-auto px-4 flex gap-8 items-start mb-16">
           {/* Image Gallery */}
-          <div className="flex flex-col gap-6 w-full justify-self-start -ml-15">
-            {/* Main Image */}
-            <div className="flex flex-col items-center">
-              {/* Hình product chính */}
-              <div className="relative w-full aspect-square max-w-[420px] mx-auto rounded-lg overflow-hidden">
-                <Image
-                  src={currentImage}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  priority
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = product.image;
-                  }}
-                />
+          <div className="w-[840px] flex-shrink-0 relative">
+            {/* Thumbnail Gallery - absolute + sticky */}
+            <div className="absolute ml-[-90px] top-0 h-full flex items-start pointer-events-none">
+              <div className="flex flex-col gap-3 sticky top-20 z-10 pointer-events-auto">
+                {productImages.map((img, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToImage(index)}
+                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 shadow-lg ${
+                      selectedImageIndex === index 
+                        ? "border-[#8FBC8F] ring-2 ring-[#8FBC8F] ring-opacity-30 scale-110" 
+                        : "border-white hover:border-[#8FBC8F]"
+                    }`}
+                  >
+                    <Image
+                      src={img}
+                      alt={`${product.name} - Ảnh ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = product.image;
+                      }}
+                    />
+                  </button>
+                ))}
               </div>
             </div>
-            
-            {/* Thumbnail Gallery - Horizontal */}
-            <div className="flex gap-3 justify-center">
+            {/* Main Images */}
+            <div className="space-y-4 pl-20"> {/* pl-20 để tránh thumbnail gallery che ảnh */}
               {productImages.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImageIndex(index)}
-                  className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                    selectedImageIndex === index 
-                      ? "border-[#8FBC8F] ring-2 ring-[#8FBC8F] ring-opacity-30" 
-                      : "border-[#e0e0e0] hover:border-[#8FBC8F]"
-                  }`}
+                <div 
+                  key={index} 
+                  ref={(el) => { imageRefs.current[index] = el; }}
+                  className="relative w-full h-[840px] rounded-lg overflow-hidden cursor-zoom-in group"
+                  onClick={() => setLightboxIndex(index)}
+                  tabIndex={0}
+                  aria-label="Xem ảnh lớn"
+                  role="button"
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") setLightboxIndex(index);
+                  }}
                 >
                   <Image
                     src={img}
                     alt={`${product.name} - Ảnh ${index + 1}`}
                     fill
-                    className="object-cover"
+                    className="object-contain transition-transform duration-200 group-hover:scale-105"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = product.image;
                     }}
                   />
-                </button>
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                </div>
               ))}
             </div>
           </div>
-          
           {/* Thông tin sản phẩm */}
-          <div className="w-full flex flex-col gap-6">
-            <h1 className="text-2xl md:text-4xl font-beaululo text-[#222] uppercase tracking-widest mb-2">{product.name}</h1>
-            {/* Rating và Reviews */}
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <StarRating rating={product.rating} size="w-6 h-6" />
-                <span className="text-2xl font-bold text-[#222]">{product.rating}</span>
+          <div className="w-[490px] flex-shrink-0 sticky top-17">
+            <div className="flex flex-col gap-6">
+              <h1 className="text-2xl md:text-4xl font-beaululo text-[#222] uppercase tracking-widest mb-2">{product.name}</h1>
+              {/* Rating và Reviews */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <StarRating rating={product.rating} size="w-6 h-6" />
+                  <span className="text-2xl font-bold text-[#222]">{product.rating}</span>
+                </div>
+                <span className="text-[#bbb] mx-2">|</span>
+                <span className="text-sm text-[#666] font-nitti">
+                  {product.reviewCount.toLocaleString()} Đánh Giá
+                </span>
               </div>
-              <span className="text-[#bbb] mx-2">|</span>
-              <span className="text-sm text-[#666] font-nitti">
-                {product.reviewCount.toLocaleString()} Đánh Giá
-              </span>
-            </div>
 
-            <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}</p>
-            {/* Chọn loại */}
-            <div className="flex gap-2.5 mb-2">
-              {VARIANTS.map((v) => (
+              <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}</p>
+              
+              {/* Chọn loại */}
+              <div className="flex gap-2.5 mb-2">
+                {VARIANTS.map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setVariant(v)}
+                    className={`px-4 py-1 rounded border text-sm font-nitti tracking-widest transition-colors ${variant === v ? "bg-[#222] text-white border-[#222]" : "bg-white text-[#222] border-[#bbb] hover:border-[#222]"}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Số lượng */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="font-nitti text-sm">Số lượng:</span>
                 <button
-                  key={v}
-                  onClick={() => setVariant(v)}
-                  className={`px-4 py-1 rounded border text-sm font-nitti tracking-widest transition-colors ${variant === v ? "bg-[#222] text-white border-[#222]" : "bg-white text-[#222] border-[#bbb] hover:border-[#222]"}`}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-            {/* Số lượng */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="font-nitti text-sm">Số lượng:</span>
-              <button onClick={() => setQuantity(q => Math.max(1, q-1))} className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg">-</button>
-              <span className="font-nitti text-base w-8 text-center">{quantity}</span>
-              <button onClick={() => setQuantity(q => q+1)} className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg">+</button>
-            </div>
-            {/* Nút thêm vào giỏ */}
-            <button className="bg-[#8FBC8F] hover:bg-[#7CA87C] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-colors">
-              Thêm vào giỏ hàng
-            </button>
-            
-            {/* Mô tả */}
-            <div className="mt-8">
-              <h2 className="font-beaululo text-lg text-[#222] uppercase tracking-widest mb-2">Mô tả sản phẩm</h2>
-              <p className="text-[#4C5C4C] font-nitti leading-relaxed whitespace-pre-line">{product.description}</p>
+                  onClick={() => setQuantity(q => Math.max(1, q-1))}
+                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
+                    hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
+                >-</button>
+                <span className="font-nitti text-base w-8 text-center">{quantity}</span>
+                <button
+                  onClick={() => setQuantity(q => q+1)}
+                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
+                    hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
+                >+</button>
+              </div>
+              
+              {/* Nút thêm vào giỏ */}
+              <button className="bg-[#8FBC8F] hover:bg-[#7CA87C] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-colors">
+                Thêm vào giỏ hàng
+              </button>
+              
+              {/* Mô tả */}
+              <div className="mt-8">
+                <h2 className="font-beaululo text-lg text-[#222] uppercase tracking-widest mb-2">Mô tả sản phẩm</h2>
+                <p className="text-[#4C5C4C] font-nitti leading-relaxed whitespace-pre-line">{product.description}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -185,6 +248,36 @@ export default function ProductDetailPage() {
           {/* Sản phẩm liên quan */}
           <RelatedProducts currentProductId={product.id} region={product.region} />
         </div>
+
+        {/* Lightbox Modal */}
+        {lightboxIndex !== null && (
+          <div
+            className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center"
+            onClick={() => setLightboxIndex(null)}
+            tabIndex={-1}
+          >
+            <div
+              className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <Image
+                src={productImages[lightboxIndex]}
+                alt={`${product.name} - Ảnh phóng to`}
+                fill
+                className="object-contain rounded-lg"
+                style={{ position: "relative" }}
+              />
+              <button
+                className="absolute top-2 right-2 bg-white/80 hover:bg-white text-black rounded-full w-10 h-10 flex items-center justify-center text-2xl font-bold shadow"
+                onClick={() => setLightboxIndex(null)}
+                aria-label="Đóng"
+                tabIndex={0}
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
       </main>
       <SiteFooter />
     </>
