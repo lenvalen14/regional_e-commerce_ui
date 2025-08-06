@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import { ShoppingBag, Menu } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { useState } from "react";
+import { CartDropdown } from "./CartDropdown";
 
 export function SiteHeader() {
+  const { state } = useCart();
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-50 bg-white shadow-sm">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -30,9 +36,26 @@ export function SiteHeader() {
 
         {/* Icons */}
         <div className="flex items-center gap-4">
-          <Link href="/cart" className="text-[#4C5C4C] hover:text-[#8FBC8F]">
-            <ShoppingBag className="h-6 w-6" />
-          </Link>
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsCartOpen(true)}
+            onMouseLeave={() => setIsCartOpen(false)}
+          >
+            <Link href="/cart" className="text-[#4C5C4C] hover:text-[#8FBC8F] relative block p-2 -m-2 transition-colors">
+              <ShoppingBag className="h-6 w-6" />
+              {state.itemCount > 0 && (
+                <span className="absolute -top-0 -right-0 bg-[#E53935] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {state.itemCount > 99 ? '99+' : state.itemCount}
+                </span>
+              )}
+            </Link>
+
+            <CartDropdown 
+              isOpen={isCartOpen} 
+              onClose={() => setIsCartOpen(false)} 
+            />
+          </div>
+
           <button className="md:hidden text-[#4C5C4C]">
             <Menu className="h-6 w-6" />
           </button>

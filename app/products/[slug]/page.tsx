@@ -7,6 +7,8 @@ import { SiteHeader } from "@/components/sections/Header";
 import { SiteFooter } from "@/components/sections/Footer";
 import { ProductReviews, StarRating } from "@/components/sections/ProductReviews";
 import { RelatedProducts } from "@/components/sections/RelatedProducts";
+import { useCart } from "@/contexts/CartContext";
+import { Check } from "lucide-react";
 
 const PRODUCTS = [
   {
@@ -71,7 +73,11 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
+  const { addItem } = useCart();
 
   // Theo dõi scroll để cập nhật active thumbnail
   useEffect(() => {
@@ -105,6 +111,34 @@ export default function ProductDetailPage() {
         behavior: 'smooth',
         block: 'center'
       });
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    
+    setIsAdding(true);
+    
+    const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''));
+    
+    try {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: priceNumber,
+        priceLabel: product.price,
+        variant: variant,
+        image: product.image,
+        quantity: quantity
+      });
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+      
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -227,9 +261,27 @@ export default function ProductDetailPage() {
                 >+</button>
               </div>
               
-              {/* Nút thêm vào giỏ */}
-              <button className="bg-[#8FBC8F] hover:bg-[#7CA87C] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-colors">
-                Thêm vào giỏ hàng
+              {/* Nút thêm vào giỏ - THAY THẾ ĐOẠN NÀY */}
+              <button 
+                onClick={handleAddToCart}
+                disabled={isAdding}
+                className={`relative overflow-hidden bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-[#bbb] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-all duration-300 ${
+                  showSuccess ? 'bg-green-600' : ''
+                }`}
+              >
+                {isAdding ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Đang thêm...
+                  </span>
+                ) : showSuccess ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Check className="w-5 h-5" />
+                    Đã thêm vào giỏ!
+                  </span>
+                ) : (
+                  'Thêm vào giỏ hàng'
+                )}
               </button>
               
               {/* Mô tả */}
