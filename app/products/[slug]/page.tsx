@@ -119,26 +119,64 @@ export default function ProductDetailPage() {
     
     setIsAdding(true);
     
+    // Tạo hiệu ứng bay
+    const createFlyingAnimation = () => {
+      const button = document.querySelector('button:has(+ #flying-product)') as HTMLElement;
+      const flyingProduct = document.getElementById('flying-product') as HTMLElement;
+      const cartIcon = document.querySelector('[data-cart-icon]') as HTMLElement;
+      
+      if (!button || !flyingProduct || !cartIcon) return;
+      
+      const buttonRect = button.getBoundingClientRect();
+      const cartRect = cartIcon.getBoundingClientRect();
+      
+      // Set vị trí ban đầu
+      flyingProduct.style.left = `${buttonRect.left + buttonRect.width / 2 - 120}px`; // -120 thay vì -40 (to hơn 3 lần)
+      flyingProduct.style.top = `${buttonRect.top + buttonRect.height / 2 - 120}px`;  // -120 thay vì -40
+      flyingProduct.style.opacity = '1';
+      flyingProduct.style.transform = 'scale(1)';
+      
+      // Animate đến cart (chậm hơn 10%)
+      setTimeout(() => {
+        flyingProduct.style.left = `${cartRect.left + cartRect.width / 2 - 120}px`; // -120 thay vì -40
+        flyingProduct.style.top = `${cartRect.top + cartRect.height / 2 - 120}px`;   // -120 thay vì -40
+        flyingProduct.style.transform = 'scale(0.3)';
+        flyingProduct.style.opacity = '0.8';
+      }, 110); // 110ms thay vì 100ms (chậm 10%)
+      
+      // Ẩn sau khi hoàn thành (chậm hơn 10%)
+      setTimeout(() => {
+        flyingProduct.style.opacity = '0';
+        flyingProduct.style.transform = 'scale(0)';
+      }, 1210); // 1210ms thay vì 1100ms (chậm 10%)
+    };
+    
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''));
     
     try {
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: priceNumber,
-        priceLabel: product.price,
-        variant: variant,
-        image: product.image,
-        quantity: quantity
-      });
+      // Bắt đầu animation
+      createFlyingAnimation();
       
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
+      // Delay để animation chạy trước
+      setTimeout(() => {
+        addItem({
+          id: product.id,
+          name: product.name,
+          price: priceNumber,
+          priceLabel: product.price,
+          variant: variant,
+          image: product.image,
+          quantity: quantity
+        });
+        
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      }, 600);
       
     } catch (error) {
       console.error('Error adding to cart:', error);
     } finally {
-      setIsAdding(false);
+      setTimeout(() => setIsAdding(false), 1200);
     }
   };
 
@@ -261,7 +299,7 @@ export default function ProductDetailPage() {
                 >+</button>
               </div>
               
-              {/* Nút thêm vào giỏ - THAY THẾ ĐOẠN NÀY */}
+              {/* Nút thêm vào giỏ */}
               <button 
                 onClick={handleAddToCart}
                 disabled={isAdding}
@@ -283,6 +321,24 @@ export default function ProductDetailPage() {
                   'Thêm vào giỏ hàng'
                 )}
               </button>
+
+              {/* Flying Product Animation */}
+              <div 
+                id="flying-product"
+                className="fixed pointer-events-none z-[9999] opacity-0 transition-all duration-1000 ease-out"
+                style={{
+                  width: '240px',   // 240px thay vì 80px (to hơn 3 lần)
+                  height: '240px',  // 240px thay vì 80px (to hơn 3 lần)
+                  transform: 'scale(0)',
+                }}
+              >
+                <Image
+                  src={currentImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover rounded-lg shadow-lg"
+                />
+              </div>
               
               {/* Mô tả */}
               <div className="mt-8">

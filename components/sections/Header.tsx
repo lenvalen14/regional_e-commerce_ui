@@ -58,14 +58,18 @@ export function SiteHeader() {
               onMouseEnter={() => setIsCartOpen(true)}
               onMouseLeave={() => setIsCartOpen(false)}
             >
-              <Link href="/cart" className="text-[#4C5C4C] hover:text-[#8FBC8F] relative block p-2 -m-2 transition-colors">
+              <button 
+                data-cart-icon  
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-all duration-300 group text-[#4C5C4C] hover:text-[#8FBC8F]"
+              >
                 <ShoppingBag className="h-6 w-6" />
                 {state.itemCount > 0 && (
                   <span className="absolute -top-0 -right-0 bg-[#E53935] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {state.itemCount > 99 ? '99+' : state.itemCount}
                   </span>
                 )}
-              </Link>
+              </button>
 
               <CartDropdown 
                 isOpen={isCartOpen} 

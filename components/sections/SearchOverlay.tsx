@@ -11,6 +11,7 @@ interface SearchOverlayProps {
 export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [isFocused, setIsFocused] = useState(false); // Thêm state focus
 
   // Mock trending searches
   const trendingSearches = [
@@ -90,13 +91,17 @@ export function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
             isOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-4'
           }`}
           style={{ transitionDelay: isOpen ? '300ms' : '0ms' }}>
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
+            <Search className={`absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none z-10 transition-all duration-300 ease-out ${
+              isFocused || searchQuery ? 'translate-x-[-8px] scale-90 text-[#8FBC8F]' : ''
+            }`} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
               placeholder="Tìm kiếm sản phẩm..."
-              className="w-full pl-12 pr-4 py-4 text-lg border-b-2 border-gray-300 focus:border-[#8FBC8F] outline-none bg-transparent font-nitti transition-all duration-300 ease-out focus:scale-105"
+              className="w-full pl-12 pr-4 py-4 text-lg font-nitti border-b-2 border-gray-300 focus:border-[#8FBC8F] outline-none bg-transparent transition-all duration-300 ease-out focus:scale-105"
               autoFocus
             />
           </div>
