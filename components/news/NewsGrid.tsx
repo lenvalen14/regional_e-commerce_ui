@@ -48,42 +48,95 @@ export function NewsGrid() {
       image: '/images/che.jpg',
       views: 760
     },
-    // Thêm nhiều articles khác...
+    {
+      id: 4,
+      title: 'Bánh chưng - Tinh hoa ẩm thực Tết',
+      excerpt: 'Khám phá nghệ thuật gói bánh chưng và ý nghĩa văn hóa sâu sắc...',
+      category: 'Văn hóa',
+      author: 'Hoàng Nam',
+      date: '6 Dec 2024',
+      readTime: '9 phút',
+      image: '/images/banh-chung.jpg',
+      views: 890
+    },
+    {
+      id: 5,
+      title: 'Cà phê sữa đá - Hương vị đặc trưng Sài Gòn',
+      excerpt: 'Câu chuyện về ly cà phê sữa đá và văn hóa cà phê vỉa hè...',
+      category: 'Ẩm thực',
+      author: 'Mai Linh',
+      date: '4 Dec 2024',
+      readTime: '6 phút',
+      image: '/images/ca-phe.jpg',
+      views: 650
+    },
+    {
+      id: 6,
+      title: 'Nem nướng Nha Trang - Đặc sản biển cả',
+      excerpt: 'Bí mật làm nem nướng Nha Trang thơm ngon đúng điệu...',
+      category: 'Công thức',
+      author: 'Văn Đức',
+      date: '2 Dec 2024',
+      readTime: '8 phút',
+      image: '/images/nem-nuong.jpg',
+      views: 720
+    }
   ];
 
+  // Filter articles based on search term
+  const filteredArticles = articles.filter(article =>
+    article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Sort articles
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    switch (sortBy) {
+      case 'popular':
+        return b.views - a.views;
+      case 'trending':
+        return b.views - a.views; // Same as popular for demo
+      case 'newest':
+      default:
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    }
+  });
+
   return (
-    <section ref={ref} className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={ref} className="py-24 bg-white border-t border-[#e0e0e0]">
+      <div className="container mx-auto px-4 max-w-7xl">
         {/* Header with Search and Filter */}
-        <div className={`mb-12 ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className={`mb-16 ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div>
-              <h2 className="text-3xl font-serif text-amber-900 mb-2">
+              <h2 className="text-3xl md:text-4xl font-beaululo text-[#222] mb-4 tracking-widest uppercase">
                 Tất cả bài viết
               </h2>
-              <p className="text-amber-600">Khám phá thêm nhiều câu chuyện thú vị</p>
+              <p className="text-[#666] font-nitti text-lg">Khám phá thêm nhiều câu chuyện thú vị</p>
+              <div className="w-16 h-px bg-[#8FBC8F] mt-4" />
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-amber-400" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8FBC8F]" />
                 <input
                   type="text"
                   placeholder="Tìm kiếm bài viết..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border-2 border-amber-200 rounded-full focus:border-amber-400 focus:outline-none transition-colors duration-300 w-64"
+                  className="pl-12 pr-4 py-3 border border-[#e0e0e0] focus:border-[#8FBC8F] focus:outline-none transition-colors duration-300 w-full sm:w-72 font-nitti text-sm bg-white"
                 />
               </div>
 
               {/* Sort */}
               <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-amber-400" />
+                <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8FBC8F]" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="pl-10 pr-8 py-2 border-2 border-amber-200 rounded-full focus:border-amber-400 focus:outline-none transition-colors duration-300 bg-white"
+                  className="pl-12 pr-10 py-3 border border-[#e0e0e0] focus:border-[#8FBC8F] focus:outline-none transition-colors duration-300 bg-white font-nitti text-sm appearance-none cursor-pointer"
                 >
                   <option value="newest">Mới nhất</option>
                   <option value="popular">Phổ biến</option>
@@ -92,65 +145,67 @@ export function NewsGrid() {
               </div>
             </div>
           </div>
+
+          {/* Results count */}
+          <div className="mt-6 text-sm text-[#888] font-nitti">
+            Hiển thị {sortedArticles.length} bài viết
+          </div>
         </div>
 
         {/* Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.map((article, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
+          {sortedArticles.map((article, index) => (
             <Link 
               key={article.id}
               href={`/news/${article.id}`}
               className={`block group cursor-pointer ${inView ? 'animate-slideInFromBottom' : 'opacity-0'}`}
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <article>
-                <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-amber-100 group-hover:border-amber-300 group-hover:scale-105">
-                  {/* Image */}
-                  <div className="relative overflow-hidden aspect-video">
-                    <div className="w-full h-full bg-gradient-to-br from-amber-200 to-orange-300 group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute top-4 left-4">
-                      <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        {article.category}
-                      </span>
+              <article className="flex flex-col">
+                {/* Image */}
+                <div className="relative overflow-hidden aspect-[4/3] mb-6 bg-[#f8f8f8] group-hover:shadow-lg transition-all duration-500">
+                  <div className="w-full h-full bg-gradient-to-br from-[#f0f0f0] to-[#e0e0e0] group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-[#8FBC8F] text-white px-3 py-1 text-xs font-beaululo uppercase tracking-widest font-bold">
+                      {article.category}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 space-y-4">
+                  <h3 className="font-beaululo text-lg text-[#222] group-hover:text-[#8FBC8F] transition-colors duration-300 leading-tight tracking-widest uppercase line-clamp-2">
+                    {article.title}
+                  </h3>
+                  
+                  <p className="text-[#666] leading-relaxed font-nitti line-clamp-3 text-sm">
+                    {article.excerpt}
+                  </p>
+
+                  {/* Meta info */}
+                  <div className="flex items-center justify-between text-xs text-[#888] font-nitti pt-4 border-t border-[#e0e0e0]">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        <span>{article.author}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{article.date}</span>
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{article.readTime}</span>
+                    </div>
                   </div>
 
-                  {/* Content */}
-                  <div className="p-6 space-y-4">
-                    <h3 className="font-serif text-xl text-amber-900 group-hover:text-orange-700 transition-colors duration-300 leading-tight line-clamp-2">
-                      {article.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 leading-relaxed line-clamp-3">
-                      {article.excerpt}
-                    </p>
-
-                    {/* Meta info */}
-                    <div className="flex items-center justify-between text-sm text-amber-600">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <User className="h-4 w-4" />
-                          <span>{article.author}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>{article.date}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span>{article.readTime}</span>
-                      </div>
-                    </div>
-
-                    {/* Read more button */}
-                    <div className="pt-4 border-t border-amber-100">
-                      <div className="text-amber-700 font-semibold hover:text-orange-600 transition-colors duration-300 flex items-center gap-2 group-hover:gap-3">
-                        Đọc thêm 
-                        <ArrowRight className="h-4 w-4 transition-transform duration-300" />
-                      </div>
+                  {/* Read more button */}
+                  <div className="pt-4">
+                    <div className="text-[#8FBC8F] font-nitti font-bold uppercase tracking-widest text-sm hover:text-[#222] transition-colors duration-300 border-b border-[#8FBC8F] hover:border-[#222] pb-1 inline-flex items-center gap-2 group">
+                      Đọc thêm 
+                      <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform duration-300" />
                     </div>
                   </div>
                 </div>
@@ -159,12 +214,21 @@ export function NewsGrid() {
           ))}
         </div>
 
+        {/* No results */}
+        {sortedArticles.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-[#888] font-nitti text-lg">Không tìm thấy bài viết phù hợp.</p>
+          </div>
+        )}
+
         {/* Load More */}
-        <div className="text-center mt-12">
-          <button className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-8 py-3 rounded-full font-semibold hover:from-amber-700 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-            Xem thêm bài viết
-          </button>
-        </div>
+        {sortedArticles.length > 0 && (
+          <div className="text-center mt-16">
+            <button className="bg-[#8FBC8F] text-white px-8 py-3 font-beaululo uppercase tracking-widest font-bold text-sm hover:bg-[#222] transform hover:scale-105 transition-all duration-300 border-2 border-[#8FBC8F] hover:border-[#222]">
+              Xem thêm bài viết
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );

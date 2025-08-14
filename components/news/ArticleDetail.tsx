@@ -24,8 +24,15 @@ export function ArticleDetail({ articleId }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likes, setLikes] = useState(45);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
     const handleScroll = () => {
       setScrollY(window.scrollY);
       
@@ -43,7 +50,7 @@ export function ArticleDetail({ articleId }: Props) {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMounted]);
 
   // Mock article data - trong thực tế sẽ fetch từ API
   const article = {
@@ -110,12 +117,42 @@ export function ArticleDetail({ articleId }: Props) {
     console.log(`Sharing to ${platform}`);
   };
 
+  // Prevent hydration mismatch by not rendering dynamic content on server
+  if (!isMounted) {
+    return (
+      <div className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="animate-pulse">
+            <div className="h-[70vh] bg-gray-200 rounded-lg mb-8"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+              <div className="lg:col-span-1">
+                <div className="space-y-8">
+                  <div className="h-48 bg-gray-200 rounded-2xl"></div>
+                  <div className="h-12 bg-gray-200 rounded-xl"></div>
+                  <div className="h-12 bg-gray-200 rounded-xl"></div>
+                </div>
+              </div>
+              <div className="lg:col-span-3">
+                <div className="space-y-4">
+                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Reading Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-amber-100 z-50">
+      <div className="fixed top-0 left-0 w-full h-1 bg-[#8FBC8F]/20 z-50">
         <div 
-          className="h-full bg-gradient-to-r from-amber-600 to-orange-600 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-[#8FBC8F] to-[#7CA87C] transition-all duration-300"
           style={{ width: `${readingProgress}%` }}
         />
       </div>
@@ -128,7 +165,7 @@ export function ArticleDetail({ articleId }: Props) {
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url('/images/nuoc-mam-hero.jpg')`,
-              transform: `translateY(${scrollY * 0.3}px)`,
+              transform: isMounted ? `translateY(${scrollY * 0.3}px)` : 'none',
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -137,7 +174,7 @@ export function ArticleDetail({ articleId }: Props) {
           <div className="absolute top-8 left-8 z-20">
             <Link 
               href="/news"
-              className="inline-flex items-center gap-2 bg-white/90 text-amber-900 px-4 py-2 rounded-full font-semibold hover:bg-white transition-all duration-300 backdrop-blur-sm group"
+              className="inline-flex items-center gap-2 bg-white/90 text-[#222] px-4 py-2 rounded-full font-semibold hover:bg-white transition-all duration-300 backdrop-blur-sm group font-nitti"
             >
               <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-300" />
               Quay lại
@@ -150,22 +187,22 @@ export function ArticleDetail({ articleId }: Props) {
               <div className="max-w-4xl">
                 <div className={`space-y-6 ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
                   {/* Category */}
-                  <span className="inline-block bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <span className="inline-block bg-[#8FBC8F] text-white px-4 py-2 rounded-full text-sm font-semibold font-nitti uppercase tracking-widest">
                     {article.category}
                   </span>
 
                   {/* Title */}
-                  <h1 className="text-4xl md:text-6xl font-serif text-white leading-tight">
+                  <h1 className="text-4xl md:text-6xl font-beaululo text-white leading-tight tracking-widest uppercase">
                     {article.title}
                   </h1>
 
                   {/* Subtitle */}
-                  <p className="text-xl md:text-2xl text-amber-100 leading-relaxed max-w-3xl">
+                  <p className="text-xl md:text-2xl text-[#8FBC8F] leading-relaxed max-w-3xl font-nitti">
                     {article.subtitle}
                   </p>
 
                   {/* Meta */}
-                  <div className="flex flex-wrap items-center gap-6 text-amber-200">
+                  <div className="flex flex-wrap items-center gap-6 text-[#8FBC8F] font-nitti">
                     <div className="flex items-center gap-2">
                       <User className="h-5 w-5" />
                       <span>{article.author.name}</span>
@@ -197,12 +234,12 @@ export function ArticleDetail({ articleId }: Props) {
               <div className="lg:col-span-1">
                 <div className="sticky top-24 space-y-8">
                   {/* Author Info */}
-                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
+                  <div className="bg-gradient-to-br from-[#8FBC8F]/10 to-[#7CA87C]/10 rounded-2xl p-6 border border-[#8FBC8F]/20">
                     <div className="text-center space-y-4">
-                      <div className="w-20 h-20 bg-gradient-to-br from-amber-200 to-orange-300 rounded-full mx-auto" />
+                      <div className="w-20 h-20 bg-gradient-to-br from-[#8FBC8F] to-[#7CA87C] rounded-full mx-auto" />
                       <div>
-                        <h4 className="font-serif text-lg text-amber-900 mb-1">{article.author.name}</h4>
-                        <p className="text-sm text-gray-600">{article.author.bio}</p>
+                        <h4 className="font-beaululo text-lg text-[#222] mb-1 tracking-widest uppercase">{article.author.name}</h4>
+                        <p className="text-sm text-[#4C5C4C] font-nitti">{article.author.bio}</p>
                       </div>
                     </div>
                   </div>
@@ -211,10 +248,10 @@ export function ArticleDetail({ articleId }: Props) {
                   <div className="space-y-4">
                     <button
                       onClick={handleLike}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${
                         isLiked 
-                          ? 'bg-red-500 text-white' 
-                          : 'bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600'
+                          ? 'bg-[#8FBC8F] text-white' 
+                          : 'bg-[#f8f8f8] text-[#222] hover:bg-[#8FBC8F] hover:text-white border border-[#e0e0e0] hover:border-[#8FBC8F]'
                       }`}
                     >
                       <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
@@ -223,10 +260,10 @@ export function ArticleDetail({ articleId }: Props) {
 
                     <button
                       onClick={() => setIsBookmarked(!isBookmarked)}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${
                         isBookmarked 
-                          ? 'bg-amber-600 text-white' 
-                          : 'bg-gray-100 text-gray-700 hover:bg-amber-50 hover:text-amber-600'
+                          ? 'bg-[#8FBC8F] text-white' 
+                          : 'bg-[#f8f8f8] text-[#222] hover:bg-[#8FBC8F] hover:text-white border border-[#e0e0e0] hover:border-[#8FBC8F]'
                       }`}
                     >
                       <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-current' : ''}`} />
@@ -236,12 +273,12 @@ export function ArticleDetail({ articleId }: Props) {
 
                   {/* Share */}
                   <div className="space-y-3">
-                    <h5 className="font-semibold text-amber-900">Chia sẻ bài viết</h5>
+                    <h5 className="font-semibold text-[#222] font-nitti">Chia sẻ bài viết</h5>
                     <div className="flex gap-2">
                       {[
                         { icon: Facebook, color: 'bg-blue-600', platform: 'facebook' },
                         { icon: Twitter, color: 'bg-sky-500', platform: 'twitter' },
-                        { icon: LinkIcon, color: 'bg-gray-600', platform: 'copy' }
+                        { icon: LinkIcon, color: 'bg-[#8FBC8F]', platform: 'copy' }
                       ].map((social, index) => (
                         <button
                           key={index}
@@ -255,12 +292,12 @@ export function ArticleDetail({ articleId }: Props) {
                   </div>
 
                   {/* Reading Time */}
-                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <div className="bg-[#8FBC8F]/10 rounded-xl p-4 border border-[#8FBC8F]/20">
                     <div className="flex items-center gap-3">
-                      <Coffee className="h-6 w-6 text-amber-600" />
+                      <Coffee className="h-6 w-6 text-[#8FBC8F]" />
                       <div>
-                        <p className="font-semibold text-amber-900">Thời gian đọc</p>
-                        <p className="text-sm text-amber-700">{article.readTime}</p>
+                        <p className="font-semibold text-[#222] font-nitti">Thời gian đọc</p>
+                        <p className="text-sm text-[#4C5C4C] font-nitti">{article.readTime}</p>
                       </div>
                     </div>
                   </div>
@@ -271,18 +308,105 @@ export function ArticleDetail({ articleId }: Props) {
               <div className="lg:col-span-3">
                 <div 
                   id="article-content"
-                  className={`prose prose-lg prose-amber max-w-none ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}
+                  className={`prose prose-lg max-w-none ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}
+                  style={{
+                    '--tw-prose-headings': '#222',
+                    '--tw-prose-body': '#4C5C4C',
+                    '--tw-prose-links': '#8FBC8F',
+                    '--tw-prose-bold': '#222',
+                    '--tw-prose-counters': '#8FBC8F',
+                    '--tw-prose-bullets': '#8FBC8F',
+                    '--tw-prose-hr': '#e0e0e0',
+                    '--tw-prose-quotes': '#222',
+                    '--tw-prose-quote-borders': '#8FBC8F',
+                    '--tw-prose-captions': '#666',
+                    '--tw-prose-code': '#222',
+                    '--tw-prose-pre-code': '#222',
+                    '--tw-prose-pre-bg': '#f8f8f8',
+                    '--tw-prose-invert-headings': '#fff',
+                    '--tw-prose-invert-body': '#cbd5e1',
+                    '--tw-prose-invert-links': '#8FBC8F',
+                    '--tw-prose-invert-bold': '#fff',
+                    '--tw-prose-invert-counters': '#8FBC8F',
+                    '--tw-prose-invert-bullets': '#8FBC8F',
+                    '--tw-prose-invert-hr': '#475569',
+                    '--tw-prose-invert-quotes': '#e2e8f0',
+                    '--tw-prose-invert-quote-borders': '#8FBC8F',
+                    '--tw-prose-invert-captions': '#94a3b8',
+                    '--tw-prose-invert-code': '#fff',
+                    '--tw-prose-invert-pre-code': '#e2e8f0',
+                    '--tw-prose-invert-pre-bg': '#1e293b'
+                  } as React.CSSProperties}
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
+                
+                {/* Custom CSS for better heading visibility */}
+                <style jsx>{`
+                  .prose h2 {
+                    font-family: 'BeauLuloClean-OneBold', sans-serif;
+                    font-size: 1.875rem;
+                    line-height: 2.25rem;
+                    color: #222;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    border-bottom: 2px solid #8FBC8F;
+                    padding-bottom: 0.5rem;
+                  }
+                  
+                  .prose h3 {
+                    font-family: 'BeauLuloClean-OneBold', sans-serif;
+                    font-size: 1.5rem;
+                    line-height: 2rem;
+                    color: #222;
+                    margin-top: 1.5rem;
+                    margin-bottom: 0.75rem;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                  }
+                  
+                  .prose p {
+                    font-family: 'Nitti', sans-serif;
+                    font-size: 1.125rem;
+                    line-height: 1.75rem;
+                    color: #4C5C4C;
+                    margin-bottom: 1rem;
+                  }
+                  
+                  .prose ul {
+                    margin-top: 1rem;
+                    margin-bottom: 1rem;
+                  }
+                  
+                  .prose li {
+                    font-family: 'Nitti', sans-serif;
+                    color: #4C5C4C;
+                    margin-bottom: 0.5rem;
+                  }
+                  
+                  .prose blockquote {
+                    font-family: 'Nitti', sans-serif;
+                    font-style: italic;
+                    border-left: 4px solid #8FBC8F;
+                    padding-left: 1rem;
+                    margin: 1.5rem 0;
+                    background: #f8f8f8;
+                    padding: 1rem;
+                    border-radius: 0.5rem;
+                  }
+                `}</style>
 
                 {/* Tags */}
-                <div className="mt-12 pt-8 border-t border-amber-100">
-                  <h5 className="font-semibold text-amber-900 mb-4">Từ khóa</h5>
+                <div className="mt-12 pt-8 border-t border-[#e0e0e0]">
+                  <h5 className="font-semibold text-[#222] mb-4 font-nitti">Từ khóa</h5>
                   <div className="flex flex-wrap gap-2">
                     {article.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-medium hover:bg-amber-200 transition-colors duration-300 cursor-pointer"
+                        className="bg-[#8FBC8F]/10 text-[#8FBC8F] px-3 py-1 rounded-full text-sm font-medium hover:bg-[#8FBC8F] hover:text-white transition-colors duration-300 cursor-pointer font-nitti"
                       >
                         #{tag}
                       </span>
@@ -291,10 +415,10 @@ export function ArticleDetail({ articleId }: Props) {
                 </div>
 
                 {/* Call to Action */}
-                <div className="mt-12 bg-gradient-to-r from-amber-600 to-orange-600 rounded-2xl p-8 text-white text-center">
-                  <h4 className="text-2xl font-serif mb-4">Bạn thích bài viết này?</h4>
-                  <p className="mb-6 text-amber-100">Đăng ký nhận thông báo về những bài viết mới nhất từ chúng tôi</p>
-                  <button className="bg-white text-amber-600 px-6 py-3 rounded-full font-semibold hover:bg-amber-50 transition-colors duration-300">
+                <div className="mt-12 bg-gradient-to-r from-[#8FBC8F] to-[#7CA87C] rounded-2xl p-8 text-white text-center">
+                  <h4 className="text-2xl font-beaululo mb-4 tracking-widest uppercase">Bạn thích bài viết này?</h4>
+                  <p className="mb-6 text-white/90 font-nitti">Đăng ký nhận thông báo về những bài viết mới nhất từ chúng tôi</p>
+                  <button className="bg-white text-[#8FBC8F] px-6 py-3 rounded-full font-semibold hover:bg-[#f8f8f8] transition-colors duration-300 font-nitti">
                     Đăng ký ngay
                   </button>
                 </div>

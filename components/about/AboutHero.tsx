@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { useInView } from 'react-intersection-observer';
+import { ChevronDown, Target, Globe, Users, Zap, Award, MapPin, Heart } from 'lucide-react';
 
+// AboutHero Component - Clean white background like NewsHero
 export function AboutHero() {
   const [scrollY, setScrollY] = useState(0);
 
@@ -13,56 +15,54 @@ export function AboutHero() {
   }, []);
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background với parallax */}
-      <div 
-        className="absolute inset-0 bg-gradient-to-br from-[#2F3E34]/100 to-[#8FBC8F]/100"
-        style={{
-          transform: `translateY(${scrollY * 0.5}px)`,
-        }}
-      />
+    <section className="relative min-h-screen flex items-center justify-center bg-white overflow-hidden">
+      {/* Decorative elements - similar to NewsHero */}
+      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-[#8FBC8F] to-[#7AA87A] rounded-full opacity-10 animate-float" />
+      <div className="absolute bottom-20 right-10 w-24 h-24 bg-gradient-to-br from-[#8FBC8F] to-[#7AA87A] rounded-full opacity-10 animate-float animation-delay-1000" />
       
-      {/* Background pattern - Thay thế bằng pattern đơn giản hơn */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25px 25px, white 2px, transparent 0)`,
-          backgroundSize: '50px 50px'
-        }} />
-      </div>
+      <div className="container mx-auto px-4 py-6 relative z-10">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          {/* Decorative border */}
+          <div className="w-24 h-1 bg-[#8FBC8F] mx-auto animate-expandWidth" />
+          
+          <div className="space-y-6">
+            <h1 className="text-5xl md:text-7xl font-beaululo text-[#222] leading-tight tracking-widest uppercase">
+              <span className="block animate-fadeInUp">Đặc Sản</span>
+              <span className="block text-[#8FBC8F] animate-fadeInUp animation-delay-300">Việt Nam</span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-[#666] leading-relaxed font-nitti max-w-3xl mx-auto animate-fadeInUp animation-delay-600">
+              Nơi lưu giữ tinh hoa ẩm thực Việt Nam, kết nối bạn với văn hóa và truyền thống 
+              qua từng món ăn đặc sản từ khắp ba miền đất nước.
+            </p>
+          </div>
 
-      {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
-        <div className="animate-fadeInUp">
-          <h1 className="text-5xl md:text-7xl font-beaululo mb-6 tracking-wider">
-            <span className="inline-block animate-slideInFromLeft animation-delay-200">Đặc</span>
-            <span className="inline-block animate-slideInFromLeft animation-delay-400 text-[#FFD700] mx-2">Sản</span>
-            <span className="inline-block animate-slideInFromLeft animation-delay-600">Việt</span>
-          </h1>
-          
-          <div className="w-32 h-1 bg-[#FFD700] mx-auto mb-8 animate-expandWidth animation-delay-800" />
-          
-          <p className="text-xl md:text-2xl mb-4 animate-fadeInUp animation-delay-1000 font-light">
-            Nơi lưu giữ tinh hoa ẩm thực Việt Nam
-          </p>
-          
-          <p className="text-lg opacity-90 max-w-2xl mx-auto animate-fadeInUp animation-delay-1200 mb-16">
-            Chúng tôi mang đến những đặc sản nguyên chất từ khắp mọi miền đất nước, 
-            kết nối bạn với văn hóa và truyền thống Việt Nam qua từng món ăn.
-          </p>
+          {/* Stats - inline style like NewsHero */}
+          <div className="flex flex-wrap justify-center gap-8 lg:gap-16 pt-8 border-t border-[#e0e0e0] animate-fadeInUp animation-delay-900">
+            <div className="text-center group">
+              <div className="text-3xl md:text-4xl font-bold text-[#222] font-beaululo tracking-widest group-hover:text-[#8FBC8F] transition-colors duration-300">10K+</div>
+              <div className="text-sm text-[#888] font-nitti uppercase tracking-wider mt-1">Khách hàng</div>
+            </div>
+            <div className="text-center group">
+              <div className="text-3xl md:text-4xl font-bold text-[#222] font-beaululo tracking-widest group-hover:text-[#8FBC8F] transition-colors duration-300">50+</div>
+              <div className="text-sm text-[#888] font-nitti uppercase tracking-wider mt-1">Đặc sản</div>
+            </div>
+            <div className="text-center group">
+              <div className="text-3xl md:text-4xl font-bold text-[#222] font-beaululo tracking-widest group-hover:text-[#8FBC8F] transition-colors duration-300">63</div>
+              <div className="text-sm text-[#888] font-nitti uppercase tracking-wider mt-1">Tỉnh thành</div>
+            </div>
+            <div className="text-center group">
+              <div className="text-3xl md:text-4xl font-bold text-[#222] font-beaululo tracking-widest group-hover:text-[#8FBC8F] transition-colors duration-300">99%</div>
+              <div className="text-sm text-[#888] font-nitti uppercase tracking-wider mt-1">Hài lòng</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Scroll indicator - Di chuyển ra ngoài content và xuống dưới hơn */}
-      <div className="absolute bottom-4 md:bottom-25 left-1/2 transform -translate-x-1/2 animate-bounce z-20">
-        <div className="flex flex-col items-center gap-2">
-          <ChevronDown className="h-8 w-8 text-white/70" />
-        </div>
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <ChevronDown className="h-6 w-6 text-[#888]" />
       </div>
-
-      {/* Floating elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-[#FFD700]/20 rounded-full animate-float" />
-      <div className="absolute top-40 right-20 w-16 h-16 bg-[#8FBC8F]/30 rounded-full animate-float animation-delay-500" />
-      <div className="absolute bottom-32 left-1/4 w-12 h-12 bg-white/20 rounded-full animate-float animation-delay-1000" />
     </section>
   );
 }

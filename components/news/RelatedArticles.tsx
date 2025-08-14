@@ -44,75 +44,85 @@ export function RelatedArticles() {
   ];
 
   return (
-    <section ref={ref} className="py-20 bg-gradient-to-br from-amber-50 to-orange-50">
-      <div className="container mx-auto px-4">
+    <section ref={ref} className="py-20 bg-white border-t border-[#e0e0e0]">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-16">
-          <div className={`${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
-            <h2 className="text-3xl md:text-4xl font-serif text-amber-900 mb-4">
+          <div className={`${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
+            <h2 className="text-2xl md:text-3xl font-beaululo text-[#222] mb-4 tracking-widest uppercase">
               Bài viết liên quan
             </h2>
-            <p className="text-amber-700 max-w-2xl mx-auto">
-              Khám phá thêm những câu chuyện thú vị khác về văn hóa ẩm thực Việt Nam
+            <p className="text-[#666] font-nitti mb-6">
+              Khám phá thêm những câu chuyện về văn hóa ẩm thực Việt Nam
             </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-amber-600 to-orange-600 mx-auto mt-6" />
+            <div className="w-24 h-px bg-[#8FBC8F] mx-auto" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
           {relatedArticles.map((article, index) => (
             <Link 
               key={article.id} 
               href={`/news/${article.id}`}
-              className={`group block ${inView ? 'animate-slideInFromBottom' : 'opacity-0'}`}
-              style={{ animationDelay: `${index * 200}ms` }}
+              className={`group block ${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}
+              style={{ transitionDelay: `${index * 200}ms` }}
             >
-              <article className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-amber-100 group-hover:border-amber-300 group-hover:scale-105">
+              <article className="border border-[#e0e0e0] bg-white hover:border-[#8FBC8F] transition-all duration-300 group-hover:shadow-sm">
                 {/* Image */}
-                <div className="relative overflow-hidden aspect-video">
-                  <div className="w-full h-full bg-gradient-to-br from-amber-200 to-orange-300 group-hover:scale-110 transition-transform duration-700" />
+                <div className="relative overflow-hidden aspect-[4/3]">
+                  <div className="w-full h-full bg-[#f5f5f5] group-hover:bg-[#f0f0f0] transition-colors duration-300" />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    <span className="bg-white text-[#666] px-3 py-1 text-xs font-nitti tracking-widest uppercase border border-[#e0e0e0]">
                       {article.category}
                     </span>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-4">
-                  <h3 className="font-serif text-xl text-amber-900 group-hover:text-orange-700 transition-colors duration-300 leading-tight line-clamp-2">
+                <div className="p-8 space-y-4">
+                  <h3 className="font-beaululo text-lg text-[#222] group-hover:text-[#8FBC8F] transition-colors duration-300 leading-tight tracking-widest uppercase">
                     {article.title}
                   </h3>
                   
-                  <p className="text-gray-600 leading-relaxed line-clamp-3">
+                  <p className="text-[#666] leading-relaxed font-nitti text-sm line-clamp-3">
                     {article.excerpt}
                   </p>
 
                   {/* Meta */}
-                  <div className="flex items-center justify-between text-sm text-amber-600">
+                  <div className="flex items-center justify-between text-xs text-[#888] font-nitti pt-4 border-t border-[#f0f0f0]">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
+                        <User className="h-3 w-3" />
                         <span>{article.author}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-3 w-3" />
                         <span>{article.date}</span>
                       </div>
                     </div>
+                    <span>{article.readTime}</span>
                   </div>
 
                   {/* Read more */}
-                  <div className="pt-4 border-t border-amber-100">
-                    <div className="text-amber-700 font-semibold hover:text-orange-600 transition-colors duration-300 flex items-center gap-2 group-hover:gap-3">
+                  <div className="pt-4">
+                    <div className="text-[#8FBC8F] font-nitti text-xs tracking-widest uppercase hover:text-[#7aa87a] transition-colors duration-300 flex items-center gap-2 group-hover:gap-3">
                       Đọc thêm 
-                      <ArrowRight className="h-4 w-4 transition-transform duration-300" />
+                      <ArrowRight className="h-3 w-3 transition-transform duration-300" />
                     </div>
                   </div>
                 </div>
               </article>
             </Link>
           ))}
+        </div>
+
+        {/* View All Link */}
+        <div className="text-center mt-16">
+          <Link 
+            href="/news"
+            className="inline-block border border-[#e0e0e0] text-[#666] px-8 py-3 font-nitti text-sm tracking-widest uppercase hover:border-[#8FBC8F] hover:text-[#8FBC8F] transition-colors duration-300"
+          >
+            Xem tất cả bài viết
+          </Link>
         </div>
       </div>
     </section>
