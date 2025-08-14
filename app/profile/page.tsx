@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { SiteHeader } from "@/components/sections/Header";
-import { ProfileSidebar } from "@/components/sections/ProfileSidebar";
-import { ProfileForm } from "@/components/sections/ProfileForm";
-import { ProfileAvatar } from "@/components/sections/ProfileAvatar";
+import { SiteHeader } from "@/components/layout/Header";
+import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
+import { ProfileForm } from "@/components/profile/ProfileForm";
+import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);

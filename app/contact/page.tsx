@@ -1,10 +1,10 @@
 'use client';
 
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
-import { ContactMap } from "@/components/sections/ContactMap";
-import { ContactForm } from "@/components/sections/ContactForm";
-import { ContactInfo } from "@/components/sections/ContactInfo";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
+import { ContactMap } from "@/components/contact/ContactMap";
+import { ContactForm } from "@/components/contact/ContactForm";
+import { ContactInfo } from "@/components/contact/ContactInfo";
 
 export default function ContactPage() {
   return (

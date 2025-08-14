@@ -1,12 +1,12 @@
 'use client';
 
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
-import { NewsHero } from "@/components/sections/NewsHero";
-import { FeaturedNews } from "@/components/sections/FeaturedNews";
-import { NewsGrid } from "@/components/sections/NewsGrid";
-import { NewsCategories } from "@/components/sections/NewsCategories";
-import { NewsletterSubscribe } from "@/components/sections/NewsletterSubscribe";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
+import { NewsHero } from "@/components/news/NewsHero";
+import { FeaturedNews } from "@/components/news/FeaturedNews";
+import { NewsGrid } from "@/components/news/NewsGrid";
+import { NewsCategories } from "@/components/news/NewsCategories";
+import { NewsletterSubscribe } from "@/components/shared/NewsletterSubscribe";
 
 export default function NewsPage() {
   return (

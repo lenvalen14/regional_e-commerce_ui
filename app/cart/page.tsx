@@ -1,9 +1,9 @@
 'use client';
 
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
-import { CartItems } from "@/components/sections/CartItems";
-import { CartSummary } from "@/components/sections/CartSummary";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
+import { CartItems } from "@/components/cart/CartItems";
+import { CartSummary } from "@/components/cart/CartSummary";
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage() {

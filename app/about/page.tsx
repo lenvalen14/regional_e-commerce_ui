@@ -1,13 +1,13 @@
 'use client';
 
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
-import { AboutHero } from "@/components/sections/AboutHero";
-import { AboutStory } from "@/components/sections/AboutStory";
-import { AboutValues } from "@/components/sections/AboutValues";
-import { AboutCulture } from "@/components/sections/AboutCulture";
-import { AboutMission } from "@/components/sections/AboutMission";
-import { AboutStats } from "@/components/sections/AboutStats";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
+import { AboutHero } from "@/components/about/AboutHero";
+import { AboutStory } from "@/components/about/AboutStory";
+import { AboutValues } from "@/components/about/AboutValues";
+import { AboutCulture } from "@/components/about/AboutCulture";
+import { AboutMission } from "@/components/about/AboutMission";
+import { AboutStats } from "@/components/about/AboutStats";
 
 export default function AboutPage() {
   return (

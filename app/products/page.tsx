@@ -4,8 +4,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
 
 const PRODUCTS = [
   {

@@ -1,10 +1,10 @@
-import { Hero } from "@/components/sections/Hero";
-import { SiteHeader } from "@/components/sections/Header";
-import { RegionCategories } from "@/components/sections/RegionCategories";
-import { FeaturedProducts } from "@/components/sections/FeaturedProducts";
+import { Hero } from "@/components/layout/Hero";
+import { SiteHeader } from "@/components/layout/Header";
+import { RegionCategories } from "@/components/shared/RegionCategories";
+import { FeaturedProducts } from "@/components/products/FeaturedProducts";
 // import { CulturalIntro } from "@/components/sections/CulturalIntro";
 // import { NewsPreview } from "@/components/sections/NewsPreview";
-import { SiteFooter } from "@/components/sections/Footer";
+import { SiteFooter } from "@/components/layout/Footer";
 
 export default function HomePage() {
   return (

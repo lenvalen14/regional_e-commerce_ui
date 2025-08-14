@@ -3,10 +3,10 @@
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
-import { SiteHeader } from "@/components/sections/Header";
-import { SiteFooter } from "@/components/sections/Footer";
-import { ProductReviews, StarRating } from "@/components/sections/ProductReviews";
-import { RelatedProducts } from "@/components/sections/RelatedProducts";
+import { SiteHeader } from "@/components/layout/Header";
+import { SiteFooter } from "@/components/layout/Footer";
+import { ProductReviews, StarRating } from "@/components/products/ProductReviews";
+import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { useCart } from "@/contexts/CartContext";
 import { Check } from "lucide-react";
 

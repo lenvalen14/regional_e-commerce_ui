@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import { SiteHeader } from "@/components/sections/Header";
-import { OrderTabs } from "@/components/sections/OrderTabs";
-import { OrderList } from "@/components/sections/OrderList";
+import { SiteHeader } from "@/components/layout/Header";
+import { OrderTabs } from "@/components/orders/OrderTabs";
+import { OrderList } from "@/components/orders/OrderList";
 import { Truck, CheckCircle, Clock, XCircle, Package } from "lucide-react";
 
 const mockOrders = [
