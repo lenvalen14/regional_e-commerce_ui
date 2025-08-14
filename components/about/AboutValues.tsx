@@ -14,25 +14,25 @@ export function AboutValues() {
       icon: Leaf,
       title: 'Tự nhiên nguyên chất',
       description: 'Cam kết mang đến những sản phẩm hoàn toàn tự nhiên, không chất bảo quản.',
-      color: 'from-green-400 to-green-600'
+      color: 'from-[#8FBC8F] to-[#7CA87C]'
     },
     {
       icon: Shield,
       title: 'An toàn tuyệt đối',
       description: 'Quy trình kiểm tra chất lượng nghiêm ngặt, đảm bảo vệ sinh an toàn thực phẩm.',
-      color: 'from-blue-400 to-blue-600'
+      color: 'from-[#8FBC8F] to-[#7CA87C]'
     },
     {
       icon: Heart,
       title: 'Tình yêu quê hương',
       description: 'Mỗi sản phẩm được tuyển chọn với tình yêu và niềm tự hào về đất nước Việt Nam.',
-      color: 'from-red-400 to-red-600'
+      color: 'from-[#8FBC8F] to-[#7CA87C]'
     },
     {
       icon: Star,
       title: 'Chất lượng hàng đầu',
       description: 'Chỉ chọn lựa những đặc sản chất lượng cao nhất từ các vùng miền, đảm bảo tiêu chuẩn quốc tế.',
-      color: 'from-yellow-400 to-yellow-600'
+      color: 'from-[#8FBC8F] to-[#7CA87C]'
     },
   ];
 
@@ -41,10 +41,10 @@ export function AboutValues() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className={`${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
-            <span className="text-[#8FBC8F] font-semibold text-sm uppercase tracking-widest">
+            <span className="text-[#8FBC8F] font-semibold text-sm uppercase tracking-widest font-nitti">
               Giá trị cốt lõi
             </span>
-            <h2 className="text-4xl md:text-5xl font-beaululo text-[#2F3E34] mt-4 mb-6">
+            <h2 className="text-4xl md:text-5xl font-beaululo text-[#222] mt-4 mb-6 tracking-widest uppercase">
               Những điều chúng tôi tin tưởng
             </h2>
             <div className="w-24 h-1 bg-[#8FBC8F] mx-auto" />
@@ -62,7 +62,7 @@ export function AboutValues() {
               style={{ animationDelay: `${index * 150}ms` }}
             >
               {/* Thêm h-full và flex flex-col để card chiếm toàn bộ chiều cao */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-500 border border-gray-100 relative overflow-hidden h-full flex flex-col">
+              <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-shadow duration-500 border border-[#e0e0e0] relative overflow-hidden h-full flex flex-col">
                 {/* Background gradient overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${value.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                 
@@ -73,17 +73,17 @@ export function AboutValues() {
                 
                 {/* Content - Thêm flex-grow để nội dung chiếm hết không gian còn lại */}
                 <div className="flex-grow flex flex-col">
-                  <h3 className="text-xl font-bold text-[#2F3E34] mb-4 group-hover:text-[#8FBC8F] transition-colors duration-300">
+                  <h3 className="text-xl font-bold text-[#222] mb-4 group-hover:text-[#8FBC8F] transition-colors duration-300 font-nitti">
                     {value.title}
                   </h3>
                   
-                  <p className="text-gray-600 leading-relaxed flex-grow">
+                  <p className="text-[#4C5C4C] leading-relaxed flex-grow font-nitti">
                     {value.description}
                   </p>
                 </div>
 
                 {/* Decorative element */}
-                <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-50 group-hover:scale-125 transition-transform duration-500" />
+                <div className="absolute -bottom-2 -right-2 w-20 h-20 bg-gradient-to-br from-[#e0e0e0] to-[#d0d0d0] rounded-full opacity-50 group-hover:scale-125 transition-transform duration-500" />
               </div>
             </div>
           ))}

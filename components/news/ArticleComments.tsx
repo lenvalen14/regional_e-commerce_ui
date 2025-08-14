@@ -58,110 +58,108 @@ export function ArticleComments() {
   };
 
   return (
-    <section ref={ref} className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className={`text-center mb-12 ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
-            <h3 className="text-2xl md:text-3xl font-serif text-amber-900 mb-4">
-              Bình luận ({comments.length})
-            </h3>
-            <div className="w-16 h-1 bg-gradient-to-r from-amber-600 to-orange-600 mx-auto" />
-          </div>
+    <section ref={ref} className="py-20 bg-white border-t border-[#e0e0e0]">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Header */}
+        <div className={`text-center mb-16 ${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}>
+          <h3 className="text-2xl md:text-3xl font-beaululo text-[#222] mb-4 tracking-widest uppercase">
+            Bình luận ({comments.length})
+          </h3>
+          <div className="w-16 h-px bg-[#8FBC8F] mx-auto" />
+        </div>
 
-          {/* Comment Form */}
-          <div className={`mb-12 ${inView ? 'animate-slideInFromBottom' : 'opacity-0'}`}>
-            <form onSubmit={handleSubmitComment} className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-100">
-              <div className="flex gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-amber-200 to-orange-300 rounded-full flex-shrink-0" />
-                <div className="flex-1">
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Chia sẻ suy nghĩ của bạn về bài viết..."
-                    className="w-full p-4 border-2 border-amber-200 rounded-xl focus:border-amber-400 focus:outline-none transition-colors duration-300 resize-none"
-                    rows={4}
-                  />
-                  <div className="flex justify-end mt-3">
-                    <button
-                      type="submit"
-                      disabled={!newComment.trim()}
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-2 rounded-full font-semibold hover:from-amber-700 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
-                    >
-                      <Send className="h-4 w-4" />
-                      Gửi bình luận
-                    </button>
-                  </div>
+        {/* Comment Form */}
+        <div className={`mb-16 ${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 delay-200`}>
+          <form onSubmit={handleSubmitComment} className="border border-[#e0e0e0] bg-white p-8">
+            <div className="flex gap-6">
+              <div className="w-12 h-12 bg-[#f5f5f5] rounded-full flex-shrink-0" />
+              <div className="flex-1">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Chia sẻ suy nghĩ của bạn về bài viết..."
+                  className="w-full p-4 border border-[#e0e0e0] focus:border-[#8FBC8F] focus:outline-none transition-colors duration-300 resize-none font-nitti"
+                  rows={4}
+                />
+                <div className="flex justify-end mt-4">
+                  <button
+                    type="submit"
+                    disabled={!newComment.trim()}
+                    className="bg-[#8FBC8F] text-white px-6 py-3 font-nitti text-sm tracking-widest uppercase hover:bg-[#7aa87a] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    Gửi
+                  </button>
                 </div>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
+        </div>
 
-          {/* Comments List */}
-          <div className="space-y-8">
-            {comments.map((comment, index) => (
-              <div 
-                key={comment.id}
-                className={`${inView ? 'animate-slideInFromBottom' : 'opacity-0'}`}
-                style={{ animationDelay: `${(index + 1) * 200}ms` }}
-              >
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-200 to-orange-300 rounded-full flex-shrink-0" />
-                  
-                  <div className="flex-1">
-                    <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <h5 className="font-semibold text-amber-900">{comment.author}</h5>
-                          <span className="text-sm text-gray-500">{comment.date}</span>
-                        </div>
-                        
-                        <button className="flex items-center gap-1 text-sm text-gray-500 hover:text-amber-600 transition-colors duration-300">
-                          <ThumbsUp className="h-4 w-4" />
-                          {comment.likes}
-                        </button>
+        {/* Comments List */}
+        <div className="space-y-12">
+          {comments.map((comment, index) => (
+            <div 
+              key={comment.id}
+              className={`${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700`}
+              style={{ transitionDelay: `${(index + 1) * 300}ms` }}
+            >
+              <div className="flex gap-6">
+                <div className="w-12 h-12 bg-[#f5f5f5] rounded-full flex-shrink-0" />
+                
+                <div className="flex-1">
+                  <div className="bg-white border border-[#e0e0e0] p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <h5 className="font-beaululo text-[#222] text-sm tracking-widest uppercase">{comment.author}</h5>
+                        <span className="text-xs text-[#888] font-nitti">{comment.date}</span>
                       </div>
                       
-                      <p className="text-gray-700 leading-relaxed mb-4">{comment.content}</p>
-                      
-                      <button className="text-sm text-amber-600 hover:text-orange-600 transition-colors duration-300 flex items-center gap-1">
-                        <Reply className="h-4 w-4" />
-                        Trả lời
+                      <button className="flex items-center gap-1 text-xs text-[#888] hover:text-[#8FBC8F] transition-colors duration-300 font-nitti">
+                        <ThumbsUp className="h-3 w-3" />
+                        {comment.likes}
                       </button>
                     </div>
-
-                    {/* Replies */}
-                    {comment.replies.length > 0 && (
-                      <div className="ml-8 mt-4 space-y-4">
-                        {comment.replies.map((reply) => (
-                          <div key={reply.id} className="flex gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-amber-200 to-orange-300 rounded-full flex-shrink-0" />
-                            <div className="flex-1 bg-amber-50 rounded-xl p-4 border border-amber-100">
-                              <div className="flex items-center gap-2 mb-2">
-                                <h6 className="font-semibold text-amber-900 text-sm">{reply.author}</h6>
-                                {reply.isAuthor && (
-                                  <span className="bg-amber-600 text-white px-2 py-1 rounded-full text-xs">Tác giả</span>
-                                )}
-                                <span className="text-xs text-gray-500">{reply.date}</span>
-                              </div>
-                              <p className="text-sm text-gray-700">{reply.content}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    
+                    <p className="text-[#444] leading-relaxed mb-4 font-nitti">{comment.content}</p>
+                    
+                    <button className="text-xs text-[#8FBC8F] hover:text-[#7aa87a] transition-colors duration-300 flex items-center gap-1 font-nitti tracking-widest uppercase">
+                      <Reply className="h-3 w-3" />
+                      Trả lời
+                    </button>
                   </div>
+
+                  {/* Replies */}
+                  {comment.replies.length > 0 && (
+                    <div className="ml-12 mt-6 space-y-6">
+                      {comment.replies.map((reply) => (
+                        <div key={reply.id} className="flex gap-4">
+                          <div className="w-8 h-8 bg-[#f5f5f5] rounded-full flex-shrink-0" />
+                          <div className="flex-1 bg-[#fafafa] border border-[#e0e0e0] p-4">
+                            <div className="flex items-center gap-3 mb-3">
+                              <h6 className="font-beaululo text-[#222] text-xs tracking-widest uppercase">{reply.author}</h6>
+                              {reply.isAuthor && (
+                                <span className="bg-[#8FBC8F] text-white px-2 py-1 text-xs font-nitti tracking-widest uppercase">Tác giả</span>
+                              )}
+                              <span className="text-xs text-[#888] font-nitti">{reply.date}</span>
+                            </div>
+                            <p className="text-xs text-[#444] font-nitti">{reply.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
 
-          {/* Load More Comments */}
-          <div className="text-center mt-12">
-            <button className="bg-amber-100 text-amber-800 px-6 py-3 rounded-full font-semibold hover:bg-amber-200 transition-colors duration-300">
-              Xem thêm bình luận
-            </button>
-          </div>
+        {/* Load More Comments */}
+        <div className="text-center mt-16">
+          <button className="border border-[#e0e0e0] text-[#666] px-8 py-3 font-nitti text-sm tracking-widest uppercase hover:border-[#8FBC8F] hover:text-[#8FBC8F] transition-colors duration-300">
+            Xem thêm bình luận
+          </button>
         </div>
       </div>
     </section>

@@ -6,7 +6,6 @@ import { NewsHero } from "@/components/news/NewsHero";
 import { FeaturedNews } from "@/components/news/FeaturedNews";
 import { NewsGrid } from "@/components/news/NewsGrid";
 import { NewsCategories } from "@/components/news/NewsCategories";
-import { NewsletterSubscribe } from "@/components/shared/NewsletterSubscribe";
 
 export default function NewsPage() {
   return (
@@ -26,8 +25,6 @@ export default function NewsPage() {
         {/* News Grid */}
         <NewsGrid />
         
-        {/* Newsletter Subscribe */}
-        <NewsletterSubscribe />
       </main>
 
       <SiteFooter />
