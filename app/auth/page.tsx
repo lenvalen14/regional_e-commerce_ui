@@ -2,10 +2,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/layout/Header";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const router = useRouter();
+
+  // Mock user data cho test
+  const mockUser = {
+    name: "Phan Phạm Ngọc Thạch",
+    email: "pngthach@gmail.com",
+    avatar: "https://instagram.fsgn2-7.fna.fbcdn.net/v/t51.2885-15/520871917_17959218914987300_3931077271016486478_n.jpg?stp=dst-jpg_e35_p720x720_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UuYzIifQ&_nc_ht=instagram.fsgn2-7.fna.fbcdn.net&_nc_cat=108&_nc_oc=Q6cZ2QG4vzBsLq10Q73vsTPnUBTM5keeCYyi32PFbpmbGkh6qlYZTPTEvcyTuFGYWUTx_XI&_nc_ohc=VZSVDYqYjzMQ7kNvwHmPwd8&_nc_gid=gOQyB4oiWydqnbeRw9pXIw&edm=AP4sbd4BAAAA&ccb=7-5&ig_cache_key=MzY3NzE4ODkyNjk5MTE0MDAwNw%3D%3D.3-ccb7-5&oh=00_AfUPg_wdlLnfjRufLQc--G06WidWPeKDEQ2QPQNjPmcKfQ&oe=68A35650&_nc_sid=7a9f4b"
+  };
+
+  const handleQuickLogin = () => {
+    try {
+      // Lưu mock user data vào localStorage
+      localStorage.setItem('user', JSON.stringify(mockUser));
+      localStorage.setItem('isLoggedIn', 'true');
+      
+      // Đợi một chút để đảm bảo localStorage được lưu
+      setTimeout(() => {
+        // Chuyển đến trang profile với hard navigation
+        window.location.href = '/profile';
+      }, 100);
+    } catch (error) {
+      console.error('Lỗi khi đăng nhập nhanh:', error);
+      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+    }
+  };
 
   return (
     <div 
@@ -110,8 +136,24 @@ export default function AuthPage() {
                   Đăng nhập
                 </button>
                 
-                {/* Admin Login Button */}
+                {/* Quick Login for Testing */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mb-3">
+                    <button
+                      type="button"
+                      onClick={handleQuickLogin}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md flex items-center justify-center"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                      </svg>
+                      Đăng nhập nhanh (Test)
+                    </button>
+                    <p className="text-xs text-blue-600 mt-1 text-center">
+                      Test với tài khoản: {mockUser.name}
+                    </p>
+                  </div>
+                  
                   <Link 
                     href="/admin/dashboard"
                     className="w-full flex items-center justify-center bg-[#2F3E34] hover:bg-[#1F2A22] text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"

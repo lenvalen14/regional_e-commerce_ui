@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Eye } from "lucide-react";
 
 interface OrderItem {
@@ -58,10 +59,13 @@ export function OrderCard({ order, getStatusInfo, formatPrice, formatDate }: Ord
         ))}
       </div>
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md font-nitti text-sm hover:bg-gray-50 transition-colors">
+        <Link
+          href={`/orders/${order.id}`}
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md font-nitti text-sm hover:bg-gray-50 transition-colors"
+        >
           <Eye className="h-4 w-4" />
           Xem chi tiết
-        </button>
+        </Link>
         <div className="text-right">
           <p className="font-nitti text-sm text-gray-600">Tổng tiền:</p>
           <p className="font-nitti text-lg font-bold text-[#2F3E34]">
