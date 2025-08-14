@@ -13,45 +13,48 @@ export function AboutCulture() {
       name: 'Miền Bắc',
       description: 'Tinh tế, thanh đạm với hương vị đậm đà của núi rừng Tây Bắc',
       specialties: ['Thịt trâu gác bếp', 'Mắc khén Hà Giang', 'Cốm xanh Vòng'],
-      color: 'from-blue-500 to-indigo-600',
-      image: '/images/north-vietnam.jpg'
+      color: 'bg-blue-50 text-blue-600',
+      accentColor: 'bg-blue-600',
+      image: '/images/region-north.jpg'
     },
     {
       name: 'Miền Trung',
       description: 'Cay nồng, đậm đà với gia vị phong phú từ vùng đất Huế cố đô',
       specialties: ['Bánh tráng nướng', 'Mắm ruốc', 'Chả cá Nha Trang'],
-      color: 'from-red-500 to-pink-600',
-      image: '/images/central-vietnam.jpg'
+      color: 'bg-red-50 text-red-600',
+      accentColor: 'bg-red-600',
+      image: '/images/region-central.png'
     },
     {
       name: 'Miền Nam',
       description: 'Ngọt thanh, hài hòa với hương vị đồng bằng sông Cửu Long',
       specialties: ['Mắm nêm', 'Kẹo dừa Bến Tre', 'Khô cá sặc'],
-      color: 'from-green-500 to-emerald-600',
-      image: '/images/south-vietnam.jpg'
+      color: 'bg-green-50 text-green-600',
+      accentColor: 'bg-green-600',
+      image: '/images/region-south.jpg'
     },
   ];
 
   return (
-    <section ref={ref} className="py-20 bg-gradient-to-br from-gray-50 to-white">
+    <section ref={ref} className="py-20 bg-[#f8f8f8]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <div className={`${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
-            <span className="text-[#8FBC8F] font-semibold text-sm uppercase tracking-widest">
+            <span className="text-[#8FBC8F] font-semibold text-sm uppercase tracking-widest font-nitti">
               Văn hóa ẩm thực
             </span>
-            <h2 className="text-4xl md:text-5xl font-beaululo text-[#2F3E34] mt-4 mb-6">
+            <h2 className="text-4xl md:text-5xl font-beaululo text-[#222] mt-4 mb-6 tracking-widest uppercase">
               Ba miền - Một tinh hoa
             </h2>
             <div className="w-24 h-1 bg-[#8FBC8F] mx-auto mb-6" />
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg text-[#666] max-w-3xl mx-auto font-nitti">
               Từ Bắc vào Nam, mỗi vùng miền Việt Nam đều có những đặc sản riêng biệt, 
               phản ánh văn hóa và lịch sử của từng địa phương.
             </p>
           </div>
         </div>
 
-        <div className="space-y-16">
+        <div className="space-y-16 max-w-6xl mx-auto">
           {regions.map((region, index) => (
             <div
               key={index}
@@ -60,51 +63,51 @@ export function AboutCulture() {
               } ${inView ? 'animate-slideInFromBottom' : 'opacity-0'}`}
               style={{ animationDelay: `${index * 300}ms` }}
             >
-              {/* Image */}
-              <div className="lg:w-1/2 relative group">
-                <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-                  <div className={`w-full h-80 bg-gradient-to-br ${region.color} opacity-90`}>
-                    <div className="absolute inset-0 bg-black/20" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <h3 className="text-4xl font-beaululo text-white">
+              {/* Image Card */}
+              <div className="lg:w-1/2">
+                <div className="bg-white rounded-2xl overflow-hidden border border-[#e0e0e0] hover:shadow-lg transition-all duration-500 group">
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    {/* Image */}
+                    <img
+                      src={region.image} // đường dẫn ảnh thật
+                      alt={region.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Region name overlay */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                      <h3 className="text-2xl font-beaululo text-white tracking-wider">
                         {region.name}
                       </h3>
                     </div>
                   </div>
-                  
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
-
-                {/* Floating decorative elements */}
-                <div className={`absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br ${region.color} rounded-full opacity-70 animate-pulse`} />
-                <div className={`absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-br ${region.color} rounded-full opacity-50 animate-pulse animation-delay-500`} />
               </div>
 
               {/* Content */}
               <div className="lg:w-1/2 space-y-6">
                 <div>
-                  <h3 className="text-3xl font-beaululo text-[#2F3E34] mb-4">
+                  <h3 className="text-3xl font-beaululo text-[#222] mb-4 tracking-wider uppercase">
                     Đặc sản {region.name}
                   </h3>
-                  <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                  <p className="text-lg text-[#666] leading-relaxed mb-6 font-nitti">
                     {region.description}
                   </p>
                 </div>
 
                 {/* Specialties */}
-                <div>
-                  <h4 className="text-xl font-semibold text-[#2F3E34] mb-4">
+                <div className="bg-white rounded-xl p-6 border border-[#e0e0e0]">
+                  <h4 className="text-xl font-semibold text-[#222] mb-4 font-nitti">
                     Đặc sản nổi bật:
                   </h4>
                   <div className="space-y-3">
                     {region.specialties.map((specialty, idx) => (
                       <div 
                         key={idx}
-                        className="flex items-center group hover:scale-105 transition-transform duration-300"
+                        className="flex items-center p-3 bg-[#f8f8f8] rounded-lg hover:bg-[#f0f0f0] transition-colors duration-300 group"
                       >
-                        <div className={`w-3 h-3 bg-gradient-to-br ${region.color} rounded-full mr-3 group-hover:scale-125 transition-transform duration-300`} />
-                        <span className="text-gray-700 group-hover:text-[#2F3E34] transition-colors duration-300">
+                        <div className={`w-3 h-3 ${region.accentColor} rounded-full mr-4 flex-shrink-0 group-hover:scale-125 transition-transform duration-300`} />
+                        <span className="text-[#666] font-nitti group-hover:text-[#222] transition-colors duration-300">
                           {specialty}
                         </span>
                       </div>
