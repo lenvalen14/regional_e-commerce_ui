@@ -3,9 +3,10 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Bell } from "lucide-react"
+import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search } from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
+import NotificationBell from "./dashboard/noti/NotificationBell"
 
 const sidebarItems = [
   { icon: Home, label: "Trang Chủ", href: "/admin/dashboard" },
@@ -100,15 +101,7 @@ export default function DashboardLayout({
               </div>
 
               <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm">
-                  <Search className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Bell className="h-5 w-5" />
-                </Button>
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm font-medium">A</span>
-                </div>
+                <NotificationBell />
               </div>
             </div>
           </header>

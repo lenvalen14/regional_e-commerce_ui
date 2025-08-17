@@ -7,7 +7,11 @@ import { useState, useEffect } from "react";
 // Auth hook đọc từ localStorage
 const useAuth = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<{
+    name: string;
+    email: string;
+    avatar?: string;
+  } | null>(null);
   
   useEffect(() => {
     // Đọc trạng thái từ localStorage

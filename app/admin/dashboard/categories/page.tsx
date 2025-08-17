@@ -2,20 +2,39 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Edit, Trash2, FolderOpen } from "lucide-react"
+import { Plus } from "lucide-react"
+
+// Import components
+import CategoryStats from "./CategoryStats"
+import CategorySearch from "./CategorySearch"
+import CategoryList from "./CategoryList"
+import AddCategoryModal from "./AddCategoryModal"
+import EditCategoryModal from "./EditCategoryModal"
+import DeleteCategoryModal from "./DeleteCategoryModal"
+
+// Define Category interface
+interface Category {
+  id: number
+  name: string
+  description: string
+  productCount: number
+  status: string
+  image: string
+}
+
+interface SearchFilters {
+  searchTerm: string
+}
 
 // Sample categories data for Vietnamese specialties
-const categoriesData = [
+const initialCategoriesData: Category[] = [
   {
     id: 1,
     name: "Bánh kẹo",
     description: "Các loại bánh và kẹo đặc sản",
     productCount: 45,
     status: "Active",
-    image: "/banh-keo-category.png",
+    image: "",
   },
   {
     id: 2,
@@ -23,7 +42,7 @@ const categoriesData = [
     description: "Gia vị và nước chấm truyền thống",
     productCount: 28,
     status: "Active",
-    image: "/gia-vi-category.png",
+    image: "",
   },
   {
     id: 3,
@@ -31,7 +50,7 @@ const categoriesData = [
     description: "Các loại thực phẩm sấy khô, chà bông",
     productCount: 32,
     status: "Active",
-    image: "/thuc-pham-kho-category.png",
+    image: "",
   },
   {
     id: 4,
@@ -39,7 +58,7 @@ const categoriesData = [
     description: "Trái cây sấy dẻo các loại",
     productCount: 18,
     status: "Active",
-    image: "/trai-cay-say-category.png",
+    image: "",
   },
   {
     id: 5,
@@ -47,110 +66,127 @@ const categoriesData = [
     description: "Nước mắm truyền thống các vùng miền",
     productCount: 12,
     status: "Inactive",
-    image: "/nuoc-mam-category.png",
+    image: "",
   },
 ]
 
 export default function CategoriesPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [categories, setCategories] = useState<Category[]>(initialCategoriesData)
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>(initialCategoriesData)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+
+  // Filter and search categories
+  const handleSearch = (filters: SearchFilters) => {
+    let filtered = [...categories]
+
+    // Search by name or description
+    if (filters.searchTerm) {
+      const searchLower = filters.searchTerm.toLowerCase()
+      filtered = filtered.filter(category =>
+        category.name.toLowerCase().includes(searchLower) ||
+        category.description.toLowerCase().includes(searchLower)
+      )
+    }
+
+    setFilteredCategories(filtered)
+  }
+
+  // Reset search filters
+  const handleResetSearch = () => {
+    setFilteredCategories(categories)
+  }
+
+  // Add new category
+  const handleAddCategory = (newCategory: Category) => {
+    const updatedCategories = [...categories, newCategory]
+    setCategories(updatedCategories)
+    setFilteredCategories(updatedCategories)
+  }
+
+  // Edit category
+  const handleEditCategory = (category: Category) => {
+    setSelectedCategory(category)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateCategory = (updatedCategory: Category) => {
+    const updatedCategories = categories.map(cat =>
+      cat.id === updatedCategory.id ? updatedCategory : cat
+    )
+    setCategories(updatedCategories)
+    setFilteredCategories(updatedCategories.filter(cat =>
+      filteredCategories.some(filtered => filtered.id === cat.id)
+    ))
+  }
+
+  // Delete category
+  const handleDeleteCategory = (category: Category) => {
+    setSelectedCategory(category)
+    setShowDeleteModal(true)
+  }
+
+  const handleConfirmDelete = (categoryId: number) => {
+    const updatedCategories = categories.filter(cat => cat.id !== categoryId)
+    setCategories(updatedCategories)
+    setFilteredCategories(updatedCategories.filter(cat =>
+      filteredCategories.some(filtered => filtered.id === cat.id)
+    ))
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Quản Lý Danh Mục</h2>
-        <Button className="bg-green-600 hover:bg-green-700">
+        <Button 
+          className="bg-green-600 hover:bg-green-700"
+          onClick={() => setShowAddModal(true)}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Thêm danh mục mới
         </Button>
       </div>
 
-      {/* Search */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Tìm kiếm danh mục..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Statistics */}
+      <CategoryStats categories={categories} />
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categoriesData.map((category) => (
-          <Card key={category.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <img
-                    src={category.image || "/placeholder.svg"}
-                    alt={category.name}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-gray-900 truncate">{category.name}</h3>
-                    <Badge
-                      variant={category.status === "Active" ? "default" : "secondary"}
-                      className={
-                        category.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                      }
-                    >
-                      {category.status === "Active" ? "Hoạt động" : "Tạm dừng"}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{category.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">{category.productCount} sản phẩm</span>
-                    <div className="flex items-center space-x-1">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Search and Filters */}
+      <CategorySearch
+        onSearch={handleSearch}
+        onReset={handleResetSearch}
+        totalResults={filteredCategories.length}
+      />
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <FolderOpen className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">{categoriesData.length}</p>
-            <p className="text-sm text-gray-600">Tổng danh mục</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <FolderOpen className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {categoriesData.filter((c) => c.status === "Active").length}
-            </p>
-            <p className="text-sm text-gray-600">Đang hoạt động</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <FolderOpen className="h-8 w-8 text-orange-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold text-gray-900">
-              {categoriesData.reduce((sum, c) => sum + c.productCount, 0)}
-            </p>
-            <p className="text-sm text-gray-600">Tổng sản phẩm</p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Categories List */}
+      <CategoryList
+        categories={filteredCategories}
+        onEdit={handleEditCategory}
+        onDelete={handleDeleteCategory}
+      />
+
+      {/* Modals */}
+      <AddCategoryModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={handleAddCategory}
+      />
+
+      <EditCategoryModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onEdit={handleUpdateCategory}
+        category={selectedCategory}
+      />
+
+      <DeleteCategoryModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleConfirmDelete}
+        category={selectedCategory}
+      />
     </div>
   )
 }

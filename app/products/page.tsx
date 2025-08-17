@@ -12,6 +12,7 @@ const PRODUCTS = [
     id: "cha-com",
     name: "Chả Cốm Hà Nội",
     region: "bac-bo",
+    category: "mon-chinh",
     price: 120000,
     priceLabel: "120.000đ",
     image: "/images/com.jpg",
@@ -20,6 +21,7 @@ const PRODUCTS = [
     id: "bun-bo",
     name: "Bún Bò Huế",
     region: "trung-bo",
+    category: "mon-chinh",
     price: 95000,
     priceLabel: "95.000đ",
     image: "/images/bun-bo.jpg",
@@ -28,11 +30,56 @@ const PRODUCTS = [
     id: "banh-trang",
     name: "Bánh Tráng Trộn",
     region: "nam-bo",
+    category: "do-an-vat",
     price: 45000,
     priceLabel: "45.000đ",
     image: "/images/banh-trang.jpg",
   },
-  // ...more products
+  {
+    id: "che-ba-mau",
+    name: "Chè Ba Màu",
+    region: "nam-bo",
+    category: "trang-mieng",
+    price: 35000,
+    priceLabel: "35.000đ",
+    image: "/images/che-ba-mau.jpg",
+  },
+  {
+    id: "nem-nuong",
+    name: "Nem Nướng Nha Trang",
+    region: "trung-bo",
+    category: "do-an-vat",
+    price: 85000,
+    priceLabel: "85.000đ",
+    image: "/images/nem-nuong.jpg",
+  },
+  {
+    id: "banh-chung",
+    name: "Bánh Chưng Truyền Thống",
+    region: "bac-bo",
+    category: "banh-keo",
+    price: 150000,
+    priceLabel: "150.000đ",
+    image: "/images/banh-chung.jpg",
+  },
+  {
+    id: "ca-phe-sua-da",
+    name: "Cà Phê Sữa Đá",
+    region: "nam-bo",
+    category: "do-uong",
+    price: 25000,
+    priceLabel: "25.000đ",
+    image: "/images/ca-phe.jpg",
+  },
+  {
+    id: "tra-sen",
+    name: "Trà Sen Hồ Tây",
+    region: "bac-bo",
+    category: "do-uong",
+    price: 180000,
+    priceLabel: "180.000đ",
+    image: "/images/tra-sen.jpg",
+  },
 ];
 
 const REGIONS = [
@@ -49,6 +96,15 @@ const PRICE_FILTERS = [
   { id: "4", label: "Trên 150.000đ", min: 150000, max: Infinity },
 ];
 
+const CATEGORIES = [
+  { id: "all", name: "Tất cả danh mục" },
+  { id: "mon-chinh", name: "Món chính" },
+  { id: "do-an-vat", name: "Đồ ăn vặt" },
+  { id: "trang-mieng", name: "Tráng miệng" },
+  { id: "banh-keo", name: "Bánh kẹo" },
+  { id: "do-uong", name: "Đồ uống" },
+];
+
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -56,6 +112,7 @@ export default function ProductsPage() {
 
   const [selectedRegion, setSelectedRegion] = useState(regionParam);
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Lọc sản phẩm
   let filtered = PRODUCTS.filter((p) =>
@@ -68,6 +125,9 @@ export default function ProductsPage() {
         return pf && p.price >= pf.min && p.price < pf.max;
       })
     );
+  }
+  if (selectedCategory !== "all") {
+    filtered = filtered.filter((p) => p.category === selectedCategory);
   }
 
   // Xử lý chọn miền
@@ -87,6 +147,11 @@ export default function ProductsPage() {
     setSelectedPrices((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  }
+
+  // Xử lý chọn danh mục
+  function handleCategoryChange(id: string) {
+    setSelectedCategory(id);
   }
 
   return (
@@ -128,6 +193,25 @@ export default function ProductsPage() {
                         className="accent-[#8FBC8F]"
                       />
                       <span>{f.label}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-8">
+              <h3 className="font-beaululo text-sm text-[#222] mb-4 tracking-widest uppercase">Danh mục sản phẩm</h3>
+              <ul className="space-y-2 font-nitti text-sm">
+                {CATEGORIES.map((c) => (
+                  <li key={c.id}>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={selectedCategory === c.id}
+                        onChange={() => handleCategoryChange(c.id)}
+                        className="accent-[#8FBC8F]"
+                      />
+                      <span>{c.name}</span>
                     </label>
                   </li>
                 ))}
