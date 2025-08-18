@@ -4,33 +4,90 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { SiteHeader } from "@/components/layout/Header";
+import { useLoginMutation, useRegisterMutation } from "@/features/auth/authApi";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    confirmPassword: '',
+    phone: ''
+  });
+  const [rememberMe, setRememberMe] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
   const router = useRouter();
+  
+  // RTK Query mutations
+  const [login, { isLoading: isLoginLoading, error: loginError }] = useLoginMutation();
+  const [register, { isLoading: isRegisterLoading, error: registerError }] = useRegisterMutation();
 
-  // Mock user data cho test
-  const mockUser = {
-    name: "Phan Phạm Ngọc Thạch",
-    email: "pngthach@gmail.com",
-    avatar: "https://instagram.fsgn2-7.fna.fbcdn.net/v/t51.2885-15/520871917_17959218914987300_3931077271016486478_n.jpg?stp=dst-jpg_e35_p720x720_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6IkNBUk9VU0VMX0lURU0uaW1hZ2VfdXJsZ2VuLjE0NDB4MTkyMC5zZHIuZjgyNzg3LmRlZmF1bHRfaW1hZ2UuYzIifQ&_nc_ht=instagram.fsgn2-7.fna.fbcdn.net&_nc_cat=108&_nc_oc=Q6cZ2QG4vzBsLq10Q73vsTPnUBTM5keeCYyi32PFbpmbGkh6qlYZTPTEvcyTuFGYWUTx_XI&_nc_ohc=VZSVDYqYjzMQ7kNvwHmPwd8&_nc_gid=gOQyB4oiWydqnbeRw9pXIw&edm=AP4sbd4BAAAA&ccb=7-5&ig_cache_key=MzY3NzE4ODkyNjk5MTE0MDAwNw%3D%3D.3-ccb7-5&oh=00_AfUPg_wdlLnfjRufLQc--G06WidWPeKDEQ2QPQNjPmcKfQ&oe=68A35650&_nc_sid=7a9f4b"
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleQuickLogin = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSuccessMessage('');
+    
     try {
-      // Lưu mock user data vào localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('isLoggedIn', 'true');
-      
-      // Đợi một chút để đảm bảo localStorage được lưu
-      setTimeout(() => {
-        // Chuyển đến trang profile với hard navigation
-        window.location.href = '/profile';
-      }, 100);
-    } catch (error) {
-      console.error('Lỗi khi đăng nhập nhanh:', error);
-      alert('Có lỗi xảy ra. Vui lòng thử lại.');
+      if (isLogin) {
+        // Handle Login
+        await login({
+          email: formData.email,
+          password: formData.password
+        }).unwrap();
+        router.push('/profile');
+        
+      } else {
+        // Handle Register
+        if (formData.password !== formData.confirmPassword) {
+          alert('Mật khẩu xác nhận không khớp!');
+          return;
+        }
+        
+        if (!agreeTerms) {
+          alert('Vui lòng đồng ý với điều khoản dịch vụ!');
+          return;
+        }
+        
+        await register({
+          email: formData.email,
+          password: formData.password,
+          userName: formData.name,
+          phone: formData.phone
+        }).unwrap();
+
+        // Thay vì chuyển hướng, chuyển sang form đăng nhập
+        setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
+        setIsLogin(true);
+        // Giữ lại email đã nhập, xóa các trường khác
+        setFormData(prev => ({
+          ...prev,
+          password: '',
+          name: '',
+          confirmPassword: '',
+          phone: ''
+        }));
+      }
+    } catch (error: any) {
+      console.error('Failed to authenticate:', error);
     }
+  };
+
+  const getErrorMessage = () => {
+    const error = isLogin ? loginError : registerError;
+    if (error && 'data' in error && error.data && typeof error.data === 'object' && 'message' in error.data) {
+      return (error.data as { message: string }).message;
+    }
+    return null;
   };
 
   return (
@@ -42,11 +99,6 @@ export default function AuthPage() {
     >
       {/* Background Overlay để làm mờ background cho dễ đọc */}
       <div className="absolute inset-0 bg-white/50"></div>
-      
-      {/* Header */}
-      <div className="relative z-10">
-        <SiteHeader />
-      </div>
       
       {/* Auth Content */}
       <div className="relative z-10 flex items-center justify-center py-12 px-4">
@@ -64,10 +116,28 @@ export default function AuthPage() {
           </div>
 
           <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-white/20 p-6">
+            {/* Success Message Display */}
+            {successMessage && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-md text-sm font-nitti">
+                {successMessage}
+              </div>
+            )}
+            
+            {/* Error Display */}
+            {getErrorMessage() && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md text-sm font-nitti">
+                {getErrorMessage()}
+              </div>
+            )}
+
             {/* Tab Navigation */}
             <div className="flex border-b border-gray-200 mb-6">
               <button
-                onClick={() => setIsLogin(true)}
+                onClick={() => {
+                  setIsLogin(true);
+                  setSuccessMessage('');
+                  setFormData({ email: '', password: '', name: '', confirmPassword: '', phone: '' });
+                }}
                 className={`flex-1 py-2 text-center font-nitti font-medium transition-colors ${
                   isLogin 
                     ? 'text-[#8FBC8F] border-b-2 border-[#8FBC8F]' 
@@ -77,7 +147,11 @@ export default function AuthPage() {
                 Đăng nhập
               </button>
               <button
-                onClick={() => setIsLogin(false)}
+                onClick={() => {
+                  setIsLogin(false);
+                  setSuccessMessage('');
+                  setFormData({ email: '', password: '', name: '', confirmPassword: '', phone: '' });
+                }}
                 className={`flex-1 py-2 text-center font-nitti font-medium transition-colors ${
                   !isLogin 
                     ? 'text-[#8FBC8F] border-b-2 border-[#8FBC8F]' 
@@ -90,16 +164,20 @@ export default function AuthPage() {
 
             {/* Login Form */}
             {isLogin ? (
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
                     Email
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập email của bạn"
+                    disabled={isLoginLoading}
                   />
                 </div>
                 
@@ -109,9 +187,13 @@ export default function AuthPage() {
                   </label>
                   <input
                     type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập mật khẩu"
+                    disabled={isLoginLoading}
                   />
                 </div>
 
@@ -119,7 +201,10 @@ export default function AuthPage() {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
                       className="rounded border-gray-300 text-[#8FBC8F] focus:ring-[#8FBC8F]"
+                      disabled={isLoginLoading}
                     />
                     <span className="ml-2 text-sm font-nitti text-[#666]">Ghi nhớ đăng nhập</span>
                   </label>
@@ -131,52 +216,28 @@ export default function AuthPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
+                  disabled={isLoginLoading}
+                  className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
                 >
-                  Đăng nhập
+                  {isLoginLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                 </button>
-                
-                {/* Quick Login for Testing */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="mb-3">
-                    <button
-                      type="button"
-                      onClick={handleQuickLogin}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md flex items-center justify-center"
-                    >
-                      <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.293l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
-                      </svg>
-                      Đăng nhập nhanh (Test)
-                    </button>
-                    <p className="text-xs text-blue-600 mt-1 text-center">
-                      Test với tài khoản: {mockUser.name}
-                    </p>
-                  </div>
-                  
-                  <Link 
-                    href="/admin/dashboard"
-                    className="w-full flex items-center justify-center bg-[#2F3E34] hover:bg-[#1F2A22] text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
-                    </svg>
-                    Đăng nhập Admin
-                  </Link>
-                </div>
               </form>
             ) : (
               /* Register Form */
-              <form className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
                     Họ và tên
                   </label>
                   <input
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập họ và tên"
+                    disabled={isRegisterLoading}
                   />
                 </div>
 
@@ -186,9 +247,29 @@ export default function AuthPage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập email của bạn"
+                    disabled={isRegisterLoading}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
+                    Số điện thoại
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
+                    placeholder="Nhập số điện thoại"
+                    disabled={isRegisterLoading}
                   />
                 </div>
                 
@@ -198,9 +279,13 @@ export default function AuthPage() {
                   </label>
                   <input
                     type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập mật khẩu"
+                    disabled={isRegisterLoading}
                   />
                 </div>
 
@@ -210,17 +295,24 @@ export default function AuthPage() {
                   </label>
                   <input
                     type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
                     required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] transition-colors bg-white/80"
                     placeholder="Nhập lại mật khẩu"
+                    disabled={isRegisterLoading}
                   />
                 </div>
 
                 <div className="flex items-center">
                   <input
                     type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
                     required
                     className="rounded border-gray-300 text-[#8FBC8F] focus:ring-[#8FBC8F]"
+                    disabled={isRegisterLoading}
                   />
                   <span className="ml-2 text-sm font-nitti text-[#666]">
                     Tôi đồng ý với{' '}
@@ -236,9 +328,10 @@ export default function AuthPage() {
 
                 <button
                   type="submit"
-                  className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
+                  disabled={isRegisterLoading}
+                  className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
                 >
-                  Đăng ký
+                  {isRegisterLoading ? 'Đang đăng ký...' : 'Đăng ký'}
                 </button>
               </form>
             )}
@@ -255,7 +348,11 @@ export default function AuthPage() {
               </div>
 
               <div className="mt-6 space-y-3">
-                <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/90 text-sm font-nitti text-[#2F3E34] hover:bg-white transition-colors">
+                <button 
+                  type="button"
+                  disabled={isLoginLoading || isRegisterLoading}
+                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/90 text-sm font-nitti text-[#2F3E34] hover:bg-white disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                >
                   <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -263,13 +360,6 @@ export default function AuthPage() {
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                   </svg>
                   {isLogin ? 'Đăng nhập' : 'Đăng ký'} với Google
-                </button>
-                
-                <button className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white/90 text-sm font-nitti text-[#2F3E34] hover:bg-white transition-colors">
-                  <svg className="h-5 w-5 mr-2" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  {isLogin ? 'Đăng nhập' : 'Đăng ký'} với Facebook
                 </button>
               </div>
             </div>

@@ -1,6 +1,21 @@
 import React from "react";
+import { useRouter } from "next/navigation";
+import { useLogoutMutation } from "@/features/auth/authApi";
 
 export function ProfileSidebar() {
+  const router = useRouter();
+  const [logout, { isLoading }] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+    } catch (_) {
+      // ignore - state cleared in mutation finally
+    } finally {
+      router.push("/auth");
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       <div className="bg-gradient-to-r from-[#8FBC8F] to-[#7CA87C] p-6">
@@ -23,7 +38,7 @@ export function ProfileSidebar() {
             </button>
           </li>
           <li>
-            <button className="flex items-center w-full text-left p-3 rounded-lg text-gray-600 font-nitti hover:bg-gray-50 hover:text-red-500 transition-all">
+            <button onClick={handleLogout} disabled={isLoading} className="flex items-center w-full text-left p-3 rounded-lg text-gray-600 font-nitti hover:bg-gray-50 hover:text-red-500 transition-all disabled:opacity-50">
               <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
               Đăng xuất
             </button>

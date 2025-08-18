@@ -2,45 +2,17 @@
 
 import Link from "next/link";
 import { User, LogIn, UserPlus, LogOut, Settings } from "lucide-react";
-import { useState, useEffect } from "react";
-
-// Auth hook đọc từ localStorage
-const useAuth = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    avatar?: string;
-  } | null>(null);
-  
-  useEffect(() => {
-    // Đọc trạng thái từ localStorage
-    const savedUser = localStorage.getItem('user');
-    const savedLoginStatus = localStorage.getItem('isLoggedIn');
-    
-    if (savedLoginStatus === 'true' && savedUser) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('isLoggedIn');
-    setIsLoggedIn(false);
-    setUser(null);
-  };
-
-  return {
-    isLoggedIn,
-    user,
-    login: () => setIsLoggedIn(true),
-    logout
-  };
-};
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { selectCurrentUser, selectIsAuthenticated } from "@/features/auth/authSlice";
+import { useLogoutMutation } from "@/features/auth/authApi";
+import { useRouter } from "next/navigation";
 
 export function UserProfileIcon() {
-  const { isLoggedIn, user, logout } = useAuth();
+  const router = useRouter();
+  const isLoggedIn = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectCurrentUser);
+  const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   if (!isLoggedIn) {
@@ -98,18 +70,18 @@ export function UserProfileIcon() {
     >
       {/* Avatar hoặc Initial Circle */}
       <div className="text-[#4C5C4C] hover:text-[#8FBC8F] p-2 -m-2 transition-colors cursor-pointer">
-        {user?.avatar ? (
+        {(user as any)?.avatar ? (
           // Avatar thật từ URL
           <img 
-            src={user.avatar} 
-            alt={user.name}
+            src={(user as any).avatar} 
+            alt={user?.userName || user?.email || 'user'}
             className="h-8 w-8 rounded-full object-cover border-2 border-gray-200 hover:border-[#8FBC8F] transition-colors"
           />
         ) : (
           // Circle với chữ cái đầu khi không có avatar
           <div className="h-8 w-8 rounded-full bg-[#8FBC8F] flex items-center justify-center border-2 border-gray-200 hover:border-[#7CA87C] transition-colors">
             <span className="text-white text-sm font-bold">
-              {user?.name?.charAt(0).toUpperCase()}
+              {(user?.userName || user?.email || '?').charAt(0).toUpperCase()}
             </span>
           </div>
         )}
@@ -127,22 +99,22 @@ export function UserProfileIcon() {
           {/* User Info Header */}
           <div className="p-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3">
-              {user?.avatar ? (
+              {(user as any)?.avatar ? (
                 <img 
-                  src={user.avatar} 
-                  alt={user.name}
+                  src={(user as any).avatar} 
+                  alt={user?.userName || user?.email || 'user'}
                   className="h-12 w-12 rounded-full object-cover flex-shrink-0"
                 />
               ) : (
                 <div className="h-12 w-12 rounded-full bg-[#8FBC8F] flex items-center justify-center flex-shrink-0">
                   <span className="text-white text-lg font-bold">
-                    {user?.name?.charAt(0).toUpperCase()}
+                    {(user?.userName || user?.email || '?').charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-nitti font-medium text-[#2F3E34] text-base leading-tight">
-                  {user?.name}
+                  {user?.userName || user?.email}
                 </p>
                 <p className="font-nitti text-sm text-[#666] mt-1 break-all">
                   {user?.email}
@@ -179,19 +151,24 @@ export function UserProfileIcon() {
             
             {/* Đăng xuất */}
             <button
-              onClick={() => {
-                logout();
-                setIsDropdownOpen(false);
-                window.location.href = '/auth'; // Chuyển về trang đăng nhập
+              onClick={async () => {
+                try {
+                  await logout().unwrap();
+                } catch (_) {
+                  // ignore
+                } finally {
+                  setIsDropdownOpen(false);
+                  router.push('/auth');
+                }
               }}
-              className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 transition-colors group"
+              disabled={isLoggingOut}
+              className="flex items-center gap-3 w-full text-left px-3 py-2 rounded-md hover:bg-gray-50 transition-colors group disabled:opacity-50"
             >
               <LogOut className="h-4 w-4 text-[#666] group-hover:text-red-500 flex-shrink-0" />
               <span className="font-nitti text-sm text-[#2F3E34] group-hover:text-red-500">
                 Đăng xuất
               </span>
             </button>
-            {}
           </div>
         </div>
       </div>
