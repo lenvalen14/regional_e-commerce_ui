@@ -148,7 +148,7 @@ export const authApi = apiSlice.injectEndpoints({
 
      getUserById: builder.query<UserProfile, string>({
         query: (id) => `/users/${id}`,
-        providesTags: (result, error, id) => [{ type: 'User', id }],
+        providesTags: (result, error, id) => [{ type: 'Users', id }],
     }),
 
     refreshToken: builder.mutation<{ token: string }, { refreshToken: string }>({
@@ -166,7 +166,7 @@ export const authApi = apiSlice.injectEndpoints({
         }),
         // Chuẩn hóa về UserProfile nếu API trả về dạng bọc { code, message, data }
         transformResponse: (response: ProfileApiResponse) => response.data,
-        invalidatesTags: (result, error, { id }) => ['Auth', { type: 'User', id }],
+        invalidatesTags: (result, error, { id }) => ['Auth', { type: 'Users', id }],
     }),
   }),
 })
