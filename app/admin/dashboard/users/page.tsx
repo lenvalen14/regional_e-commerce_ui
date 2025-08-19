@@ -87,7 +87,7 @@ export default function UsersPage() {
           onAddUser={handleOpenAddModal}
         />
 
-        {/* Search and Filter */}
+          {/* Search and Filter */}
         <UserSearch 
           searchTerm={searchTerm}
           statusFilter={statusFilter}
@@ -123,7 +123,7 @@ export default function UsersPage() {
           <div className="mt-6 flex items-center justify-between bg-white px-6 py-3 rounded-lg border border-gray-200">
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-700">Hiển thị</span>
-              <select
+                  <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                 className="border border-gray-300 rounded px-2 py-1 text-sm"
@@ -132,30 +132,30 @@ export default function UsersPage() {
                 <option value={10}>10</option>
                 <option value={20}>20</option>
                 <option value={50}>50</option>
-              </select>
+                  </select>
               <span className="text-sm text-gray-700">mục mỗi trang</span>
-            </div>
-            
+              </div>
+              
             <div className="flex items-center space-x-2">
-              <button
+                <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 0}
                 className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
+                >
                 Trước
-              </button>
+                </button>
               
               <span className="text-sm text-gray-700">
                 Trang {currentPage + 1} / {totalPages}
               </span>
               
-              <button
+                <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages - 1}
                 className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-              >
+                >
                 Sau
-              </button>
+                </button>
             </div>
           </div>
         )}

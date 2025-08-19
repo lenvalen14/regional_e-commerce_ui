@@ -37,6 +37,7 @@ export interface UserProfile {
   userName: string;
   phone: string;
   avatar: string;
+  role: string
 }
 
 export interface UpdateProfileRequest {

@@ -2,7 +2,12 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/features/auth/authApi";
 
-export function ProfileSidebar() {
+interface ProfileSidebarProps {
+  active?: "profile" | "addresses";
+  onSelect?: (view: "profile" | "addresses") => void;
+}
+
+export function ProfileSidebar({ active = "profile", onSelect }: ProfileSidebarProps) {
   const router = useRouter();
   const [logout, { isLoading }] = useLogoutMutation();
 
@@ -26,19 +31,45 @@ export function ProfileSidebar() {
       <div className="p-6">
         <ul className="space-y-4">
           <li>
-            <button className="flex items-center w-full text-left p-3 rounded-lg bg-[#8FBC8F]/10 text-[#8FBC8F] font-nitti font-medium transition-all hover:bg-[#8FBC8F]/20">
-              <div className="w-2 h-2 bg-[#8FBC8F] rounded-full mr-3"></div>
+            <button
+              onClick={() => onSelect?.("profile")}
+              className={`flex items-center w-full text-left p-3 rounded-lg font-nitti font-medium transition-all ${
+                active === "profile"
+                  ? "bg-[#8FBC8F]/10 text-[#8FBC8F] hover:bg-[#8FBC8F]/20"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#8FBC8F]"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full mr-3 ${
+                  active === "profile" ? "bg-[#8FBC8F]" : "bg-gray-400"
+                }`}
+              ></div>
               Thông tin tài khoản
             </button>
           </li>
           <li>
-            <button className="flex items-center w-full text-left p-3 rounded-lg text-gray-600 font-nitti hover:bg-gray-50 hover:text-[#8FBC8F] transition-all">
-              <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
+            <button
+              onClick={() => onSelect?.("addresses")}
+              className={`flex items-center w-full text-left p-3 rounded-lg font-nitti transition-all ${
+                active === "addresses"
+                  ? "bg-[#8FBC8F]/10 text-[#8FBC8F] hover:bg-[#8FBC8F]/20"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#8FBC8F]"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full mr-3 ${
+                  active === "addresses" ? "bg-[#8FBC8F]" : "bg-gray-400"
+                }`}
+              ></div>
               Danh sách địa chỉ
             </button>
           </li>
           <li>
-            <button onClick={handleLogout} disabled={isLoading} className="flex items-center w-full text-left p-3 rounded-lg text-gray-600 font-nitti hover:bg-gray-50 hover:text-red-500 transition-all disabled:opacity-50">
+            <button
+              onClick={handleLogout}
+              disabled={isLoading}
+              className="flex items-center w-full text-left p-3 rounded-lg text-gray-600 font-nitti hover:bg-gray-50 hover:text-red-500 transition-all disabled:opacity-50"
+            >
               <div className="w-2 h-2 bg-gray-400 rounded-full mr-3"></div>
               Đăng xuất
             </button>

@@ -14,11 +14,27 @@ interface AuthState {
   isAuthenticated: boolean
 }
 
+const getInitialToken = (): string | null => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('token');
+    }
+    return null;
+}
+
+const getInitialRefreshToken = (): string | null => {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('refreshToken');
+    }
+    return null;
+}
+
+const token = getInitialToken();
+
 const initialState: AuthState = {
   user: null,
-  token: null,
-  refreshToken: null,
-  isAuthenticated: false,
+  token: token,
+  refreshToken: getInitialRefreshToken(),
+  isAuthenticated: !!token,
 }
 
 const authSlice = createSlice({
@@ -28,18 +44,17 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       action: PayloadAction<{
-        user?: User
+        user: User
         token: string
         refreshToken?: string
       }>
     ) => {
       const { user, token, refreshToken } = action.payload
-      state.user = user || state.user
+      state.user = user
       state.token = token
       state.refreshToken = refreshToken || state.refreshToken
       state.isAuthenticated = true
-      
-      // Lưu vào localStorage
+
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', token)
         if (refreshToken) {
@@ -54,20 +69,19 @@ const authSlice = createSlice({
       state.refreshToken = null
       state.isAuthenticated = false
       
-      // Xóa khỏi localStorage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token')
         localStorage.removeItem('refreshToken')
       }
     },
 
-    updateUser: (state, action: PayloadAction<Partial<User>>) => {
-      if (state.user) {
-        state.user = { ...state.user, ...action.payload }
-      }
+      updateUser: (state, action: PayloadAction<Partial<User>>) => {
+        if (state.user) {
+          state.user = { ...state.user, ...action.payload }
+        }
+      },
     },
-  },
-})
+  })
 
 export const { setCredentials, logout, updateUser } = authSlice.actions
 

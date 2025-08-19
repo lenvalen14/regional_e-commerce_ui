@@ -9,6 +9,18 @@ import { SiteHeader } from '@/components/layout/Header';
 import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
+import AddressList, { AddressResponse } from "@/components/profile/AddressList";
+import AddAddressModal from "@/components/profile/AddAddressModal";
+import EditAddressModal from "@/components/profile/EditAddressModal";
+import DeleteAddressModal from "@/components/profile/DeleteAddressModal";
+import {
+  useGetUserAddressesQuery,
+  useCreateAddressMutation,
+  useUpdateAddressMutation,
+  useDeleteAddressMutation,
+  useSetDefaultAddressMutation,
+} from '@/features/address/addressApi'
+import { toast } from 'sonner';
 
 const getInitials = (name: string): string => {
   if (!name) return "?";
@@ -42,6 +54,8 @@ interface ProfileFormData {
   phone: string;
 }
 
+type ViewKey = 'profile' | 'addresses'
+
 export default function ProfilePage() {
   const router = useRouter();
   const token = useSelector(selectCurrentToken);
@@ -54,6 +68,23 @@ export default function ProfilePage() {
     email: "",
     phone: "",
   });
+  const [activeView, setActiveView] = useState<ViewKey>('profile')
+
+  const userId = userResponse?.data?.userId
+
+  // Address API hooks
+  const { data: addressList = [], isLoading: isAddrLoading } = useGetUserAddressesQuery(userId!, { skip: !userId })
+  const [createAddress, { isLoading: creatingAddr }] = useCreateAddressMutation()
+  const [updateAddress, { isLoading: updatingAddr }] = useUpdateAddressMutation()
+  const [deleteAddress, { isLoading: deletingAddrLoading }] = useDeleteAddressMutation()
+  const [setDefaultAddress, { isLoading: settingDefault }] = useSetDefaultAddressMutation()
+
+  // Dialog state
+  const [showAddAddr, setShowAddAddr] = useState(false)
+  const [showEditAddr, setShowEditAddr] = useState(false)
+  const [editingAddr, setEditingAddr] = useState<AddressResponse | null>(null)
+  const [showDeleteAddr, setShowDeleteAddr] = useState(false)
+  const [deletingAddr, setDeletingAddr] = useState<AddressResponse | null>(null)
 
   useEffect(() => {
     if (userResponse && userResponse.data) {
@@ -98,6 +129,76 @@ export default function ProfilePage() {
       }
   };
 
+  const handleAddAddress = async (payload: Omit<AddressResponse, 'addressId'>) => {
+    if (!userId) return
+    try {
+      await createAddress({
+        userId,
+        addressLine: payload.addressLine,
+        province: payload.province,
+        phone: payload.phone,
+        isDefault: payload.isDefault,
+      }).unwrap()
+      setShowAddAddr(false)
+    } catch (e) {
+      console.error(e)
+      alert('Không thể thêm địa chỉ')
+    }
+  }
+
+  const startEditAddress = (addr: AddressResponse) => {
+    setEditingAddr(addr)
+    setShowEditAddr(true)
+  }
+
+  const handleEditAddress = async (updated: AddressResponse) => {
+    try {
+      await updateAddress({
+        addressId: updated.addressId,
+        data: {
+          addressLine: updated.addressLine,
+          province: updated.province,
+          phone: updated.phone,
+          isDefault: updated.isDefault,
+        },
+      }).unwrap()
+      setShowEditAddr(false)
+      setEditingAddr(null)
+    } catch (e) {
+      console.error(e)
+      alert('Không thể cập nhật địa chỉ')
+    }
+  }
+
+  const startDeleteAddress = (addr: AddressResponse) => {
+    setDeletingAddr(addr)
+    setShowDeleteAddr(true)
+  }
+
+  const handleDeleteAddress = async (addr: AddressResponse) => {
+    if (!addr) return; 
+
+    try {
+        await deleteAddress(addr.addressId).unwrap();
+        toast.success("Xóa địa chỉ thành công!");
+        setShowDeleteAddr(false);
+        setDeletingAddr(null);
+    } catch (error: any) {
+        console.error("Lỗi khi xóa địa chỉ:", error);
+        const errorMessage = error?.data?.message || 'Không thể xóa địa chỉ. Vui lòng thử lại.';
+        toast.error(errorMessage);
+    }
+  };
+
+  const handleSetDefault = async (addr: AddressResponse) => {
+    try {
+      await setDefaultAddress(addr.addressId).unwrap()
+    } catch (e) {
+      console.error(e)
+      alert('Không thể đặt mặc định')
+    }
+  }
+
   const userInitials = useMemo(() => getInitials(formData.userName), [formData.userName]);
   const avatarColorClass = useMemo(() => generateColorClass(formData.userName), [formData.userName]);
 
@@ -126,29 +227,63 @@ export default function ProfilePage() {
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             <div className="lg:col-span-1">
-              <ProfileSidebar />
+              <ProfileSidebar active={activeView} onSelect={setActiveView} />
             </div>
 
-            <div className="lg:col-span-2">
-              <ProfileForm
-                profile={formData}
-                isEditing={isEditing}
-                setProfile={setFormData}
-                setIsEditing={setIsEditing}
-                handleSave={handleSave}
-                handleCancel={handleCancel}
-                isSaving={isUpdating}
-              />
-            </div>
-
-            <div className="lg:col-span-1">
-              <ProfileAvatar
-                initials={userInitials}
-                bgColorClass={avatarColorClass}
-                name={formData.userName}
-                email={formData.email}
-              />
-            </div>
+            {activeView === 'profile' ? (
+              <>
+                <div className="lg:col-span-2">
+                  <ProfileForm
+                    profile={formData}
+                    isEditing={isEditing}
+                    setProfile={setFormData}
+                    setIsEditing={setIsEditing}
+                    handleSave={handleSave}
+                    handleCancel={handleCancel}
+                    isSaving={isUpdating}
+                  />
+                </div>
+                <div className="lg:col-span-1">
+                  <ProfileAvatar
+                    initials={userInitials}
+                    bgColorClass={avatarColorClass}
+                    name={formData.userName}
+                    email={formData.email}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="lg:col-span-3">
+                <AddressList
+                  addresses={addressList}
+                  loading={isAddrLoading || creatingAddr || updatingAddr || deletingAddrLoading || settingDefault}
+                  onAdd={() => setShowAddAddr(true)}
+                  onEdit={startEditAddress}
+                  onDelete={startDeleteAddress}
+                  onSetDefault={handleSetDefault}
+                />
+                <AddAddressModal
+                  isOpen={showAddAddr}
+                  onClose={() => setShowAddAddr(false)}
+                  onSubmit={handleAddAddress}
+                  loading={creatingAddr}
+                />
+                <EditAddressModal
+                  isOpen={showEditAddr}
+                  address={editingAddr}
+                  onClose={() => { setShowEditAddr(false); setEditingAddr(null) }}
+                  onSubmit={handleEditAddress}
+                  loading={updatingAddr}
+                />
+                <DeleteAddressModal
+                  isOpen={showDeleteAddr}
+                  address={deletingAddr}
+                  onClose={() => { setShowDeleteAddr(false); setDeletingAddr(null) }}
+                  onConfirm={handleDeleteAddress}
+                  loading={deletingAddrLoading}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
