@@ -3,8 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { SiteHeader } from "@/components/layout/Header";
 import { useLoginMutation, useRegisterMutation } from "@/features/auth/authApi";
+import { jwtDecode } from "jwt-decode";
+
+interface DecodedToken {
+  userId: string;
+  sub: string;
+  role: 'ADMIN' | 'CUSTOMER';
+  iat: number;
+  exp: number;
+}
+
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,12 +48,25 @@ export default function AuthPage() {
     
     try {
       if (isLogin) {
-        // Handle Login
-        await login({
+        const apiResult = await login({
           email: formData.email,
           password: formData.password
         }).unwrap();
-        router.push('/profile');
+
+        const token = apiResult.data.token;
+
+        if (token) {
+            const decodedToken: DecodedToken = jwtDecode(token);
+
+            if (decodedToken.role === 'ADMIN') {
+                router.push('/admin');
+            } else {
+                router.push('/profile');
+            }
+        } else {
+            console.error("Đăng nhập thành công nhưng không tìm thấy token.");
+            router.push('/profile');
+        }
         
       } else {
         // Handle Register
@@ -65,10 +87,8 @@ export default function AuthPage() {
           phone: formData.phone
         }).unwrap();
 
-        // Thay vì chuyển hướng, chuyển sang form đăng nhập
         setSuccessMessage('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
         setIsLogin(true);
-        // Giữ lại email đã nhập, xóa các trường khác
         setFormData(prev => ({
           ...prev,
           password: '',

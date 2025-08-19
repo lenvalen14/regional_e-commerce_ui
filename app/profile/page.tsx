@@ -10,8 +10,6 @@ import { ProfileSidebar } from "@/components/profile/ProfileSidebar";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { ProfileAvatar } from "@/components/profile/ProfileAvatar";
 
-// --- Helper Functions ---
-
 const getInitials = (name: string): string => {
   if (!name) return "?";
   const words = name.trim().split(' ').filter(Boolean);
@@ -47,8 +45,6 @@ interface ProfileFormData {
 export default function ProfilePage() {
   const router = useRouter();
   const token = useSelector(selectCurrentToken);
-
-  // 'user' ở đây là toàn bộ response, ví dụ: { code: 200, data: { userName: ... } }
   const { data: userResponse, isLoading, isError } = useGetProfileQuery(undefined, { skip: !token });
   const [updateProfile, { isLoading: isUpdating }] = useUpdateProfileMutation();
 
@@ -59,9 +55,7 @@ export default function ProfilePage() {
     phone: "",
   });
 
-  // SỬA LỖI Ở ĐÂY: Truy cập vào userResponse.data
   useEffect(() => {
-    // Chỉ cập nhật form nếu có dữ liệu user thực sự bên trong response
     if (userResponse && userResponse.data) {
       setFormData({
         userName: userResponse.data.userName || "",
@@ -78,7 +72,6 @@ export default function ProfilePage() {
   }, [isError, router, token]);
 
   const handleSave = async () => {
-    // Lấy id từ userResponse.data.userId
     const userId = userResponse?.data?.userId;
     if (!userId) {
         alert("Không thể cập nhật, thiếu ID người dùng.");
@@ -96,7 +89,6 @@ export default function ProfilePage() {
   
   const handleCancel = () => {
       setIsEditing(false);
-      // SỬA LỖI Ở ĐÂY: Truy cập vào userResponse.data
       if (userResponse && userResponse.data) {
           setFormData({
               userName: userResponse.data.userName || "",
