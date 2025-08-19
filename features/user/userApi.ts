@@ -75,11 +75,20 @@ export const userApi = apiSlice.injectEndpoints({
       invalidatesTags: ['Users'],
     }),
 
-    // Delete user
+    // Block user
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (userId) => ({
-        url: `/users/${userId}`,
-        method: 'DELETE',
+        url: `/users/${userId}/block`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Users'],
+    }),
+
+    // Unblock user
+    unblockUser: builder.mutation<ApiResponse<void>, string>({
+      query: (userId) => ({
+        url: `/users/${userId}/unblock`,
+        method: 'PATCH',
       }),
       invalidatesTags: ['Users'],
     }),
@@ -91,4 +100,5 @@ export const {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useUnblockUserMutation,
 } = userApi

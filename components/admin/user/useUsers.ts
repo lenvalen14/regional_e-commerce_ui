@@ -8,6 +8,7 @@ import {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
+  useUnblockUserMutation,
   User,
   UserFormData
 } from "../../../features/user"
@@ -52,6 +53,7 @@ export function useUsers() {
   const [createUser, { isLoading: creatingUser }] = useCreateUserMutation()
   const [updateUser, { isLoading: updatingUser }] = useUpdateUserMutation()
   const [deleteUser, { isLoading: deletingUser }] = useDeleteUserMutation()
+  const [unblockUser, { isLoading: unblockingUser }] = useUnblockUserMutation()
 
   // Extract data from API response
   const users = usersResponse?.data || []
@@ -131,7 +133,6 @@ export function useUsers() {
       userName: user.userName,
       email: user.email,
       phone: user.phone,
-      isActive: user.isActive,
     }))
     dispatch(setShowEditModal(true))
   }, [dispatch])
@@ -143,7 +144,6 @@ export function useUsers() {
           userName: formData.userName,
           email: formData.email,
           phone: formData.phone,
-          isActive: formData.isActive ?? true,
         }
         
         await updateUser({ userId: selectedUser.userId, userData }).unwrap()
@@ -165,10 +165,18 @@ export function useUsers() {
         await deleteUser(selectedUser.userId).unwrap()
         dispatch(setShowDeleteModal(false))
       } catch (err) {
-        console.error('Error deleting user:', err)
+        console.error('Error blocking user:', err)
       }
     }
   }, [selectedUser, deleteUser, dispatch])
+
+  const handleUnblockUser = useCallback(async (user: User) => {
+    try {
+      await unblockUser(user.userId).unwrap()
+    } catch (err) {
+      console.error('Error unblocking user:', err)
+    }
+  }, [unblockUser])
 
   // Pagination handlers
   const handlePageChange = useCallback((page: number) => {
@@ -195,7 +203,7 @@ export function useUsers() {
     searchTerm,
     statusFilter,
     formData,
-    loading: loading || creatingUser || updatingUser || deletingUser,
+    loading: loading || creatingUser || updatingUser || deletingUser || unblockingUser,
     error,
     currentPage,
     pageSize,
@@ -215,6 +223,7 @@ export function useUsers() {
     handleUpdateUser,
     handleDeleteUser,
     handleConfirmDelete,
+    handleUnblockUser,
     handleClearFilters,
     handlePageChange,
     handlePageSizeChange,

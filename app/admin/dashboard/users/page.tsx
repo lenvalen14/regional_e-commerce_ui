@@ -45,6 +45,7 @@ export default function UsersPage() {
     handleUpdateUser,
     handleDeleteUser,
     handleConfirmDelete,
+    handleUnblockUser,
     handleClearFilters,
     handlePageChange,
     handlePageSizeChange,
@@ -107,6 +108,7 @@ export default function UsersPage() {
             users={filteredUsers}
             onEditUser={handleEditUser}
             onDeleteUser={handleDeleteUser}
+            onUnblockUser={handleUnblockUser}
           />
         ) : (
           <EmptyState 

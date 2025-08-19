@@ -46,6 +46,7 @@ export default function EditUserModal({
             formData={formData}
             onFormDataChange={onFormDataChange}
             includePassword={false}
+            showStatus={false}
           />
         </div>
         

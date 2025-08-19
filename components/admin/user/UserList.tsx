@@ -1,15 +1,16 @@
 'use client';
 
-import { Edit, Trash2, Mail, Phone, User as UserIcon } from "lucide-react"
+import { Edit, Trash2, Mail, Phone, User as UserIcon, Unlock } from "lucide-react"
 import { User } from "./types"
 
 interface UserListProps {
   users: User[]
   onEditUser: (user: User) => void
   onDeleteUser: (user: User) => void
+  onUnblockUser: (user: User) => void
 }
 
-export default function UserList({ users, onEditUser, onDeleteUser }: UserListProps) {
+export default function UserList({ users, onEditUser, onDeleteUser, onUnblockUser }: UserListProps) {
   // Get avatar initials
   const getInitials = (name: string) => {
     return name
@@ -82,20 +83,32 @@ export default function UserList({ users, onEditUser, onDeleteUser }: UserListPr
 
               {/* Actions */}
               <div className="col-span-2 flex justify-center space-x-2">
-                <button 
-                  className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group/btn"
-                  onClick={() => onEditUser(user)}
-                  title="Chỉnh sửa"
-                >
-                  <Edit className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                </button>
-                <button 
-                  className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group/btn"
-                  onClick={() => onDeleteUser(user)}
-                  title="Xóa"
-                >
-                  <Trash2 className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                </button>
+                {user.isActive ? (
+                  <>
+                    <button 
+                      className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group/btn"
+                      onClick={() => onEditUser(user)}
+                      title="Chỉnh sửa"
+                    >
+                      <Edit className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                    </button>
+                    <button 
+                      className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 group/btn"
+                      onClick={() => onDeleteUser(user)}
+                      title="Chặn"
+                    >
+                      <Trash2 className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    className="p-2.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all duration-200 group/btn"
+                    onClick={() => onUnblockUser(user)}
+                    title="Bỏ chặn"
+                  >
+                    <Unlock className="h-4 w-4 group-hover/btn:scale-110 transition-transform" />
+                  </button>
+                )}
               </div>
             </div>
           </div>
