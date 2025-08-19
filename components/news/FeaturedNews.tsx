@@ -1,52 +1,50 @@
 'use client';
 
 import { useInView } from 'react-intersection-observer';
-import { Calendar, User } from 'lucide-react';
+import { Calendar, User, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { NewResponse } from '@/features/new/newApi';
 
-export function FeaturedNews() {
+interface FeaturedNewsProps {
+  articles: NewResponse[]; // Nhận mảng bài viết từ NewsPage
+}
+
+export function FeaturedNews({ articles }: FeaturedNewsProps) {
   const { ref, inView } = useInView({
     threshold: 0.3,
     triggerOnce: true,
   });
 
-  const featuredArticles = [
-    {
-      id: 1,
-      title: 'Nghệ thuật làm nước mắm Phú Quốc',
-      excerpt: 'Tìm hiểu quy trình làm nước mắm truyền thống với hương vị đặc trưng của đảo ngọc Phú Quốc...',
-      category: 'Ẩm thực',
-      author: 'Minh An',
-      date: '10 Dec 2024',
-      readTime: '8 phút',
-      image: '/images/nuoc_mam.jpg',
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Chợ đêm Đà Lạt - Thiên đường đặc sản',
-      excerpt: 'Khám phá những món đặc sản độc đáo chỉ có ở chợ đêm Đà Lạt...',
-      category: 'Du lịch',
-      author: 'Thu Hà',
-      date: '8 Dec 2024',
-      readTime: '6 phút',
-      image: '/images/cho-dem-da-lat.jpg'
-    },
-    {
-      id: 3,
-      title: 'Bún bò Huế - Hồn cốt ẩm thực cung đình',
-      excerpt: 'Câu chuyện về món bún bò Huế và những bí mật gia truyền...',
-      category: 'Văn hóa',
-      author: 'Văn Hưng',
-      date: '5 Dec 2024',
-      readTime: '10 phút',
-      image: '/images/bun-bo-hue.jpg'
-    }
-  ];
+  if (!articles || articles.length === 0) return null;
+
+  // Lấy bài chính (bài đầu tiên trong mảng) và các bài phụ
+  const mainArticle = articles[0];
+  const sideArticles = articles.slice(1);
+
+  // Hàm tạo excerpt (cắt khoảng 150 ký tự)
+  const getExcerpt = (content: string, length = 150) => {
+    if (!content) return '';
+    return content.length > length ? content.slice(0, length) + '...' : content;
+  };
+
+  // Hàm tính thời gian đọc (trung bình 200 từ/phút)
+  const getReadTime = (content: string) => {
+    if (!content) return '1 phút';
+    const words = content.trim().split(/\s+/).length;
+    const minutes = Math.ceil(words / 200);
+    return `${minutes} phút`;
+  };
+
+  // Chuyển timestamp sang ngày hiển thị
+  const formatDate = (timestamp: number | string | Date) => {
+    const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
+    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
 
   return (
     <section ref={ref} className="py-24 bg-white border-t border-[#e0e0e0]">
       <div className="container mx-auto px-4 max-w-6xl">
+        {/* Header */}
         <div className="text-center mb-20">
           <div className={`${inView ? 'animate-fadeInUp' : 'opacity-0'}`}>
             <span className="text-[#8FBC8F] font-beaululo text-sm uppercase tracking-widest font-bold">
@@ -62,46 +60,46 @@ export function FeaturedNews() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Main Featured Article */}
           <div className={`lg:col-span-2 ${inView ? 'animate-slideInFromLeft' : 'opacity-0'}`}>
-            <Link href={`/news/${featuredArticles[0].id}`}>
+            <Link href={`/news/${mainArticle.newId}`}>
               <article className="group cursor-pointer">
                 <div className="relative overflow-hidden mb-8 border border-[#e0e0e0] group-hover:shadow-2xl transition-all duration-500">
                   {/* Image */}
-                  <div className="aspect-[16/9] overflow-hidden relative">
-                    <img 
-                      src={featuredArticles[0].image} 
-                      alt={featuredArticles[0].title} 
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
-                    />
-                    {/* Category label */}
-                    <div className="absolute top-6 left-6">
-                      <span className="bg-[#8FBC8F] text-white px-4 py-2 text-sm font-beaululo uppercase tracking-widest font-bold">
-                        {featuredArticles[0].category}
-                      </span>
+                  {mainArticle.images && mainArticle.images[0] && (
+                    <div className="aspect-[16/9] overflow-hidden relative">
+                      <img
+                        src={mainArticle.images[0].imageUrl}
+                        alt={mainArticle.title}
+                        className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                      />
                     </div>
-                  </div>
+                  )}
                 </div>
-                
+
                 <div className="space-y-6">
                   <h3 className="text-2xl md:text-3xl font-beaululo text-[#222] group-hover:text-[#8FBC8F] transition-colors duration-300 leading-tight tracking-widest uppercase">
-                    {featuredArticles[0].title}
+                    {mainArticle.title}
                   </h3>
-                  
+
                   <p className="text-[#666] text-lg leading-relaxed font-nitti">
-                    {featuredArticles[0].excerpt}
+                    {getExcerpt(mainArticle.content)}
                   </p>
-                  
+
                   <div className="flex items-center justify-between pt-6 border-t border-[#e0e0e0]">
                     <div className="flex items-center gap-6 text-sm text-[#888] font-nitti">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        <span>{featuredArticles[0].author}</span>
+                        <span>Admin</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        <span>{featuredArticles[0].date}</span>
+                        <span>{formatDate(mainArticle.createAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{getReadTime(mainArticle.content)}</span>
                       </div>
                     </div>
-                    
+
                     <div className="text-[#8FBC8F] font-nitti font-bold uppercase tracking-widest text-sm hover:text-[#222] transition-colors duration-300 border-b border-[#8FBC8F] hover:border-[#222] pb-1 flex items-center gap-2 group">
                       Đọc thêm
                       <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
@@ -114,39 +112,40 @@ export function FeaturedNews() {
 
           {/* Side Articles */}
           <div className="space-y-8">
-            {featuredArticles.slice(1).map((article, index) => (
-              <Link 
-                key={article.id}
-                href={`/news/${article.id}`}
+            {sideArticles.map((article, index) => (
+              <Link
+                key={article.newId}
+                href={`/news/${article.newId}`}
                 className={`block group cursor-pointer ${inView ? 'animate-slideInFromRight' : 'opacity-0'}`}
                 style={{ animationDelay: `${(index + 1) * 200}ms` }}
               >
                 <article>
                   <div className="flex gap-6 p-6 border border-[#e0e0e0] hover:shadow-2xl transition-all duration-500 bg-white group-hover:scale-105">
-                    
                     {/* Image */}
-                    <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded">
-                      <img 
-                        src={article.image} 
-                        alt={article.title} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    </div>
-                    
+                    {article.images && article.images[0] && (
+                      <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded">
+                        <img
+                          src={article.images[0].imageUrl}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+
                     <div className="flex-1 space-y-3">
                       <span className="text-xs text-[#8FBC8F] font-beaululo font-bold uppercase tracking-widest">
-                        {article.category}
+                        {article.category?.categoryName}
                       </span>
                       <h4 className="font-beaululo text-[#222] group-hover:text-[#8FBC8F] transition-colors duration-300 leading-tight tracking-widest uppercase text-sm line-clamp-2">
                         {article.title}
                       </h4>
                       <p className="text-sm text-[#666] font-nitti line-clamp-2 leading-relaxed">
-                        {article.excerpt}
+                        {getExcerpt(article.content, 100)}
                       </p>
                       <div className="flex items-center gap-3 text-xs text-[#888] font-nitti">
-                        <span>{article.date}</span>
+                        <span>{formatDate(article.createAt)}</span>
                         <span>•</span>
-                        <span>{article.readTime}</span>
+                        <span>{getReadTime(article.content)}</span>
                       </div>
                     </div>
                   </div>
@@ -155,7 +154,6 @@ export function FeaturedNews() {
             ))}
           </div>
         </div>
-
       </div>
     </section>
   );
