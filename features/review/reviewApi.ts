@@ -1,4 +1,4 @@
-import { apiSlice } from '../lib/api/apiSlice'
+import { apiSlice } from '../../lib/api/apiSlice'
 
 // ======================
 // Interfaces
@@ -7,6 +7,17 @@ export interface ReviewCreateRequest {
     rating: number
     comment: string
     productId: string
+}
+
+export interface ReviewStats {
+    totalReviews: number
+    averageRating: number
+    fiveStarCount: number
+    fourStarCount: number
+    oneStarCount: number
+    threeStarCount: number
+    twoStarCount: number
+    uniqueCustomers: number
 }
 
 export interface ReviewUpdateRequest {
@@ -60,6 +71,17 @@ export const reviewApi = apiSlice.injectEndpoints({
                 method: 'POST',
                 body: review,
             }),
+        }),
+        getGlobalReviewStats: builder.query<ReviewStats, void>({
+            query: () => `/reviews/stats`,
+            transformResponse: (response: {
+                code: number
+                message: string
+                data: ReviewStats
+                meta: any
+            }) => {
+                return response.data
+            },
         }),
 
         getReviewById: builder.query<ApiResponse<ReviewResponse>, string>({
@@ -161,4 +183,5 @@ export const {
     useGetAverageRatingByProductQuery,
     useGetReviewCountByProductQuery,
     useGetReviewsByRatingAndCategoryQuery,
+    useGetGlobalReviewStatsQuery,
 } = reviewApi

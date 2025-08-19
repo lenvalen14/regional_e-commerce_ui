@@ -8,13 +8,14 @@ import { useToast } from "@/components/ui/use-toast"
 import {
   useDeleteReviewMutation,
   ReviewResponse,
-} from "@/features/reviewApi"
+} from "@/features/review/reviewApi"
 
 interface ReviewListProps {
   reviews: ReviewResponse[]
+  onDeleteSuccess?: () => void
 }
 
-export default function ReviewList({ reviews }: ReviewListProps) {
+export default function ReviewList({ reviews, onDeleteSuccess }: ReviewListProps) {
   const { toast } = useToast()
   const [deleteReview] = useDeleteReviewMutation()
   const [localReviews, setLocalReviews] = useState<ReviewResponse[]>(reviews)
@@ -49,6 +50,7 @@ export default function ReviewList({ reviews }: ReviewListProps) {
       //   title: "Xóa thành công",
       //   description: "Đánh giá đã được xóa khỏi danh sách.",
       // })
+      onDeleteSuccess?.()
       alert("Xóa review thành công!");
     } catch (err) {
       console.error("Lỗi khi xóa review:", err)

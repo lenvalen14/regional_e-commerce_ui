@@ -7,9 +7,9 @@ import ReviewList from "./ReviewList"
 
 import {
   useGetReviewsByRatingAndCategoryQuery,
-  useDeleteReviewMutation,
+  useGetGlobalReviewStatsQuery,
   ReviewResponse,
-} from "@/features/reviewApi"
+} from "@/features/review/reviewApi"
 
 // Define interfaces
 interface SearchFilters {
@@ -19,7 +19,7 @@ interface SearchFilters {
 }
 
 export default function AdminReviewsPage() {
-  const [deleteReview] = useDeleteReviewMutation()
+  const { refetch: refetchStats } = useGetGlobalReviewStatsQuery()
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     searchTerm: "",
     rating: "all",
@@ -87,11 +87,6 @@ export default function AdminReviewsPage() {
     setSearchFilters({ searchTerm: "", rating: "all", category: "all" })
   }
 
-  const handleDeleteReview = (reviewId: string) => {
-    if (!confirm("Bạn có chắc muốn xoá review này?")) return
-    deleteReview(reviewId).then(() => refetch())
-  }
-
   if (isLoading) return <div>Đang tải...</div>
 
   return (
@@ -103,7 +98,7 @@ export default function AdminReviewsPage() {
       </div>
 
       {/* Thống kê */}
-      {/* <ReviewStats reviews={reviews} /> */}
+      <ReviewStats />
 
       {/* Bộ lọc */}
       <ReviewSearch
@@ -113,7 +108,12 @@ export default function AdminReviewsPage() {
       />
 
       {/* Danh sách review */}
-      <ReviewList reviews={filteredReviews} />
+      <ReviewList
+        reviews={filteredReviews}
+        onDeleteSuccess={() => {
+          // gọi refetch thủ công khi xóa xong
+          refetchStats()
+        }} />
     </div>
   )
 }

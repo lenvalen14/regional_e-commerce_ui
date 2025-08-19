@@ -7,7 +7,7 @@ import {
   useGetReviewsByProductQuery,
   useCreateReviewMutation,
   ReviewResponse,
-} from '@/features/reviewApi'
+} from '@/features/review/reviewApi'
 
 // ⭐ Component hiển thị rating bằng sao
 function StarRating({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) {
