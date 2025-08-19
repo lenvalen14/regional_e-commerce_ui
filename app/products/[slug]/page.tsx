@@ -9,6 +9,7 @@ import { ProductReviews, StarRating } from "@/components/products/ProductReviews
 import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { useCart } from "@/contexts/CartContext";
 import { Check } from "lucide-react";
+import { ArticleComments } from "@/components/products/ArticleComments";
 
 const PRODUCTS = [
   {
@@ -57,8 +58,8 @@ const PRODUCTS = [
     image: "/images/banh-trang.jpg",
     images: [
       "/images/banh-trang.jpg",
-       "/images/bun-bo.jpg",
-       "/images/bun-bo.jpg",
+      "/images/bun-bo.jpg",
+      "/images/bun-bo.jpg",
       "/images/banh-trang.jpg"
     ]
   }
@@ -76,7 +77,7 @@ export default function ProductDetailPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const imageRefs = useRef<(HTMLDivElement | null)[]>([]);
-  
+
   const { addItem } = useCart();
 
   // Theo dõi scroll để cập nhật active thumbnail
@@ -84,13 +85,13 @@ export default function ProductDetailPage() {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const windowHeight = window.innerHeight;
-      
+
       imageRefs.current.forEach((ref, index) => {
         if (ref) {
           const rect = ref.getBoundingClientRect();
           const imageTop = rect.top + scrollY;
           const imageBottom = imageTop + rect.height;
-          
+
           // Nếu ảnh đang hiển thị trong viewport (ít nhất 50%)
           if (scrollY + windowHeight * 0.3 >= imageTop && scrollY + windowHeight * 0.7 <= imageBottom) {
             setSelectedImageIndex(index);
@@ -116,26 +117,26 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!product) return;
-    
+
     setIsAdding(true);
-    
+
     // Tạo hiệu ứng bay
     const createFlyingAnimation = () => {
       const button = document.querySelector('button:has(+ #flying-product)') as HTMLElement;
       const flyingProduct = document.getElementById('flying-product') as HTMLElement;
       const cartIcon = document.querySelector('[data-cart-icon]') as HTMLElement;
-      
+
       if (!button || !flyingProduct || !cartIcon) return;
-      
+
       const buttonRect = button.getBoundingClientRect();
       const cartRect = cartIcon.getBoundingClientRect();
-      
+
       // Set vị trí ban đầu
       flyingProduct.style.left = `${buttonRect.left + buttonRect.width / 2 - 120}px`; // -120 thay vì -40 (to hơn 3 lần)
       flyingProduct.style.top = `${buttonRect.top + buttonRect.height / 2 - 120}px`;  // -120 thay vì -40
       flyingProduct.style.opacity = '1';
       flyingProduct.style.transform = 'scale(1)';
-      
+
       // Animate đến cart (chậm hơn 10%)
       setTimeout(() => {
         flyingProduct.style.left = `${cartRect.left + cartRect.width / 2 - 120}px`; // -120 thay vì -40
@@ -143,20 +144,20 @@ export default function ProductDetailPage() {
         flyingProduct.style.transform = 'scale(0.3)';
         flyingProduct.style.opacity = '0.8';
       }, 110); // 110ms thay vì 100ms (chậm 10%)
-      
+
       // Ẩn sau khi hoàn thành (chậm hơn 10%)
       setTimeout(() => {
         flyingProduct.style.opacity = '0';
         flyingProduct.style.transform = 'scale(0)';
       }, 1210); // 1210ms thay vì 1100ms (chậm 10%)
     };
-    
+
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''));
-    
+
     try {
       // Bắt đầu animation
       createFlyingAnimation();
-      
+
       // Delay để animation chạy trước
       setTimeout(() => {
         addItem({
@@ -168,11 +169,11 @@ export default function ProductDetailPage() {
           image: product.image,
           quantity: quantity
         });
-        
+
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
       }, 600);
-      
+
     } catch (error) {
       console.error('Error adding to cart:', error);
     } finally {
@@ -202,11 +203,10 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => scrollToImage(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 shadow-lg ${
-                      selectedImageIndex === index 
-                        ? "border-[#8FBC8F] ring-2 ring-[#8FBC8F] ring-opacity-30 scale-110" 
-                        : "border-white hover:border-[#8FBC8F]"
-                    }`}
+                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 shadow-lg ${selectedImageIndex === index
+                      ? "border-[#8FBC8F] ring-2 ring-[#8FBC8F] ring-opacity-30 scale-110"
+                      : "border-white hover:border-[#8FBC8F]"
+                      }`}
                   >
                     <Image
                       src={img}
@@ -224,8 +224,8 @@ export default function ProductDetailPage() {
             {/* Main Images */}
             <div className="space-y-4 pl-20"> {/* pl-20 để tránh thumbnail gallery che ảnh */}
               {productImages.map((img, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   ref={(el) => { imageRefs.current[index] = el; }}
                   className="relative w-full h-[840px] rounded-lg overflow-hidden cursor-zoom-in group"
                   onClick={() => setLightboxIndex(index)}
@@ -267,7 +267,7 @@ export default function ProductDetailPage() {
               </div>
 
               <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}</p>
-              
+
               {/* Chọn loại */}
               <div className="flex gap-2.5 mb-2">
                 {VARIANTS.map((v) => (
@@ -280,32 +280,31 @@ export default function ProductDetailPage() {
                   </button>
                 ))}
               </div>
-              
+
               {/* Số lượng */}
               <div className="flex items-center gap-2 mb-4">
                 <span className="font-nitti text-sm">Số lượng:</span>
                 <button
-                  onClick={() => setQuantity(q => Math.max(1, q-1))}
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
                   className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
                     hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
                 >-</button>
                 <span className="font-nitti text-base w-8 text-center">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(q => q+1)}
+                  onClick={() => setQuantity(q => q + 1)}
                   className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
                     hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
                     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
                 >+</button>
               </div>
-              
+
               {/* Nút thêm vào giỏ */}
-              <button 
+              <button
                 onClick={handleAddToCart}
                 disabled={isAdding}
-                className={`relative overflow-hidden bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-[#bbb] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-all duration-300 ${
-                  showSuccess ? 'bg-green-600' : ''
-                }`}
+                className={`relative overflow-hidden bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-[#bbb] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-all duration-300 ${showSuccess ? 'bg-green-600' : ''
+                  }`}
               >
                 {isAdding ? (
                   <span className="flex items-center justify-center gap-2">
@@ -323,7 +322,7 @@ export default function ProductDetailPage() {
               </button>
 
               {/* Flying Product Animation */}
-              <div 
+              <div
                 id="flying-product"
                 className="fixed pointer-events-none z-[9999] opacity-0 transition-all duration-1000 ease-out"
                 style={{
@@ -339,7 +338,7 @@ export default function ProductDetailPage() {
                   className="object-cover rounded-lg shadow-lg"
                 />
               </div>
-              
+
               {/* Mô tả */}
               <div className="mt-8">
                 <h2 className="font-beaululo text-lg text-[#222] uppercase tracking-widest mb-2">Mô tả sản phẩm</h2>
@@ -348,11 +347,11 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
-        
+
         {/* Phần dưới: Reviews full width */}
         <div className="max-w-6xl mx-auto px-4">
           <ProductReviews productId={product.id} />
-          
+
           {/* Sản phẩm liên quan */}
           <RelatedProducts currentProductId={product.id} region={product.region} />
         </div>

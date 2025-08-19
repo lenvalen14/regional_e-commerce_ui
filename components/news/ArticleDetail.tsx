@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { 
-  Calendar, User, Clock, Eye, Heart, Share2, Bookmark, 
-  ArrowLeft, Coffee, MessageCircle, ThumbsUp, Facebook, 
+import {
+  Calendar, User, Clock, Eye, Heart, Share2, Bookmark,
+  ArrowLeft, Coffee, MessageCircle, ThumbsUp, Facebook,
   Twitter, Link as LinkIcon
 } from 'lucide-react';
 import Link from 'next/link';
@@ -32,10 +32,10 @@ export function ArticleDetail({ articleId }: Props) {
 
   useEffect(() => {
     if (!isMounted) return;
-    
+
     const handleScroll = () => {
       setScrollY(window.scrollY);
-      
+
       // Calculate reading progress
       const article = document.getElementById('article-content');
       if (article) {
@@ -151,7 +151,7 @@ export function ArticleDetail({ articleId }: Props) {
     <>
       {/* Reading Progress Bar */}
       <div className="fixed top-0 left-0 w-full h-1 bg-[#8FBC8F]/20 z-50">
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-[#8FBC8F] to-[#7CA87C] transition-all duration-300"
           style={{ width: `${readingProgress}%` }}
         />
@@ -161,7 +161,7 @@ export function ArticleDetail({ articleId }: Props) {
         {/* Hero Section */}
         <section className="relative h-[70vh] overflow-hidden">
           {/* Background Image */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
               backgroundImage: `url('/images/nuoc-mam-hero.jpg')`,
@@ -169,10 +169,10 @@ export function ArticleDetail({ articleId }: Props) {
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          
+
           {/* Back Button */}
           <div className="absolute top-8 left-8 z-20">
-            <Link 
+            <Link
               href="/news"
               className="inline-flex items-center gap-2 bg-white/90 text-[#222] px-4 py-2 rounded-full font-semibold hover:bg-white transition-all duration-300 backdrop-blur-sm group font-nitti"
             >
@@ -248,11 +248,10 @@ export function ArticleDetail({ articleId }: Props) {
                   <div className="space-y-4">
                     <button
                       onClick={handleLike}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${
-                        isLiked 
-                          ? 'bg-[#8FBC8F] text-white' 
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${isLiked
+                          ? 'bg-[#8FBC8F] text-white'
                           : 'bg-[#f8f8f8] text-[#222] hover:bg-[#8FBC8F] hover:text-white border border-[#e0e0e0] hover:border-[#8FBC8F]'
-                      }`}
+                        }`}
                     >
                       <Heart className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
                       {likes} lượt thích
@@ -260,11 +259,10 @@ export function ArticleDetail({ articleId }: Props) {
 
                     <button
                       onClick={() => setIsBookmarked(!isBookmarked)}
-                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${
-                        isBookmarked 
-                          ? 'bg-[#8FBC8F] text-white' 
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 font-nitti ${isBookmarked
+                          ? 'bg-[#8FBC8F] text-white'
                           : 'bg-[#f8f8f8] text-[#222] hover:bg-[#8FBC8F] hover:text-white border border-[#e0e0e0] hover:border-[#8FBC8F]'
-                      }`}
+                        }`}
                     >
                       <Bookmark className={`h-5 w-5 ${isBookmarked ? 'fill-current' : ''}`} />
                       {isBookmarked ? 'Đã lưu' : 'Lưu bài viết'}
@@ -306,7 +304,7 @@ export function ArticleDetail({ articleId }: Props) {
 
               {/* Main Content */}
               <div className="lg:col-span-3">
-                <div 
+                <div
                   id="article-content"
                   className={`prose prose-lg max-w-none ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}
                   style={{
@@ -339,7 +337,7 @@ export function ArticleDetail({ articleId }: Props) {
                   } as React.CSSProperties}
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
-                
+
                 {/* Custom CSS for better heading visibility */}
                 <style jsx>{`
                   .prose h2 {

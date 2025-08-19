@@ -24,7 +24,7 @@ export default function ReviewSearch({ searchFilters, onSearchChange, onReset }:
         <Search className="h-5 w-5 mr-2" />
         Tìm kiếm đánh giá
       </h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <Input
@@ -34,7 +34,7 @@ export default function ReviewSearch({ searchFilters, onSearchChange, onReset }:
             className="w-full"
           />
         </div>
-        
+
         <div>
           <Select value={searchFilters.rating} onValueChange={(value) => onSearchChange("rating", value)}>
             <SelectTrigger>

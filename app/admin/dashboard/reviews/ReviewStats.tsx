@@ -24,10 +24,10 @@ interface ReviewStatsProps {
 
 export default function ReviewStats({ reviews }: ReviewStatsProps) {
   const totalReviews = reviews.length
-  const averageRating = reviews.length > 0 
+  const averageRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : "0"
-  
+
   const ratingCounts = {
     5: reviews.filter(r => r.rating === 5).length,
     4: reviews.filter(r => r.rating === 4).length,
@@ -52,7 +52,7 @@ export default function ReviewStats({ reviews }: ReviewStatsProps) {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Đánh giá TB</CardTitle>
