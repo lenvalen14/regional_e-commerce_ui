@@ -134,7 +134,6 @@ export const authApi = apiSlice.injectEndpoints({
         try {
           await queryFulfilled
         } finally {
-          // Đảm bảo dọn trạng thái local và cache RTK Query trong mọi trường hợp
           dispatch(logout())
           dispatch(apiSlice.util.resetApiState())
         }

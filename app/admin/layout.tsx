@@ -4,9 +4,11 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react"
-import { useSearchParams, usePathname } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { Suspense } from "react"
 import NotificationBell from "./dashboard/noti/NotificationBell"
+import { useLogoutMutation } from '@/features/auth/authApi';
+import { useRouter } from 'next/navigation';
 
 const sidebarItems = [
   { icon: Home, label: "Trang Chủ", href: "/admin/dashboard" },
@@ -26,6 +28,8 @@ function DashboardLayoutContent({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const pathname = usePathname()
+  const [logout, { isLoading }] = useLogoutMutation();
+  const router = useRouter();
 
   // Close sidebar on mobile when route changes
   useEffect(() => {
@@ -38,6 +42,16 @@ function DashboardLayoutContent({
     }
     return pathname?.startsWith(href)
   }
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      router.push('/auth');
+    } catch (error) {
+      console.error("Failed to log out:", error);
+      // Xử lý lỗi, ví dụ: hiển thị thông báo lỗi
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -152,9 +166,8 @@ function DashboardLayoutContent({
             className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl ${
               sidebarCollapsed ? "p-4 justify-center" : "justify-start px-4 py-3"
             }`}
-            onClick={() => {
-              window.location.href = "/auth"
-            }}
+            onClick={handleLogout}
+            disabled={isLoading}
           >
             <LogOut className="h-5 w-5" />
             {!sidebarCollapsed && <span className="ml-3 transition-all duration-300 ease-out">Đăng Xuất</span>}
