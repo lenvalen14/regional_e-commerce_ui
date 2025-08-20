@@ -40,6 +40,37 @@ export interface UserProfile {
   role: string
 }
 
+// Forgot password types
+export interface RequestPasswordOtpRequest {
+  email: string
+}
+
+export interface RequestPasswordOtpResponse {
+  code: number
+  message: string
+}
+
+export interface VerifyPasswordOtpRequest {
+  email: string
+  otp: number
+}
+
+export interface VerifyPasswordOtpResponse {
+  code: number
+  message: string
+}
+
+export interface ResetPasswordRequest {
+  email: string
+  password: string
+  confirmPassword: string
+}
+
+export interface ResetPasswordResponse {
+  code: number
+  message: string
+}
+
 export interface UpdateProfileRequest {
     id: string;
     data: {
@@ -158,6 +189,7 @@ export const authApi = apiSlice.injectEndpoints({
         body: { refreshToken },
       }),
     }),
+    
     updateProfile: builder.mutation<UserProfile, UpdateProfileRequest>({
         query: ({ id, data }) => ({
             url: `/users/${id}`,
@@ -167,6 +199,31 @@ export const authApi = apiSlice.injectEndpoints({
         // Chuẩn hóa về UserProfile nếu API trả về dạng bọc { code, message, data }
         transformResponse: (response: ProfileApiResponse) => response.data,
         invalidatesTags: (result, error, { id }) => ['Auth', { type: 'Users', id }],
+    }),
+
+    // Forgot password flow
+    requestPasswordOtp: builder.mutation<RequestPasswordOtpResponse, RequestPasswordOtpRequest>({
+      query: (body) => ({
+        url: '/passwords/send-otp',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    verifyPasswordOtp: builder.mutation<VerifyPasswordOtpResponse, VerifyPasswordOtpRequest>({
+      query: (body) => ({
+        url: '/passwords/verify-otp',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    resetPassword: builder.mutation<ResetPasswordResponse, ResetPasswordRequest>({
+      query: (body) => ({
+        url: '/passwords/forgot-password',
+        method: 'POST',
+        body,
+      }),
     }),
   }),
 })
@@ -179,4 +236,7 @@ export const {
   useGetUserByIdQuery,
   useRefreshTokenMutation,
   useUpdateProfileMutation,
+  useRequestPasswordOtpMutation,
+  useVerifyPasswordOtpMutation,
+  useResetPasswordMutation,
 } = authApi
