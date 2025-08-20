@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { setCredentials, selectCurrentToken, selectCurrentUser } from "@/features/auth/authSlice"
 import { useGetProfileQuery } from "@/features/auth/authApi"
+import { useCartSync } from "@/hooks/use-cart-sync"
+import { useCartBackup } from "@/hooks/use-cart-backup"
 
 export default function AuthInitializer() {
   const [isMounted, setIsMounted] = useState(false)
@@ -11,6 +13,10 @@ export default function AuthInitializer() {
   const dispatch = useDispatch()
   const token = useSelector(selectCurrentToken)
   const user = useSelector(selectCurrentUser)
+  
+  // Use cart sync and backup hooks
+  useCartSync()
+  useCartBackup()
 
   useEffect(() => {
     setIsMounted(true)

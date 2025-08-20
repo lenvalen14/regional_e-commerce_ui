@@ -124,6 +124,8 @@ const authSlice = createSlice({
         try {
           localStorage.removeItem("token")
           localStorage.removeItem("refreshToken")
+          // DON'T remove cart - let it stay for guest user
+          // localStorage.removeItem("cart")
         } catch (error) {
           console.error("Error clearing localStorage:", error)
         }
