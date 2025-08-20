@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { Suspense } from "react"
-import NotificationBell from "./dashboard/noti/NotificationBell"
+import NotificationBell from "../../components/notification/NotificationBell"
 import { useLogoutMutation } from '@/features/auth/authApi';
 import { useRouter } from 'next/navigation';
+import Link from "next/link"
 
 const sidebarItems = [
   { icon: Home, label: "Trang Chủ", href: "/admin/dashboard" },
@@ -71,11 +72,17 @@ function DashboardLayoutContent({
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Logo Section */}
-        <div className={`flex items-center border-b border-gray-100 ${sidebarCollapsed ? "justify-center p-5" : "justify-between px-6 py-5"}`}>
+       {/* Logo Section */}
+        <div
+          className={`flex items-center border-b border-gray-100 ${
+            sidebarCollapsed
+              ? "justify-center p-5"
+              : "justify-between px-6 py-5"
+          }`}
+        >
           {!sidebarCollapsed ? (
             <>
-              <div className="flex items-center space-x-3">
+              <Link href="/" className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                   <span className="text-white font-bold text-sm">ĐSQ</span>
                 </div>
@@ -83,20 +90,20 @@ function DashboardLayoutContent({
                   <h2 className="font-bold text-gray-900">Đặc Sản Quê</h2>
                   <p className="text-xs text-gray-500">Admin Panel</p>
                 </div>
-              </div>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden hover:bg-gray-100" 
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden hover:bg-gray-100"
                 onClick={() => setSidebarOpen(false)}
               >
                 <X className="h-5 w-5" />
               </Button>
             </>
           ) : (
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+            <Link href="/" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-sm">ĐSQ</span>
-            </div>
+            </Link>
           )}
         </div>
 

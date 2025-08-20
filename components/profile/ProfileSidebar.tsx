@@ -3,8 +3,8 @@ import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/features/auth/authApi";
 
 interface ProfileSidebarProps {
-  active?: "profile" | "addresses";
-  onSelect?: (view: "profile" | "addresses") => void;
+  active?: "profile" | "addresses" | "notifications";
+  onSelect?: (view: "profile" | "addresses" | "notifications") => void;
 }
 
 export function ProfileSidebar({ active = "profile", onSelect }: ProfileSidebarProps) {
@@ -62,6 +62,23 @@ export function ProfileSidebar({ active = "profile", onSelect }: ProfileSidebarP
                 }`}
               ></div>
               Danh sách địa chỉ
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => onSelect?.("notifications")}
+              className={`flex items-center w-full text-left p-3 rounded-lg font-nitti transition-all ${
+                active === "notifications"
+                  ? "bg-[#8FBC8F]/10 text-[#8FBC8F] hover:bg-[#8FBC8F]/20"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#8FBC8F]"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full mr-3 ${
+                  active === "notifications" ? "bg-[#8FBC8F]" : "bg-gray-400"
+                }`}
+              ></div>
+              Thông báo
             </button>
           </li>
           <li>

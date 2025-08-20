@@ -13,6 +13,7 @@ import AddressList, { AddressResponse } from "@/components/profile/AddressList";
 import AddAddressModal from "@/components/profile/AddAddressModal";
 import EditAddressModal from "@/components/profile/EditAddressModal";
 import DeleteAddressModal from "@/components/profile/DeleteAddressModal";
+import NotificationList from "@/components/profile/NotificationList";
 import {
   useGetUserAddressesQuery,
   useCreateAddressMutation,
@@ -20,6 +21,9 @@ import {
   useDeleteAddressMutation,
   useSetDefaultAddressMutation,
 } from '@/features/address/addressApi'
+import {
+  useGetUserNotificationsQuery,
+} from '@/features/notification';
 import { toast } from 'sonner';
 
 const getInitials = (name: string): string => {
@@ -54,7 +58,7 @@ interface ProfileFormData {
   phone: string;
 }
 
-type ViewKey = 'profile' | 'addresses'
+type ViewKey = 'profile' | 'addresses' | 'notifications'
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -78,6 +82,14 @@ export default function ProfilePage() {
   const [updateAddress, { isLoading: updatingAddr }] = useUpdateAddressMutation()
   const [deleteAddress, { isLoading: deletingAddrLoading }] = useDeleteAddressMutation()
   const [setDefaultAddress, { isLoading: settingDefault }] = useSetDefaultAddressMutation()
+
+  // Notification API hooks
+  const { data: notificationList, isLoading: isNotiLoading } = useGetUserNotificationsQuery()
+
+  // Use only real data from API
+  const notifications = Array.isArray(notificationList) ? notificationList : [];
+
+  // WebSocket connection is managed by NotificationBell only
 
   // Dialog state
   const [showAddAddr, setShowAddAddr] = useState(false)
@@ -199,6 +211,27 @@ export default function ProfilePage() {
     }
   }
 
+  // Notification handlers - now handled by NotificationList component
+  const handleMarkAsRead = (notificationId: string) => {
+    // This will be handled by the NotificationList component
+    console.log('Mark as read:', notificationId);
+  }
+
+  const handleMarkAllAsRead = () => {
+    // This will be handled by the NotificationList component
+    console.log('Mark all as read');
+  }
+
+  const handleDeleteNotification = (notificationId: string) => {
+    // This will be handled by the NotificationList component
+    console.log('Delete notification:', notificationId);
+  }
+
+  const handleDeleteAllUserNotifications = () => {
+    // This will be handled by the NotificationList component
+    console.log('Delete all notifications');
+  }
+
   const userInitials = useMemo(() => getInitials(formData.userName), [formData.userName]);
   const avatarColorClass = useMemo(() => generateColorClass(formData.userName), [formData.userName]);
 
@@ -252,7 +285,7 @@ export default function ProfilePage() {
                   />
                 </div>
               </>
-            ) : (
+            ) : activeView === 'addresses' ? (
               <div className="lg:col-span-3">
                 <AddressList
                   addresses={addressList}
@@ -282,6 +315,18 @@ export default function ProfilePage() {
                   onConfirm={handleDeleteAddress}
                   loading={deletingAddrLoading}
                 />
+              </div>
+            ) : (
+              <div className="lg:col-span-3">
+                <NotificationList
+                   notifications={notifications}
+                   loading={isNotiLoading}
+                   
+                   onMarkAsRead={handleMarkAsRead}
+                   onMarkAllAsRead={handleMarkAllAsRead}
+                   onDelete={handleDeleteNotification}
+                   onDeleteAllNotifications={handleDeleteAllUserNotifications}
+                 />
               </div>
             )}
           </div>

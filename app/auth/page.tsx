@@ -8,6 +8,7 @@ import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/features/auth/authSlice";
 import { toast } from "sonner";
+import { InputField, SubmitButton, GoogleIcon } from "./auth-components";
 
 interface DecodedToken {
   userId: string;
@@ -47,7 +48,6 @@ export default function AuthPage() {
   const [register, { isLoading: isRegisterLoading, error: registerError }] =
     useRegisterMutation();
 
-  /** Xử lý thay đổi input */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -56,11 +56,9 @@ export default function AuthPage() {
     }));
   };
 
-  /** Reset form */
   const resetForm = () =>
     setFormData({ email: "", password: "", name: "", confirmPassword: "", phone: "" });
 
-  /** Validate form đăng ký */
   const validateRegister = () => {
     if (formData.password !== formData.confirmPassword) {
       toast.error("Mật khẩu xác nhận không khớp!");
@@ -73,14 +71,13 @@ export default function AuthPage() {
     return true;
   };
 
-  /** Submit form */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMessage("");
 
     try {
       if (isLogin) {
-        // --- ĐĂNG NHẬP ---
+        // --- LOGIN LOGIC ---
         const apiResult = await login({
           email: formData.email,
           password: formData.password,
@@ -103,15 +100,13 @@ export default function AuthPage() {
           role: decodedToken.role,
         };
 
-        // Lưu vào Redux
         dispatch(setCredentials({ user, token, refreshToken }));
 
-        // Điều hướng
         decodedToken.role === "ADMIN"
           ? router.push("/admin/dashboard")
           : router.push("/");
       } else {
-        // --- ĐĂNG KÝ ---
+        // --- REGISTER LOGIC ---
         if (!validateRegister()) return;
 
         await register({
@@ -133,7 +128,6 @@ export default function AuthPage() {
     }
   };
 
-  /** Lấy error message từ API */
   const getErrorMessage = () => {
     const error = isLogin ? loginError : registerError;
     if (
@@ -149,15 +143,22 @@ export default function AuthPage() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-gray-50 bg-cover bg-center bg-no-repeat relative"
-      style={{ backgroundImage: "url('/images/lgbg.png')" }}
-    >
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Blurred Background */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/images/background.png')",
+          filter: "blur(3px)",
+          transform: "scale(1.1)",
+        }}
+      ></div>
+
       {/* Overlay */}
       <div className="absolute inset-0 bg-white/50"></div>
 
-      {/* Content */}
-      <div className="relative z-10 flex items-center justify-center py-12 px-4">
+      {/* Main Content */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen py-12 px-4">
         <div className="max-w-md w-full space-y-8">
           {/* Header */}
           <div className="text-center">
@@ -175,7 +176,7 @@ export default function AuthPage() {
           </div>
 
           <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-white/20 p-6">
-            {/* Thông báo */}
+            {/* Notifications */}
             {successMessage && (
               <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-800 rounded-md text-sm font-nitti">
                 {successMessage}
@@ -219,9 +220,9 @@ export default function AuthPage() {
               </button>
             </div>
 
-            {/* Form */}
+            {/* Forms */}
             {isLogin ? (
-              // --- FORM LOGIN ---
+              // --- LOGIN FORM ---
               <form onSubmit={handleSubmit} className="space-y-4">
                 <InputField
                   label="Email"
@@ -270,7 +271,7 @@ export default function AuthPage() {
                 />
               </form>
             ) : (
-              // --- FORM REGISTER ---
+              // --- REGISTER FORM ---
               <form onSubmit={handleSubmit} className="space-y-4">
                 <InputField
                   label="Họ và tên"
@@ -373,68 +374,5 @@ export default function AuthPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-/** Input Field Component */
-function InputField({ label, ...props }: any) {
-  return (
-    <div>
-      <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-        {label}
-      </label>
-      <input
-        {...props}
-        required
-        className="w-full px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm 
-        focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F] 
-        transition-colors bg-white/80"
-      />
-    </div>
-  );
-}
-
-/** Submit Button Component */
-function SubmitButton({
-  loading,
-  text,
-  loadingText,
-}: {
-  loading: boolean;
-  text: string;
-  loadingText: string;
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={loading}
-      className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-gray-400 disabled:cursor-not-allowed 
-      text-white py-2 rounded-md font-nitti font-bold tracking-widest transition-colors shadow-md"
-    >
-      {loading ? loadingText : text}
-    </button>
-  );
-}
-
-function GoogleIcon() {
-  return (
-    <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      />
-    </svg>
   );
 }
