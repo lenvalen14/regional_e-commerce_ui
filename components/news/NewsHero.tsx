@@ -4,19 +4,8 @@ import { useState, useEffect } from 'react'
 import { Calendar, User, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { NewResponse } from '@/features/new/newApi'
-
-// 🔹 helper: tính readTime
-function calculateReadTime(content: string): string {
-  const words = content.trim().split(/\s+/).length
-  const minutes = Math.ceil(words / 200)
-  return `${minutes} phút đọc`
-}
-
-// 🔹 helper: rút gọn content
-function truncateContent(content: string, maxLength = 150): string {
-  if (content.length <= maxLength) return content
-  return content.substring(0, maxLength).trim() + "..."
-}
+import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
+import { getExcerpt } from '@/app/news/page';
 
 interface NewsHeroProps {
   latestNews: NewResponse
@@ -31,9 +20,8 @@ export function NewsHero({ latestNews }: NewsHeroProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const readTime = calculateReadTime(latestNews.content)
-  const previewContent = truncateContent(latestNews.content, 180)
-  const createDate = new Date(latestNews.createAt).toLocaleDateString('vi-VN')
+  const previewContent = getExcerpt(latestNews.content)
+  const createDate = formatDate(latestNews.createAt)
 
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center bg-white overflow-hidden">
@@ -85,10 +73,10 @@ export function NewsHero({ latestNews }: NewsHeroProps) {
                     <User className="h-4 w-4" />
                     <span>Admin</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
                     <span>{readTime}</span>
-                  </div>
+                  </div> */}
                 </div>
 
                 <p className="text-[#666] leading-relaxed font-nitti">

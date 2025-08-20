@@ -5,6 +5,8 @@ import { useInView } from 'react-intersection-observer';
 import { Calendar, User, Clock, ArrowRight, Search, Filter } from 'lucide-react';
 import Link from 'next/link';
 import { NewResponse } from '@/features/new/newApi';
+import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
+import { getExcerpt } from '@/app/news/page';
 
 interface NewsGridProps {
   articles: NewResponse[]; // nhận từ NewsPage
@@ -20,23 +22,6 @@ export function NewsGrid({ articles }: NewsGridProps) {
   const [sortBy, setSortBy] = useState('newest');
 
   if (!articles || articles.length === 0) return null;
-
-  const getExcerpt = (content: string, length = 150) => {
-    if (!content) return '';
-    return content.length > length ? content.slice(0, length) + '...' : content;
-  };
-
-  const getReadTime = (content: string) => {
-    if (!content) return '1 phút';
-    const words = content.trim().split(/\s+/).length;
-    const minutes = Math.ceil(words / 200);
-    return `${minutes} phút`;
-  };
-
-  const formatDate = (timestamp: number | string | Date) => {
-    const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
 
   return (
     <section ref={ref} className="py-24 bg-white border-t border-[#e0e0e0]">
@@ -130,10 +115,10 @@ export function NewsGrid({ articles }: NewsGridProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    {/* <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       <span>{getReadTime(article.content)}</span>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="pt-4">

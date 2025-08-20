@@ -5,12 +5,16 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers, { getState, endpoint }) => {
       const token = (getState() as RootState).auth.token
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
-      headers.set('Content-Type', 'application/json')
+
+      const skipEndpoints = ['createNews']
+      if (!skipEndpoints.includes(endpoint)) {
+        headers.set("Content-Type", "application/json")
+      }
       return headers
     },
   }),
