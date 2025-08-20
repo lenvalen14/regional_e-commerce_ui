@@ -16,7 +16,7 @@ export default function UserSearch({
   onStatusFilter 
 }: UserSearchProps) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-6">
+    <div className="p-6 mb-6">
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Search Input */}
         <div className="flex-1 relative">

@@ -78,7 +78,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-white p-6">
       <div className="max-w-6xl mx-auto">
         
         {/* Header with Stats */}
@@ -118,45 +118,52 @@ export default function UsersPage() {
           />
         )}
 
-        {/* Pagination */}
+        {/* Pagination - Sleek & Modern */}
         {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-between bg-white px-6 py-3 rounded-lg border border-gray-200">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-700">Hiển thị</span>
-                  <select
+          <div className="flex items-center justify-between mt-8 p-4 bg-white rounded-2xl shadow-xl transition-all duration-300 ease-in-out hover:shadow-2xl">
+            {/* Page Size Dropdown */}
+            <div className="flex items-center space-x-3 text-gray-700">
+              <span className="text-sm font-medium">Hiển thị</span>
+              <select
                 value={pageSize}
                 onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                className="form-select border-none bg-gray-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors duration-200"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>
                 <option value={50}>50</option>
-                  </select>
-              <span className="text-sm text-gray-700">mục mỗi trang</span>
-              </div>
-              
-            <div className="flex items-center space-x-2">
-                <button
+              </select>
+              <span className="text-sm font-medium">mục</span>
+            </div>
+
+            {/* Page Navigation */}
+            <nav className="flex items-center space-x-2" aria-label="Pagination">
+              <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 0}
-                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                Trước
-                </button>
-              
-              <span className="text-sm text-gray-700">
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-transform duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Page Info */}
+              <span className="text-sm font-semibold text-gray-800 px-4">
                 Trang {currentPage + 1} / {totalPages}
               </span>
-              
-                <button
+
+              <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages - 1}
-                className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-                >
-                Sau
-                </button>
-            </div>
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-transform duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </nav>
           </div>
         )}
 

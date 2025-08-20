@@ -1,30 +1,30 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useGetProfileQuery } from '@/features/auth/authApi';
-import { setCredentials, selectCurrentToken, selectCurrentUser } from '@/features/auth/authSlice';
+import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+import { setCredentials, selectCurrentToken, selectCurrentUser } from "@/features/auth/authSlice"
+import { useGetProfileQuery } from "@/features/auth/authApi"
 
 export default function AuthInitializer() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  const dispatch = useDispatch();
-  const token = useSelector(selectCurrentToken);
-  const user = useSelector(selectCurrentUser);
+  const [isMounted, setIsMounted] = useState(false)
+
+  const dispatch = useDispatch()
+  const token = useSelector(selectCurrentToken)
+  const user = useSelector(selectCurrentUser)
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    setIsMounted(true)
+  }, [])
 
-  const { data: userResponse, isSuccess } = useGetProfileQuery(undefined, {
+  const { data: profileResponse, isSuccess } = useGetProfileQuery(undefined, {
     skip: !isMounted || !token || !!user,
-  });
+  })
 
   useEffect(() => {
-    if (isMounted && isSuccess && userResponse?.data) {
-      dispatch(setCredentials({ user: userResponse.data, token: token! }));
+    if (isMounted && isSuccess && profileResponse?.data && token) {
+      dispatch(setCredentials({ user: profileResponse.data, token }))
     }
-  }, [isMounted, isSuccess, userResponse, dispatch, token]);
-  
-  return null;
+  }, [isMounted, isSuccess, profileResponse, dispatch, token])
+
+  return null
 }

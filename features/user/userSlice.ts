@@ -28,7 +28,7 @@ const initialState: UserState = {
   
   // Pagination
   currentPage: 0,
-  pageSize: 10,
+  pageSize: 5,
 }
 
 const userSlice = createSlice({

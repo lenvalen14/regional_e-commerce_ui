@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search } from "lucide-react"
-import { useSearchParams } from "next/navigation"
+import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react"
+import { useSearchParams, usePathname } from "next/navigation"
 import { Suspense } from "react"
 import NotificationBell from "./dashboard/noti/NotificationBell"
 
@@ -18,33 +18,51 @@ const sidebarItems = [
   { icon: User, label: "Tài Khoản", href: "/admin/dashboard/account" },
 ]
 
-export default function DashboardLayout({
+function DashboardLayoutContent({
   children,
 }: {
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const searchParams = useSearchParams()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const pathname = usePathname()
+
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [pathname])
+
+  const isActiveRoute = (href: string) => {
+    if (href === "/admin/dashboard") {
+      return pathname === href
+    }
+    return pathname?.startsWith(href)
+  }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div className="min-h-screen bg-gray-50">
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-        )}
+    <div className="min-h-screen bg-white">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm" 
+          onClick={() => setSidebarOpen(false)} 
+        />
+      )}
 
-        {/* Sidebar - Made sidebar truly fixed and sticky */}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
-        >
-          <div className="flex flex-col h-full">
-            {/* Logo */}
-            <div className="flex items-center justify-between p-4 border-b">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 shadow-lg transform transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+          sidebarCollapsed ? "w-20" : "w-64"
+        } ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        {/* Logo Section */}
+        <div className={`flex items-center border-b border-gray-100 ${sidebarCollapsed ? "justify-center p-5" : "justify-between px-6 py-5"}`}>
+          {!sidebarCollapsed ? (
+            <>
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-orange-500 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
                   <span className="text-white font-bold text-sm">ĐSQ</span>
                 </div>
                 <div>
@@ -52,64 +70,179 @@ export default function DashboardLayout({
                   <p className="text-xs text-gray-500">Admin Panel</p>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
-              {sidebarItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
-                </a>
-              ))}
-            </nav>
-
-            {/* Logout */}
-            <div className="p-4 border-t">
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                onClick={() => {
-                  // Navigate back to auth page for login
-                  window.location.href = "/auth"
-                }}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden hover:bg-gray-100" 
+                onClick={() => setSidebarOpen(false)}
               >
-                <LogOut className="h-5 w-5 mr-3" />
-                Đăng Xuất
+                <X className="h-5 w-5" />
               </Button>
+            </>
+          ) : (
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-sm">ĐSQ</span>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Main content - Fixed margin and removed excessive height constraints */}
-        <div className="lg:ml-64">
-          {/* Header - Made header also fixed for better UX */}
-          <header className="sticky top-0 z-30 bg-white shadow-sm border-b">
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <h1 className="text-xl font-bold text-gray-900">TRANG QUẢN LÝ</h1>
-              </div>
+        {/* Navigation */}
+        <nav className="flex-1 p-3 space-y-1">
+          {sidebarItems.map((item) => (
+            <div key={item.href} className="relative group">
+              <a
+                href={item.href}
+                className={`flex items-center space-x-3 rounded-xl transition-all duration-300 ease-out no-underline ${
+                  sidebarCollapsed ? "p-4 justify-center" : "px-4 py-3"
+                } ${
+                  isActiveRoute(item.href)
+                    ? "bg-blue-50 text-blue-600"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${isActiveRoute(item.href) ? "text-blue-600" : ""}`} />
+                {!sidebarCollapsed && (
+                  <span className="font-medium transition-all duration-300 ease-out">{item.label}</span>
+                )}
+              </a>
+              
+              {/* Tooltip for collapsed state */}
+              {sidebarCollapsed && (
+                <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
+                  {item.label}
+                  <div className="absolute top-1/2 -left-1 transform -translate-y-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
 
-              <div className="flex items-center space-x-4">
-                <NotificationBell />
+        {/* Collapse Toggle Button */}
+        <div className="hidden lg:block absolute -right-3 top-20">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-6 w-6 p-0 bg-white border-gray-200 shadow-md hover:shadow-lg"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight className="h-3 w-3" />
+            ) : (
+              <ChevronLeft className="h-3 w-3" />
+            )}
+          </Button>
+        </div>
+
+        {/* Bottom Section */}
+        <div className="border-t border-gray-100 p-3">
+          {!sidebarCollapsed && (
+            <div className="flex items-center space-x-3 px-4 py-3 bg-gray-50 rounded-xl mb-2 transition-all duration-300 ease-out">
+              <div className="w-8 h-8 bg-gray-300 rounded-lg flex items-center justify-center">
+                <User className="h-4 w-4 text-gray-600" />
+              </div>
+              <div className="flex-1 transition-all duration-300 ease-out">
+                <p className="font-medium text-gray-900 text-sm">Admin User</p>
+                <p className="text-xs text-gray-500">admin@example.com</p>
               </div>
             </div>
-          </header>
-
-          {/* Page content - Removed fixed height and excessive padding */}
-          <main className="p-4">{children}</main>
+          )}
+          
+          <Button
+            variant="ghost"
+            className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl ${
+              sidebarCollapsed ? "p-4 justify-center" : "justify-start px-4 py-3"
+            }`}
+            onClick={() => {
+              window.location.href = "/auth"
+            }}
+          >
+            <LogOut className="h-5 w-5" />
+            {!sidebarCollapsed && <span className="ml-3 transition-all duration-300 ease-out">Đăng Xuất</span>}
+          </Button>
         </div>
       </div>
+
+      {/* Main content */}
+      <div className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+        {/* Header */}
+        <header className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="lg:hidden hover:bg-gray-100" 
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">TRANG QUẢN LÝ</h1>
+                <p className="text-sm text-gray-600">Hệ thống quản lý tổng quan</p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {/* Search Bar */}
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm..."
+                  className="pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors w-64"
+                />
+              </div>
+
+              {/* Notifications */}
+              <NotificationBell />
+
+              {/* Settings */}
+              <Button variant="ghost" size="sm" className="hover:bg-gray-100 rounded-xl">
+                <Settings className="h-5 w-5" />
+              </Button>
+
+              {/* Profile */}
+              <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-semibold text-xs">A</span>
+                </div>
+                <div className="hidden sm:block">
+                  <p className="text-sm font-medium text-gray-900">Admin</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <span className="text-white font-bold text-sm">ĐSQ</span>
+          </div>
+          <p className="text-gray-600 font-medium">Đang tải trang quản lý...</p>
+        </div>
+      </div>
+    }>
+      <DashboardLayoutContent>
+        {children}
+      </DashboardLayoutContent>
     </Suspense>
   )
 }

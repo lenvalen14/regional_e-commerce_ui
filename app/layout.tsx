@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
-import { Providers } from './provider/redux-provider';
+import { ReduxProvider } from './provider/redux-provider';
 import AuthInitializer from '@/components/layout/AuthInitializer';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,12 +20,12 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={`${inter.className} antialiased`}>
-        <Providers>
+        <ReduxProvider>
           <CartProvider>
             <AuthInitializer />
             {children}
           </CartProvider>
-        </Providers>
+        </ReduxProvider>
       </body>
     </html>
   );
