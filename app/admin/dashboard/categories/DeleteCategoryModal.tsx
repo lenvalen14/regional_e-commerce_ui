@@ -4,38 +4,40 @@ import { useState } from "react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle } from "lucide-react"
+import { Category, useDeleteCategoryMutation } from "@/features/category/categoryApi"
 
-interface Category {
-  id: number
-  name: string
-  description: string
-  productCount: number
-  status: string
-  image: string
-}
+// interface Category {
+//   id: number
+//   name: string
+//   description: string
+//   productCount: number
+//   status: string
+//   image: string
+// }
 
 interface DeleteCategoryModalProps {
   isOpen: boolean
   onClose: () => void
-  onDelete: (categoryId: number) => void
+  onDelete: (categoryId: string) => void
   category: Category | null
 }
 
 export default function DeleteCategoryModal({ isOpen, onClose, onDelete, category }: DeleteCategoryModalProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteCategory] = useDeleteCategoryMutation()
 
   const handleDelete = async () => {
     if (!category) return
 
     setIsDeleting(true)
-    
+
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Call parent function to delete category
-      onDelete(category.id)
-      
+      // Call API to delete
+      await deleteCategory(category.categoryId).unwrap()
+
+      // Call parent to update state
+      onDelete(category.categoryId)
+
       // Close modal
       onClose()
     } catch (error) {
@@ -61,26 +63,26 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
           <AlertDialogDescription asChild>
             <div className="space-y-4">
               <p>
-                Bạn có chắc chắn muốn xóa danh mục <strong>"{category.name}"</strong> không?
+                Bạn có chắc chắn muốn xóa danh mục <strong>"{category.categoryName}"</strong> không?
               </p>
-              
+
               {/* Category Info */}
               <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                 <div className="flex items-center space-x-4">
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{category.name}</h4>
+                    <h4 className="font-medium text-gray-900">{category.categoryName}</h4>
                     <p className="text-sm text-gray-600">{category.description}</p>
                   </div>
-                  <Badge
+                  {/* <Badge
                     variant={category.status === "Active" ? "default" : "secondary"}
                     className={
                       category.status === "Active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
                     }
                   >
                     {category.status === "Active" ? "Hoạt động" : "Tạm dừng"}
-                  </Badge>
+                  </Badge> */}
                 </div>
-                
+
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Số sản phẩm:</span>
                   <span className="font-medium">{category.productCount} sản phẩm</span>
@@ -95,7 +97,7 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
                     <div className="text-sm">
                       <p className="font-medium text-red-800 mb-1">Cảnh báo!</p>
                       <p className="text-red-700">
-                        Danh mục này đang có <strong>{category.productCount} sản phẩm</strong>. 
+                        Danh mục này đang có <strong>{category.productCount} sản phẩm</strong>.
                         Khi xóa danh mục, tất cả sản phẩm trong danh mục này sẽ cần được chuyển sang danh mục khác hoặc sẽ bị ẩn.
                       </p>
                     </div>
@@ -109,7 +111,7 @@ export default function DeleteCategoryModal({ isOpen, onClose, onDelete, categor
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
-        
+
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>
             Hủy

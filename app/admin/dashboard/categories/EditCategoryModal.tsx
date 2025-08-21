@@ -8,15 +8,16 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, X } from "lucide-react"
+import { Category, useUpdateCategoryMutation } from "@/features/category/categoryApi"
 
-interface Category {
-  id: number
-  name: string
-  description: string
-  productCount: number
-  status: string
-  image: string
-}
+// interface Category {
+//   id: number
+//   name: string
+//   description: string
+//   productCount: number
+//   status: string
+//   image: string
+// }
 
 interface EditCategoryModalProps {
   isOpen: boolean
@@ -27,19 +28,18 @@ interface EditCategoryModalProps {
 
 export default function EditCategoryModal({ isOpen, onClose, onEdit, category }: EditCategoryModalProps) {
   const [formData, setFormData] = useState({
-    name: "",
+    categoryName: "",
     description: "",
-    status: "Active",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [updateCategory] = useUpdateCategoryMutation()
 
   // Load category data when modal opens
   useEffect(() => {
     if (category) {
       setFormData({
-        name: category.name,
-        description: category.description,
-        status: category.status,
+        categoryName: category.categoryName,
+        description: category.description || "",
       })
     }
   }, [category])
@@ -58,28 +58,27 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
     setIsSubmitting(true)
 
     try {
-      // Validate form
-      if (!formData.name.trim()) {
+      if (!formData.categoryName.trim()) {
         alert("Vui lòng nhập tên danh mục")
         return
       }
 
-      // Create updated category object
-      const updatedCategory: Category = {
-        ...category,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        status: formData.status,
-        image: category.image, // Keep existing image
-      }
+      // Gọi API update
+      const result = await updateCategory({
+        categoryId: category.categoryId.toString(),
+        categoryData: {
+          categoryName: formData.categoryName.trim(),
+          description: formData.description.trim(),
+        }
+      }).unwrap()
 
-      // Call parent function to update category
-      onEdit(updatedCategory)
+      // Gọi callback onEdit với dữ liệu vừa cập nhật
+      if (onEdit) onEdit(result.data)
 
-      // Close modal
+      setFormData({ categoryName: "", description: "" })
       onClose()
     } catch (error) {
-      console.error("Error updating category:", error)
+      console.error("Lỗi khi cập nhật danh mục:", error)
       alert("Có lỗi xảy ra khi cập nhật danh mục")
     } finally {
       setIsSubmitting(false)
@@ -88,9 +87,8 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
 
   const handleClose = () => {
     setFormData({
-      name: "",
-      description: "",
-      status: "Active",
+      categoryName: "",
+      description: ""
     })
     onClose()
   }
@@ -103,7 +101,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
         <DialogHeader>
           <DialogTitle>Chỉnh Sửa Danh Mục</DialogTitle>
           <DialogDescription>
-            Cập nhật thông tin danh mục "{category.name}"
+            Cập nhật thông tin danh mục "{category.categoryName}"
           </DialogDescription>
         </DialogHeader>
 
@@ -114,7 +112,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
             <Input
               id="edit-name"
               placeholder="Nhập tên danh mục..."
-              value={formData.name}
+              value={formData.categoryName}
               onChange={(e) => handleInputChange("name", e.target.value)}
               required
             />
@@ -133,7 +131,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
           </div>
 
           {/* Category Status */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="edit-status">Trạng thái</Label>
             <Select
               value={formData.status}
@@ -147,7 +145,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
                 <SelectItem value="Inactive">Tạm dừng</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
 
           {/* Product Count Info */}
           <div className="space-y-2">

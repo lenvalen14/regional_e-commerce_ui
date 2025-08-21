@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, RotateCcw } from "lucide-react"
+import { useGetRegionsQuery } from "@/features/region/regionApi"
+import { useGetCategoriesQuery } from "@/features/category/categoryApi"
 
 interface SearchFilters {
   searchTerm: string
@@ -18,49 +20,69 @@ interface ProductSearchProps {
   totalResults: number
 }
 
-const categories = [
-  "Tất cả danh mục",
-  "Bánh kẹo",
-  "Gia vị", 
-  "Thực phẩm khô",
-  "Đồ uống",
-  "Thực phẩm tươi sống",
-  "Đặc sản vùng miền"
-]
+// const categories = [
+//   "Tất cả danh mục",
+//   "Bánh kẹo",
+//   "Gia vị",
+//   "Thực phẩm khô",
+//   "Đồ uống",
+//   "Thực phẩm tươi sống",
+//   "Đặc sản vùng miền"
+// ]
 
 const statuses = [
   "Tất cả trạng thái",
   "In Stock",
-  "Low Stock", 
+  "Low Stock",
   "Out of Stock"
 ]
 
-const regions = [
-  "Tất cả vùng miền",
-  "Hà Nội",
-  "TP.HCM", 
-  "Đà Nẵng",
-  "Huế",
-  "Hội An",
-  "Nha Trang",
-  "Đà Lạt",
-  "Cần Thơ",
-  "An Giang",
-  "Sóc Trăng",
-  "Tây Ninh",
-  "Phan Thiết"
-]
+// const regions = [
+//   "Tất cả vùng miền",
+//   "Hà Nội",
+//   "TP.HCM",
+//   "Đà Nẵng",
+//   "Huế",
+//   "Hội An",
+//   "Nha Trang",
+//   "Đà Lạt",
+//   "Cần Thơ",
+//   "An Giang",
+//   "Sóc Trăng",
+//   "Tây Ninh",
+//   "Phan Thiết"
+// ]
 
 export default function ProductSearch({ onSearch, onReset, totalResults }: ProductSearchProps) {
+
   const [searchTerm, setSearchTerm] = useState("")
-  const [category, setCategory] = useState("Tất cả danh mục")
+  const [category, setCategory] = useState("all")
   const [status, setStatus] = useState("Tất cả trạng thái")
-  const [region, setRegion] = useState("Tất cả vùng miền")
+  const [region, setRegion] = useState("all")
+
+  const { data, isLoading, isError } = useGetRegionsQuery({ page: 0, size: 20 });
+  const regions = [
+    { id: "all", name: "Tất cả vùng miền" },
+    ...(data?.data.map(r => ({
+      id: r.regionId,
+      name: r.regionName
+    })) || [])
+  ];
+
+  const { data: categoryData, isLoading: catLoading, isError: catError } = useGetCategoriesQuery({ page: 0, size: 20 });
+  const categories = [
+    { id: "all", name: "Tất cả danh mục" },
+    ...(categoryData?.data.map(c => ({
+      id: c.categoryId,
+      name: c.categoryName
+    })) || [])
+  ];
+
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value)
-    onSearch({ 
-      searchTerm: value, 
+    onSearch({
+      searchTerm: value,
       category: category === "Tất cả danh mục" ? "" : category,
       status: status === "Tất cả trạng thái" ? "" : status,
       region: region === "Tất cả vùng miền" ? "" : region
@@ -69,18 +91,18 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
 
   const handleCategoryChange = (value: string) => {
     setCategory(value)
-    onSearch({ 
-      searchTerm, 
-      category: value === "Tất cả danh mục" ? "" : value,
+    onSearch({
+      searchTerm,
+      category: value === "all" ? "" : value,
       status: status === "Tất cả trạng thái" ? "" : status,
-      region: region === "Tất cả vùng miền" ? "" : region
+      region: region === "all" ? "" : region
     })
   }
 
   const handleStatusChange = (value: string) => {
     setStatus(value)
-    onSearch({ 
-      searchTerm, 
+    onSearch({
+      searchTerm,
       category: category === "Tất cả danh mục" ? "" : category,
       status: value === "Tất cả trạng thái" ? "" : value,
       region: region === "Tất cả vùng miền" ? "" : region
@@ -89,11 +111,11 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
 
   const handleRegionChange = (value: string) => {
     setRegion(value)
-    onSearch({ 
-      searchTerm, 
-      category: category === "Tất cả danh mục" ? "" : category,
+    onSearch({
+      searchTerm,
+      category: category === "all" ? "" : category,
       status: status === "Tất cả trạng thái" ? "" : status,
-      region: value === "Tất cả vùng miền" ? "" : value
+      region: value === "all" ? "" : value
     })
   }
 
@@ -131,10 +153,10 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
                 className="pl-10"
               />
             </div>
-            
+
             {hasActiveFilters && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleReset}
                 className="flex items-center space-x-2"
               >
@@ -154,8 +176,8 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -186,8 +208,8 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
                 </SelectTrigger>
                 <SelectContent>
                   {regions.map((reg) => (
-                    <SelectItem key={reg} value={reg}>
-                      {reg}
+                    <SelectItem key={reg.id} value={reg.id}>
+                      {reg.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -195,7 +217,7 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
             </div>
           </div>
         </div>
-        
+
         <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
           <span>Tìm thấy {totalResults} sản phẩm</span>
           {hasActiveFilters && (

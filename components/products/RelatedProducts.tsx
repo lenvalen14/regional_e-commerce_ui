@@ -55,9 +55,9 @@ const ALL_PRODUCTS: Product[] = [
     price: 95000,
     priceLabel: "95.000đ",
     image: "/images/bun-bo.jpg",
-    images: ["/images/bun-bo.jpg","/images/com.jpg"],
+    images: ["/images/bun-bo.jpg", "/images/com.jpg"],
   },
-    {
+  {
     id: "banh-trang",
     name: "Bánh Tráng Trộn",
     region: "nam-bo",
@@ -66,7 +66,7 @@ const ALL_PRODUCTS: Product[] = [
     image: "/images/banh-trang.jpg",
     images: ["/images/banh-trang.jpg", "/images/com.jpg"],
   },
-    {
+  {
     id: "bun-bo",
     name: "Bún Bò Huế",
     region: "trung-bo",
@@ -90,7 +90,7 @@ export function RelatedProducts({ currentProductId, region }: RelatedProductsPro
       <h2 className="font-beaululo text-xl text-[#222] uppercase tracking-widest mb-8 text-center">
         Sản phẩm liên quan
       </h2>
-      
+
       <div className="flex justify-center items-start gap-2 max-w-none mx-auto px-2">
         {relatedProducts.map((product, idx) => (
           <Link
@@ -116,7 +116,7 @@ export function RelatedProducts({ currentProductId, region }: RelatedProductsPro
                 }}
               />
             </div>
-            
+
             {/* Product Info */}
             <div className="w-[320px]">
               <h3 className="font-nitti text-sm text-[#222] mb-1 group-hover:text-[#8FBC8F] transition-colors">
