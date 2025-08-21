@@ -101,40 +101,52 @@ export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginApiResponse, LoginRequest>({
       query: (credentials) => ({
-        url: '/auth/login',
-        method: 'POST',
+        url: "/auth/login",
+        method: "POST",
         body: credentials,
       }),
       onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
         try {
-          const { data: apiResult } = await queryFulfilled;
-          
-          const token = apiResult.data.token;
-          const refreshToken = apiResult.data.refreshToken;
+          const { data } = await queryFulfilled
+          const { token, refreshToken } = data.data
 
-          if (!token) {
-            throw new Error("Token not found in login response");
-          }
+          const decoded: DecodedToken = jwtDecode(token)
 
-          const decoded: DecodedToken = jwtDecode(token);
-
-          const user = {
+          const userBase = {
             userId: decoded.userId,
             email: decoded.sub,
-            userName: decoded.sub.split('@')[0], 
+            userName: decoded.sub.split("@")[0],
             role: decoded.role,
-          };
+          }
 
-          const credentials = {
-            user,
-            token,
-            refreshToken
-          };
-          
-          dispatch(setCredentials(credentials));
+          dispatch(
+            setCredentials({
+              user: userBase,
+              token,
+              refreshToken,
+            })
+          )
 
-        } catch (error) {
-          console.error('Login failed:', error);
+          const profileRes = await dispatch(
+            authApi.endpoints.getProfile.initiate(undefined, {
+              forceRefetch: true,
+            })
+          ).unwrap()
+
+          const user = profileRes?.data
+            ? { ...userBase, ...profileRes.data }
+            : userBase
+
+
+          dispatch(
+            setCredentials({
+              user,
+              token,
+              refreshToken,
+            })
+          )
+        } catch (err) {
+          console.error("Login failed:", err)
         }
       },
     }),

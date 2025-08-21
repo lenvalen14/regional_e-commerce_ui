@@ -74,13 +74,13 @@ export function UserProfileIcon() {
                 ) : (
                   <div className="h-12 w-12 rounded-full bg-[#8FBC8F] flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-lg font-bold">
-                      {(user?.userName || user?.email || '?').charAt(0).toUpperCase()}
+                      {(user?.userName || '?').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-nitti font-medium text-[#2F3E34] text-base leading-tight">
-                    {user?.userName || user?.email}
+                    {user?.userName}
                   </p>
                   <p className="font-nitti text-sm text-[#666] mt-1 break-all">
                     {user?.email}

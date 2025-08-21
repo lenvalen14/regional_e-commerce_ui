@@ -121,9 +121,7 @@ export default function AuthPage() {
         resetForm();
       }
     } catch (error: any) {
-      console.error("Failed to authenticate:", error);
-      const message =
-        error?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      const message = error?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       toast.error(message);
     }
   };

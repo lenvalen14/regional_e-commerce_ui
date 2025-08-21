@@ -11,6 +11,7 @@ import {
   useSyncCartToServerMutation,
   useClearCartMutation 
 } from '../features/cart/cartApi';
+// import { skipToken } from '@reduxjs/toolkit/query/react';
 
 export interface CartItem {
   id: string;
@@ -37,8 +38,6 @@ type CartAction =
   | { type: 'SYNC_FROM_SERVER'; payload: CartItem[] };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
-  console.log('Cart reducer action:', action.type, action.payload);
-  console.log('Current cart state:', state);
   
   switch (action.type) {
     case 'ADD_ITEM': {
@@ -151,11 +150,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const user = useSelector((state: RootState) => state.auth.user);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
-  // API hooks
-  const { data: serverCart, refetch: refetchCart } = useGetCartQuery(user?.userId || '', {
-    skip: !isAuthenticated || !user?.userId,
+  const {
+    data: serverCart,
+    refetch: refetchCart,
+    error: cartError,
+  } = useGetCartQuery(undefined, {
+    skip: !isAuthenticated,
   });
-  
+
   const [addToCartAPI] = useAddToCartMutation();
   const [updateCartItemAPI] = useUpdateCartItemMutation();
   const [removeCartItemAPI] = useRemoveCartItemMutation();

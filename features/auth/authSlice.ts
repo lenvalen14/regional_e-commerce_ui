@@ -1,4 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import type { AppDispatch } from "@/lib/store"
+import { apiSlice } from "@/lib/api/apiSlice" // import baseApi của RTK Query
 
 interface User {
   userId: string
@@ -113,7 +115,8 @@ const authSlice = createSlice({
       }
     },
 
-    logout: (state) => {
+    // Đổi tên reducer này -> logoutSuccess
+    logoutSuccess: (state) => {
       state.user = null
       state.token = null
       state.refreshToken = null
@@ -124,8 +127,7 @@ const authSlice = createSlice({
         try {
           localStorage.removeItem("token")
           localStorage.removeItem("refreshToken")
-          // DON'T remove cart - let it stay for guest user
-          // localStorage.removeItem("cart")
+          // không xoá cart => giữ lại cho guest
         } catch (error) {
           console.error("Error clearing localStorage:", error)
         }
@@ -148,11 +150,12 @@ const authSlice = createSlice({
   },
 })
 
-export const { setCredentials, refreshTokenSuccess, logout, updateUser, setAuthError, clearAuthError } =
+export const { setCredentials, refreshTokenSuccess, logoutSuccess, updateUser, setAuthError, clearAuthError } =
   authSlice.actions
 
 export default authSlice.reducer
 
+// selectors
 export const selectCurrentUser = (state: { auth: AuthState }) => state.auth.user
 export const selectCurrentToken = (state: { auth: AuthState }) => state.auth.token
 export const selectRefreshToken = (state: { auth: AuthState }) => state.auth.refreshToken
@@ -171,4 +174,9 @@ export const selectTokenNeedsRefresh = (state: { auth: AuthState }): boolean => 
   } catch {
     return true
   }
+}
+
+export const logout = () => (dispatch: AppDispatch) => {
+  dispatch(apiSlice.util.resetApiState())
+  dispatch(logoutSuccess())
 }

@@ -39,13 +39,12 @@ export interface ApiResponse<T> {
 
 export const cartApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // Get cart by user ID
-    getCart: builder.query<ApiResponse<Cart>, string>({
-      query: (userId) => `/my-cart/${userId}`,
+    getCart: builder.query<ApiResponse<Cart>, void>({
+      query: () => `/my-cart`,
       providesTags: ['Cart'],
       transformErrorResponse: (response) => {
-        console.error('Cart API Error:', response);
-        return response;
+          console.error('Cart API Error:', response);
+          return response;
       },
     }),
 
