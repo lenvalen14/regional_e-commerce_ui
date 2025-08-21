@@ -1,11 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useRequestPasswordOtpMutation, useVerifyPasswordOtpMutation } from "@/features/auth/authApi";
 
 export default function VerifyOtpPage() {
@@ -13,10 +12,11 @@ export default function VerifyOtpPage() {
   const router = useRouter();
   const emailFromQuery = searchParams.get("email") || "";
   const [email, setEmail] = useState(emailFromQuery);
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
   const [counter, setCounter] = useState(60);
   const [verifyOtp, { isLoading }] = useVerifyPasswordOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useRequestPasswordOtpMutation();
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     setEmail(emailFromQuery);
@@ -28,7 +28,28 @@ export default function VerifyOtpPage() {
     return () => clearTimeout(id);
   }, [counter]);
 
-  const formattedCounter = useMemo(() => `${Math.floor(counter / 60)}:${String(counter % 60).padStart(2, '0')}`, [counter]);
+  const formattedCounter = useMemo(
+    () => `${Math.floor(counter / 60)}:${String(counter % 60).padStart(2, '0')}`,
+    [counter]
+  );
+
+  const handleChange = (val: string, idx: number) => {
+    if (!/^[0-9]?$/.test(val)) return; // chỉ cho số 0-9
+    const newOtp = [...otp];
+    newOtp[idx] = val;
+    setOtp(newOtp);
+
+    // focus sang ô tiếp theo
+    if (val && idx < otp.length - 1) {
+      inputRefs.current[idx + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+    if (e.key === "Backspace" && !otp[idx] && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +57,13 @@ export default function VerifyOtpPage() {
       toast.error("Thiếu email");
       return;
     }
-    if (otp.length !== 6) {
+    const otpValue = otp.join("");
+    if (otpValue.length !== 6) {
       toast.error("Vui lòng nhập đủ 6 ký tự OTP");
       return;
     }
     try {
-      const res = await verifyOtp({ email, otp: Number(otp) }).unwrap();
+      await verifyOtp({ email, otp: Number(otpValue) }).unwrap();
       toast.success("Xác thực OTP thành công");
       router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (error: any) {
@@ -84,25 +106,41 @@ export default function VerifyOtpPage() {
 
           <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-lg border border-white/20 p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
+              {/* OTP Input */}
+              <div className="flex justify-center gap-3">
+                {otp.map((digit, idx) => (
+                <input
+                  key={idx}
+                  ref={(el) => {
+                    inputRefs.current[idx] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleChange(e.target.value, idx)}
+                  onKeyDown={(e) => handleKeyDown(e, idx)}
+                  className="w-12 h-14 text-2xl font-bold text-center border-2 rounded-xl border-gray-300 
+                            focus:border-[#8FBC8F] focus:ring-2 focus:ring-[#8FBC8F]/50 transition-all"
+                />
+              ))}
               </div>
 
-              <Button type="submit" disabled={isLoading} className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] text-white">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] text-white"
+              >
                 {isLoading ? "Đang xác thực..." : "Xác nhận"}
               </Button>
 
               <div className="flex items-center justify-between text-sm font-nitti text-[#666]">
-                <button type="button" onClick={handleResend} disabled={isResending || counter > 0} className="text-[#8FBC8F] hover:text-[#7CA87C] disabled:text-gray-400">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isResending || counter > 0}
+                  className="text-[#8FBC8F] hover:text-[#7CA87C] disabled:text-gray-400"
+                >
                   Gửi lại OTP
                 </button>
                 <span>Thời gian còn lại: {formattedCounter}</span>
@@ -110,7 +148,10 @@ export default function VerifyOtpPage() {
             </form>
 
             <div className="mt-6 text-center">
-              <Link href="/auth/forgot-password" className="text-sm font-nitti text-[#8FBC8F] hover:text-[#7CA87C]">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm font-nitti text-[#8FBC8F] hover:text-[#7CA87C]"
+              >
                 Nhập lại email
               </Link>
             </div>
@@ -120,5 +161,3 @@ export default function VerifyOtpPage() {
     </div>
   );
 }
-
-
