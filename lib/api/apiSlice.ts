@@ -11,8 +11,9 @@ export const apiSlice = createApi({
         headers.set('Authorization', `Bearer ${token}`)
       }
 
-      const skipEndpoints = ['createNews']
-      if (!skipEndpoints.includes(endpoint)) {
+      // Skip setting Content-Type for endpoints that need to send FormData
+      const skipContentTypeEndpoints = ['createNews', 'createProduct', 'updateProduct']
+      if (!skipContentTypeEndpoints.includes(endpoint)) {
         headers.set("Content-Type", "application/json")
       }
       return headers
