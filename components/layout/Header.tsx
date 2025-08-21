@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ShoppingBag, Menu, Search, X } from "lucide-react"; // Thêm icon X cho nút đóng
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CartDropdown } from "@/components/cart/CartDropdown";
 import { UserProfileIcon } from "@/components/shared/UserProfileIcon";
 import { SearchOverlay } from "@/components/shared/SearchOverlay";
@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { selectIsAuthenticated, selectCurrentUser } from '@/features/auth/authSlice';
 
 export function SiteHeader() {
+  const [isMounted, setIsMounted] = useState(false);
   const { state: cartState } = useCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -22,8 +23,67 @@ export function SiteHeader() {
 
   const isAdmin = user?.role === "ADMIN";
 
+  // Handle hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Hàm toggle cho cart, thân thiện hơn với cả mobile và desktop
   const toggleCart = () => setIsCartOpen(prev => !prev);
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <header className="sticky top-0 z-50 bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="text-2xl font-beaululo text-[#2F3E34]">
+            Đặc Sản Việt
+          </Link>
+
+          {/* Nav cho Desktop */}
+          <nav className="hidden md:flex gap-6 text-[#4C5C4C] font-nitti font-medium items-center">
+            <Link href="/products" className="hover:text-[#8FBC8F] transition-colors">Sản phẩm</Link>
+            <Link href="/news" className="hover:text-[#8FBC8F] transition-colors">Tin tức</Link>
+            <Link href="/about" className="hover:text-[#8FBC8F] transition-colors">Giới thiệu</Link>
+            <Link href="/contact" className="hover:text-[#8FBC8F] transition-colors">Liên hệ</Link>
+          </nav>
+
+          {/* Nhóm Icons bên phải */}
+          <div className="flex items-center gap-4">
+            {/* Search Icon */}
+            <button
+              className="text-[#4C5C4C] hover:text-[#8FBC8F] p-2 -m-2 transition-colors"
+              aria-label="Tìm kiếm"
+            >
+              <Search className="h-6 w-6" />
+            </button>
+
+            {/* Placeholder for cart and notification */}
+            <div className="relative">
+              <button
+                className="relative p-2 hover:bg-gray-100 rounded-full transition-all duration-300 text-[#4C5C4C] hover:text-[#8FBC8F]"
+                aria-label="Giỏ hàng"
+              >
+                <ShoppingBag className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Placeholder for user profile */}
+            <div className="h-9 w-9" />
+
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="md:hidden text-[#4C5C4C] z-50"
+              aria-label="Mở menu"
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>

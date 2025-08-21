@@ -61,6 +61,7 @@ interface ProfileFormData {
 type ViewKey = 'profile' | 'addresses' | 'notifications'
 
 export default function ProfilePage() {
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const token = useSelector(selectCurrentToken);
   const { data: userResponse, isLoading, isError } = useGetProfileQuery(undefined, { skip: !token });
@@ -84,7 +85,7 @@ export default function ProfilePage() {
   const [setDefaultAddress, { isLoading: settingDefault }] = useSetDefaultAddressMutation()
 
   // Notification API hooks
-  const { data: notificationList, isLoading: isNotiLoading } = useGetUserNotificationsQuery()
+  const { data: notificationList, isLoading: isNotiLoading } = useGetUserNotificationsQuery({})
 
   // Use only real data from API
   const notifications = Array.isArray(notificationList) ? notificationList : [];
@@ -97,6 +98,11 @@ export default function ProfilePage() {
   const [editingAddr, setEditingAddr] = useState<AddressResponse | null>(null)
   const [showDeleteAddr, setShowDeleteAddr] = useState(false)
   const [deletingAddr, setDeletingAddr] = useState<AddressResponse | null>(null)
+
+  // Handle hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (userResponse && userResponse.data) {
@@ -234,6 +240,11 @@ export default function ProfilePage() {
 
   const userInitials = useMemo(() => getInitials(formData.userName), [formData.userName]);
   const avatarColorClass = useMemo(() => generateColorClass(formData.userName), [formData.userName]);
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return <div className="min-h-screen flex items-center justify-center">Đang tải trang cá nhân...</div>
+  }
 
   if (!token) {
     return <div className="min-h-screen flex items-center justify-center">Đang chuẩn bị dữ liệu...</div>

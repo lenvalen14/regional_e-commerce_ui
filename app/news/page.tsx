@@ -8,6 +8,11 @@ import { NewsCategories } from "@/components/news/NewsCategories"
 import { NewsGrid } from "@/components/news/NewsGrid"
 import { NewResponse, useGetAllNewsQuery } from "@/features/new/newApi"
 
+export const getExcerpt = (content: string, length = 150) => {
+  if (!content) return '';
+  return content.length > length ? content.slice(0, length) + '...' : content;
+};
+
 export default function NewsPage() {
   const { data, error, isLoading } = useGetAllNewsQuery({ page: 0, size: 6 })
 

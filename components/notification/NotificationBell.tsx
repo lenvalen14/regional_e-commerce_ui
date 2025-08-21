@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useSelector } from "react-redux"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +20,7 @@ import { useGetProfileQuery } from "@/features/auth/authApi"
 import { toast } from "sonner"
 
 export default function NotificationBell() {
+  const [isMounted, setIsMounted] = useState(false)
   const token = useSelector(selectCurrentToken)
   const [isOpen, setIsOpen] = useState(false)
   
@@ -47,6 +48,20 @@ export default function NotificationBell() {
   })
   
   const unreadCount = unreadCountData?.count || 0
+
+  // Handle hydration
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Bell className="h-5 w-5 text-gray-500" />
+      </Button>
+    )
+  }
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {

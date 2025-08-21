@@ -257,7 +257,7 @@ export default function AuthPage() {
                     </span>
                   </label>
                   <Link
-                    href="/forgot-password"
+                    href="/auth/forgot-password"
                     className="text-sm font-nitti text-[#8FBC8F] hover:text-[#7CA87C]"
                   >
                     Quên mật khẩu?

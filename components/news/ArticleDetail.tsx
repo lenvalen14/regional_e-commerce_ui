@@ -5,15 +5,11 @@ import { useInView } from 'react-intersection-observer';
 import { Calendar, User, ArrowLeft, Facebook, Twitter, Link as LinkIcon } from 'lucide-react';
 import Link from 'next/link';
 import { NewType, useGetNewsByIdQuery } from '@/features/new/newApi';
+import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
 
 interface Props {
   articleId: string;
 }
-
-const formatDate = (timestamp: number | string | Date) => {
-  const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
-  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' });
-};
 
 const newTypeMap: Record<NewType, string> = {
   AM_THUC: "Ẩm thực",
