@@ -10,6 +10,11 @@ import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { useCart } from "@/contexts/CartContext";
 import { Check } from "lucide-react";
 import { ArticleComments } from "@/components/products/ArticleComments";
+import { useGetProductQuery } from "@/features/product/productApi";
+import {
+  useGetReviewCountByProductQuery,
+  useGetAverageRatingByProductQuery
+} from "@/features/review/reviewApi";
 
 const PRODUCTS = [
   {
@@ -69,7 +74,18 @@ const VARIANTS = ["Bột", "Phin giấy", "Túi lọc"];
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const product = PRODUCTS.find((p) => p.id === params?.slug);
+  const { data, isLoading, isError } = useGetProductQuery(params?.slug as string);
+  const product = data?.data;
+  const { data: reviewCountData } = useGetReviewCountByProductQuery(product?.productId!, {
+    skip: !product?.productId, // tránh gọi khi chưa có product
+  });
+  const { data: avgRatingData } = useGetAverageRatingByProductQuery(product?.productId!, {
+    skip: !product?.productId,
+  });
+
+  const reviewCount = reviewCountData?.data ?? 0;
+  const averageRating = avgRatingData?.data ?? 0;
+  // const product = PRODUCTS.find((p) => p.id === params?.slug);
   const [variant, setVariant] = useState(VARIANTS[0]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -152,7 +168,7 @@ export default function ProductDetailPage() {
       }, 1210); // 1210ms thay vì 1100ms (chậm 10%)
     };
 
-    const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''));
+    const priceNumber = product.price;
 
     try {
       // Bắt đầu animation
@@ -161,12 +177,12 @@ export default function ProductDetailPage() {
       // Delay để animation chạy trước
       setTimeout(() => {
         addItem({
-          id: product.id,
-          name: product.name,
+          id: product.productId,
+          name: product.productName,
           price: priceNumber,
-          priceLabel: product.price,
+          priceLabel: product.price.toString(),
           variant: variant,
-          image: product.image,
+          image: product.imageProductResponseList?.[0]?.imageUrl || "images/products-default.png",
           quantity: quantity
         });
 
@@ -186,8 +202,14 @@ export default function ProductDetailPage() {
   }
 
   // Fallback về ảnh chính nếu ảnh detail không tồn tại
-  const productImages = product.images || [product.image, product.image, product.image, product.image];
+  // const productImages = product.image || [product.image, product.image, product.image, product.image];
+  const productImages =
+    product.imageProductResponseList?.map(img => img.imageUrl) || [];
   const currentImage = productImages[selectedImageIndex];
+
+  if (isLoading) return <p>Đang tải...</p>;
+  if (isError) return <p>Lỗi tải sản phẩm</p>;
+  if (!data?.data) return <p>Không tìm thấy sản phẩm</p>;
 
   return (
     <>
@@ -208,13 +230,23 @@ export default function ProductDetailPage() {
                       : "border-white hover:border-[#8FBC8F]"
                       }`}
                   >
-                    <Image
+                    {/* <Image
                       src={img}
                       alt={`${product.name} - Ảnh ${index + 1}`}
                       fill
                       className="object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = product.image;
+                      }}
+                    /> */}
+                    <Image
+                      src={img}
+                      alt={`${product.productName} - Ảnh ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          product.imageProductResponseList?.[0]?.imageUrl || "/fallback.png";
                       }}
                     />
                   </button>
@@ -236,13 +268,23 @@ export default function ProductDetailPage() {
                     if (e.key === "Enter" || e.key === " ") setLightboxIndex(index);
                   }}
                 >
-                  <Image
+                  {/* <Image
                     src={img}
-                    alt={`${product.name} - Ảnh ${index + 1}`}
+                    alt={`${product.productName} - Ảnh ${index + 1}`}
                     fill
                     className="object-contain transition-transform duration-200 group-hover:scale-105"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = product.image;
+                    }}
+                  /> */}
+                  <Image
+                    src={img}
+                    alt={`${product.productName} - Ảnh ${index + 1}`}
+                    fill
+                    className="object-contain transition-transform duration-200 group-hover:scale-105"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        product.imageProductResponseList?.[0]?.imageUrl || "/fallback.png";
                     }}
                   />
                   <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -253,20 +295,20 @@ export default function ProductDetailPage() {
           {/* Thông tin sản phẩm */}
           <div className="w-[490px] flex-shrink-0 sticky top-17">
             <div className="flex flex-col gap-6">
-              <h1 className="text-2xl md:text-4xl font-beaululo text-[#222] uppercase tracking-widest mb-2">{product.name}</h1>
+              <h1 className="text-2xl md:text-4xl font-beaululo text-[#222] uppercase tracking-widest mb-2">{product.productName}</h1>
               {/* Rating và Reviews */}
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
-                  <StarRating rating={product.rating} size="w-6 h-6" />
-                  <span className="text-2xl font-bold text-[#222]">{product.rating}</span>
+                  <StarRating rating={averageRating} size="w-6 h-6" />
+                  <span className="text-2xl font-bold text-[#222]">{averageRating.toFixed(1)}</span>
                 </div>
                 <span className="text-[#bbb] mx-2">|</span>
                 <span className="text-sm text-[#666] font-nitti">
-                  {product.reviewCount.toLocaleString()} Đánh Giá
+                  {reviewCount.toLocaleString()} Đánh Giá
                 </span>
               </div>
 
-              <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}</p>
+              <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}đ</p>
 
               {/* Chọn loại */}
               <div className="flex gap-2.5 mb-2">
@@ -333,7 +375,7 @@ export default function ProductDetailPage() {
               >
                 <Image
                   src={currentImage}
-                  alt={product.name}
+                  alt={product.productName}
                   fill
                   className="object-cover rounded-lg shadow-lg"
                 />
@@ -350,10 +392,10 @@ export default function ProductDetailPage() {
 
         {/* Phần dưới: Reviews full width */}
         <div className="max-w-6xl mx-auto px-4">
-          <ProductReviews productId={product.id} />
+          <ProductReviews productId={product.productId} />
 
           {/* Sản phẩm liên quan */}
-          <RelatedProducts currentProductId={product.id} region={product.region} />
+          <RelatedProducts currentProductId={product.productId} region={product.region.regionName} />
         </div>
 
         {/* Lightbox Modal */}
@@ -369,7 +411,7 @@ export default function ProductDetailPage() {
             >
               <Image
                 src={productImages[lightboxIndex]}
-                alt={`${product.name} - Ảnh phóng to`}
+                alt={`${product.productName} - Ảnh phóng to`}
                 fill
                 className="object-contain rounded-lg"
                 style={{ position: "relative" }}
