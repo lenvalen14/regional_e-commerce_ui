@@ -121,7 +121,7 @@ export default function NewsListPage() {
                                 <Plus className="h-4 w-4 mr-2" /> Tạo mới
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-4xl w-[90vw] max-h-[90vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-4xl w-[50vw] max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Thêm bài viết mới</DialogTitle>
                                 <DialogDescription>Nhập thông tin chi tiết cho bài viết</DialogDescription>

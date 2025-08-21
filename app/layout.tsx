@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/contexts/CartContext";
-import { ReduxProvider } from './provider/redux-provider';
-import AuthInitializer from '@/components/layout/AuthInitializer';
+import { ReduxProvider } from "./provider/redux-provider";
+import AuthInitializer from "@/components/layout/AuthInitializer";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           <CartProvider>
             <AuthInitializer />
             {children}
+            <Toaster position="top-right" richColors />
           </CartProvider>
         </ReduxProvider>
       </body>

@@ -3,8 +3,10 @@ import { useRouter } from "next/navigation";
 import { useLogoutMutation } from "@/features/auth/authApi";
 
 interface ProfileSidebarProps {
-  active?: "profile" | "addresses" | "notifications";
-  onSelect?: (view: "profile" | "addresses" | "notifications") => void;
+  active?: "profile" | "addresses" | "notifications" | "password";
+  onSelect?: (
+    view: "profile" | "addresses" | "notifications" | "password"
+  ) => void;
 }
 
 export function ProfileSidebar({ active = "profile", onSelect }: ProfileSidebarProps) {
@@ -79,6 +81,23 @@ export function ProfileSidebar({ active = "profile", onSelect }: ProfileSidebarP
                 }`}
               ></div>
               Thông báo
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => onSelect?.("password")}
+              className={`flex items-center w-full text-left p-3 rounded-lg font-nitti transition-all ${
+                active === "password"
+                  ? "bg-[#8FBC8F]/10 text-[#8FBC8F] hover:bg-[#8FBC8F]/20"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-[#8FBC8F]"
+              }`}
+            >
+              <div
+                className={`w-2 h-2 rounded-full mr-3 ${
+                  active === "password" ? "bg-[#8FBC8F]" : "bg-gray-400"
+                }`}
+              ></div>
+              Đổi mật khẩu
             </button>
           </li>
           <li>

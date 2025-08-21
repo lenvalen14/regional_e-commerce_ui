@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useCallback } from "react"
 import { useDispatch, useSelector } from "react-redux"
@@ -26,10 +26,12 @@ import {
 } from "../../../features/user/userSlice"
 import { ExtendedUserFormData } from "./types"
 
+// 🔑 import toast (cùng nơi với Toaster bạn render ở layout)
+import { toast } from "sonner"
+
 export function useUsers() {
   const dispatch = useDispatch()
   
-  // Get state from Redux store
   const {
     showAddModal,
     showEditModal,
@@ -42,7 +44,6 @@ export function useUsers() {
     pageSize,
   } = useSelector((state: RootState) => state.user)
 
-  // RTK Query hooks
   const { 
     data: usersResponse, 
     isLoading: loading, 
@@ -55,13 +56,11 @@ export function useUsers() {
   const [deleteUser, { isLoading: deletingUser }] = useDeleteUserMutation()
   const [unblockUser, { isLoading: unblockingUser }] = useUnblockUserMutation()
 
-  // Extract data from API response
   const users = usersResponse?.data || []
   const totalElements = usersResponse?.meta?.totalElements || 0
   const totalPages = usersResponse?.meta?.totalPages || 0
   const error = apiError ? (apiError as any)?.data?.message || 'An error occurred' : null
 
-  // Filter users based on search and status
   const filteredUsers = users.filter(user => {
     const matchesSearch = !searchTerm || 
       user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -75,7 +74,6 @@ export function useUsers() {
     return matchesSearch && matchesStatus
   })
 
-  // Search and filter handlers
   const handleSearchChange = useCallback((term: string) => {
     dispatch(setSearchTerm(term))
   }, [dispatch])
@@ -84,7 +82,6 @@ export function useUsers() {
     dispatch(setStatusFilter(status))
   }, [dispatch])
 
-  // Modal handlers
   const handleOpenAddModal = useCallback(() => {
     dispatch(setShowAddModal(true))
   }, [dispatch])
@@ -101,12 +98,11 @@ export function useUsers() {
     dispatch(setShowDeleteModal(false))
   }, [dispatch])
 
-  // Form data handlers
   const handleFormDataChange = useCallback((data: UserFormData | ExtendedUserFormData) => {
     dispatch(setFormData(data))
   }, [dispatch])
 
-  // CRUD operations
+  // ✅ CRUD operations with toast
   const handleAddUser = useCallback(async () => {
     const extendedFormData = formData as ExtendedUserFormData
     if (extendedFormData.userName && extendedFormData.email && extendedFormData.phone && extendedFormData.password) {
@@ -121,8 +117,10 @@ export function useUsers() {
         
         await createUser(userData).unwrap()
         dispatch(setShowAddModal(false))
+        toast.success("Người dùng đã được tạo thành công 🎉")
       } catch (err) {
         console.error('Error creating user:', err)
+        toast.error("Không thể tạo người dùng")
       }
     }
   }, [formData, createUser, dispatch])
@@ -148,8 +146,10 @@ export function useUsers() {
         
         await updateUser({ userId: selectedUser.userId, userData }).unwrap()
         dispatch(setShowEditModal(false))
+        toast.success("Cập nhật người dùng thành công ✅")
       } catch (err) {
         console.error('Error updating user:', err)
+        toast.error("Không thể cập nhật người dùng")
       }
     }
   }, [selectedUser, formData, updateUser, dispatch])
@@ -164,8 +164,10 @@ export function useUsers() {
       try {
         await deleteUser(selectedUser.userId).unwrap()
         dispatch(setShowDeleteModal(false))
+        toast.success("Xóa người dùng thành công 🗑️")
       } catch (err) {
         console.error('Error blocking user:', err)
+        toast.error("Không thể xóa người dùng")
       }
     }
   }, [selectedUser, deleteUser, dispatch])
@@ -173,12 +175,13 @@ export function useUsers() {
   const handleUnblockUser = useCallback(async (user: User) => {
     try {
       await unblockUser(user.userId).unwrap()
+      toast.success(`Đã mở khóa ${user.userName}`)
     } catch (err) {
       console.error('Error unblocking user:', err)
+      toast.error("Không thể mở khóa người dùng")
     }
   }, [unblockUser])
 
-  // Pagination handlers
   const handlePageChange = useCallback((page: number) => {
     dispatch(setCurrentPage(page))
   }, [dispatch])
@@ -187,13 +190,12 @@ export function useUsers() {
     dispatch(setPageSize(size))
   }, [dispatch])
 
-  // Clear filters
   const handleClearFilters = useCallback(() => {
     dispatch(clearFilters())
+    toast("Đã reset bộ lọc")
   }, [dispatch])
 
   return {
-    // State
     users,
     filteredUsers,
     showAddModal,
@@ -210,7 +212,6 @@ export function useUsers() {
     totalElements,
     totalPages,
     
-    // Actions
     setShowAddModal: handleCloseAddModal,
     setShowEditModal: handleCloseEditModal,
     setShowDeleteModal: handleCloseDeleteModal,

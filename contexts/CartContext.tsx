@@ -11,7 +11,6 @@ import {
   useSyncCartToServerMutation,
   useClearCartMutation 
 } from '../features/cart/cartApi';
-// import { skipToken } from '@reduxjs/toolkit/query/react';
 
 export interface CartItem {
   id: string;

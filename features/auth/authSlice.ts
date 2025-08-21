@@ -70,7 +70,7 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       action: PayloadAction<{
-        user: User
+        user: User | null
         token: string
         refreshToken?: string
       }>,

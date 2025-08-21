@@ -10,6 +10,7 @@ import NotificationBell from "../../components/notification/NotificationBell"
 import { useLogoutMutation } from '@/features/auth/authApi';
 import { useRouter } from 'next/navigation';
 import Link from "next/link"
+import { Toaster } from "@/components/ui/sonner"
 
 const sidebarItems = [
   { icon: Home, label: "Trang Chủ", href: "/admin/dashboard" },
@@ -234,6 +235,9 @@ function DashboardLayoutContent({
         <main className="p-6">
           {children}
         </main>
+        
+        {/* Toast notifications */}
+        <Toaster position="top-right" richColors />
       </div>
     </div>
   )

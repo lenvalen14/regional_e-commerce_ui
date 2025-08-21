@@ -71,6 +71,16 @@ export interface ResetPasswordResponse {
   message: string
 }
 
+export interface ChangePasswordRequest {
+  password: string
+  newPassword: string
+  confirmPassword: string
+}
+export interface ChangePasswordResponse {
+  code: number
+  message: string
+}
+
 export interface UpdateProfileRequest {
     id: string;
     data: {
@@ -237,6 +247,15 @@ export const authApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
+
+    changePassword: builder.mutation<ChangePasswordResponse, ChangePasswordRequest>({
+      query: (body) => ({
+        url: '/passwords/reset-password',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Auth'],
+    }),
   }),
 })
 
@@ -251,4 +270,5 @@ export const {
   useRequestPasswordOtpMutation,
   useVerifyPasswordOtpMutation,
   useResetPasswordMutation,
+  useChangePasswordMutation,
 } = authApi
