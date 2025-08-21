@@ -71,6 +71,7 @@ const initialCategoriesData: Category[] = [
 ]
 
 export default function CategoriesPage() {
+
   const [categories, setCategories] = useState<Category[]>(initialCategoriesData)
   const [filteredCategories, setFilteredCategories] = useState<Category[]>(initialCategoriesData)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -141,7 +142,7 @@ export default function CategoriesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Quản Lý Danh Mục</h2>
-        <Button 
+        <Button
           className="bg-green-600 hover:bg-green-700"
           onClick={() => setShowAddModal(true)}
         >

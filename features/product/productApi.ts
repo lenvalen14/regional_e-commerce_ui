@@ -29,10 +29,11 @@ export interface ProductFormData {
 
 export interface CreateProductData {
     productName: string
+    categoryId: string
+    regionId: string
     price: number
     description: string
     stockQuantity: number
-    rating: number
     imageProductResponseList?: ImageProductResponse[]
 }
 
@@ -60,6 +61,11 @@ export interface ProductsResponse {
     }
 }
 
+export interface ProductWithStatus extends Product {
+    status: "In Stock" | "Low Stock" | "Out of Stock"
+}
+
+
 export const productApi = apiSlice.injectEndpoints({
     endpoints: (builder) => ({
         // Get all with pagination
@@ -72,24 +78,63 @@ export const productApi = apiSlice.injectEndpoints({
             providesTags: ['Product'],
         }),
         // Create new product
-        createProduct: builder.mutation<ApiResponse<Product>, CreateProductData>({
-            query: (productData) => ({
-                url: '/products',
-                method: 'POST',
-                body: productData,
-            }),
-            invalidatesTags: ['Product'],
+        createProduct: builder.mutation<ApiResponse<Product>, CreateProductData & { images?: File[] }>({
+            query: ({ images, ...rest }) => {
+                const formData = new FormData();
+
+                // Thêm các trường bình thường
+                Object.entries(rest).forEach(([key, value]) => {
+                    formData.append(key, String(value));
+                });
+
+                // Thêm ảnh (nếu có)
+                if (images) {
+                    images.forEach((file) => {
+                        formData.append("images", file);
+                    });
+                }
+
+                return {
+                    url: "/products",
+                    method: "POST",
+                    body: formData,
+                };
+            },
+            invalidatesTags: ["Product"],
         }),
 
+
         // Update product
-        updateProduct: builder.mutation<ApiResponse<Product>, { productId: string; productData: Partial<Product> }>({
-            query: ({ productId, productData }) => ({
-                url: `/products/${productId}`,
-                method: 'PUT',
-                body: productData,
-            }),
-            invalidatesTags: ['Product'],
+        updateProduct: builder.mutation<
+            ApiResponse<Product>,
+            { productId: string; productData: Partial<CreateProductData>; images?: File[] }
+        >({
+            query: ({ productId, images, ...rest }) => {
+                const formData = new FormData();
+
+                // Thêm các trường bình thường
+                Object.entries(rest.productData || {}).forEach(([key, value]) => {
+                    if (value !== undefined && value !== null) {
+                        formData.append(key, String(value));
+                    }
+                });
+
+                // Thêm ảnh (nếu có)
+                if (images) {
+                    images.forEach((file) => {
+                        formData.append("files", file); // Lưu ý: backend dùng @RequestPart List<MultipartFile> files
+                    });
+                }
+
+                return {
+                    url: `/products/${productId}`,
+                    method: "PUT",
+                    body: formData,
+                };
+            },
+            invalidatesTags: ["Product"],
         }),
+
 
         deleteProduct: builder.mutation<ApiResponse<void>, string>({
             query: (productId) => ({

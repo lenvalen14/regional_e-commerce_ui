@@ -5,59 +5,74 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CreateProductData, Product, useCreateProductMutation } from "@/features/product/productApi"
+import { Category, useGetCategoriesQuery } from "@/features/category/categoryApi"
+import { useGetRegionsQuery } from "@/features/region"
 
-interface Product {
-  id: number
-  name: string
-  category: string
-  price: number
-  stock: number
-  status: string
-  description: string
-  region: string
-}
+// interface Product {
+//   id: number
+//   name: string
+//   category: string
+//   price: number
+//   stock: number
+//   status: string
+//   description: string
+//   region: string
+// }
 
 interface AddProductModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (product: Product) => void
+  onAdd: (product: CreateProductData) => void
 }
 
-const categories = [
-  "Bánh kẹo",
-  "Gia vị", 
-  "Thực phẩm khô",
-  "Đồ uống",
-  "Thực phẩm tươi sống",
-  "Đặc sản vùng miền"
-]
+// const categories = [
+//   "Bánh kẹo",
+//   "Gia vị",
+//   "Thực phẩm khô",
+//   "Đồ uống",
+//   "Thực phẩm tươi sống",
+//   "Đặc sản vùng miền"
+// ]
 
-const regions = [
-  "Hà Nội",
-  "TP.HCM", 
-  "Đà Nẵng",
-  "Huế",
-  "Hội An",
-  "Nha Trang",
-  "Đà Lạt",
-  "Cần Thơ",
-  "An Giang",
-  "Sóc Trăng",
-  "Tây Ninh",
-  "Phan Thiết"
-]
+// const regions = [
+//   "Hà Nội",
+//   "TP.HCM",
+//   "Đà Nẵng",
+//   "Huế",
+//   "Hội An",
+//   "Nha Trang",
+//   "Đà Lạt",
+//   "Cần Thơ",
+//   "An Giang",
+//   "Sóc Trăng",
+//   "Tây Ninh",
+//   "Phan Thiết"
+// ]
 
 export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductModalProps) {
+
+  const { data: categoryData } = useGetCategoriesQuery({ page: 0, size: 20 });
+  const categories = categoryData?.data.map(c => ({ id: c.categoryId, name: c.categoryName })) || [];
+
+  const { data: regionData } = useGetRegionsQuery({ page: 0, size: 20 });
+  const regions = regionData?.data.map(r => ({ id: r.regionId, name: r.regionName })) || [];
+
+
   const [formData, setFormData] = useState({
     name: "",
-    category: "",
+    categoryId: "",
     price: "",
     stock: "",
     description: "",
-    region: ""
+    regionId: "",
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [images, setImages] = useState<File[]>([]);
+
+  const [createProduct, { isLoading }] = useCreateProductMutation();
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -66,8 +81,8 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
       newErrors.name = "Tên sản phẩm là bắt buộc"
     }
 
-    if (!formData.category) {
-      newErrors.category = "Danh mục là bắt buộc"
+    if (!formData.categoryId) {
+      newErrors.categoryId = "Danh mục là bắt buộc"
     }
 
     if (!formData.price.trim()) {
@@ -86,66 +101,56 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
       newErrors.description = "Mô tả sản phẩm là bắt buộc"
     }
 
-    if (!formData.region) {
-      newErrors.region = "Vùng miền là bắt buộc"
+    if (!formData.regionId) {
+      newErrors.regionId = "Vùng miền là bắt buộc"
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) {
-      return
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    const stockNum = Number(formData.stock)
-    let status = "In Stock"
-    if (stockNum === 0) {
-      status = "Out of Stock"
-    } else if (stockNum <= 20) {
-      status = "Low Stock"
-    }
-
-    const newProduct: Product = {
-      id: Date.now(),
-      name: formData.name,
-      category: formData.category,
+    // Chuẩn bị dữ liệu đúng type
+    const productDataToSend: CreateProductData & { images?: File[] } = {
+      productName: formData.name,
+      categoryId: formData.categoryId,
+      regionId: formData.regionId,
       price: Number(formData.price),
-      stock: stockNum,
-      status: status,
+      stockQuantity: Number(formData.stock),
       description: formData.description,
-      region: formData.region
-    }
+      images, // optional
+    };
 
-    onAdd(newProduct)
-    
-    // Reset form
-    setFormData({
-      name: "",
-      category: "",
-      price: "",
-      stock: "",
-      description: "",
-      region: ""
-    })
-    setErrors({})
-    onClose()
-  }
+    // Dùng FormData để gửi multipart/form-data
+    const formDataObj = new FormData();
+    Object.entries(productDataToSend).forEach(([key, value]) => {
+      if (key === "images" && value) {
+        (value as File[]).forEach((file) => formDataObj.append("images", file));
+      } else if (value !== undefined && value !== null) {
+        formDataObj.append(key, String(value));
+      }
+    });
+
+    try {
+      await createProduct({ ...productDataToSend }).unwrap();
+      // reset form
+      setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" });
+      setImages([]);
+      setErrors({});
+      onClose();
+    } catch (err) {
+      console.error("Thêm sản phẩm thất bại:", err);
+    }
+  };
 
   const handleClose = () => {
-    setFormData({
-      name: "",
-      category: "",
-      price: "",
-      stock: "",
-      description: "",
-      region: ""
-    })
-    setErrors({})
-    onClose()
+    setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" });
+    setImages([]);
+    setErrors({});
+    onClose();
   }
 
   return (
@@ -168,19 +173,19 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
 
           <div className="space-y-2">
             <Label htmlFor="category">Danh mục *</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Chọn danh mục" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.category && <p className="text-sm text-red-600">{errors.category}</p>}
+            {errors.categoryId && <p className="text-sm text-red-600">{errors.categoryId}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -211,19 +216,19 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
 
           <div className="space-y-2">
             <Label htmlFor="region">Vùng miền *</Label>
-            <Select value={formData.region} onValueChange={(value) => setFormData({ ...formData, region: value })}>
+            <Select value={formData.regionId} onValueChange={(value) => setFormData({ ...formData, regionId: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Chọn vùng miền" />
               </SelectTrigger>
               <SelectContent>
                 {regions.map((region) => (
-                  <SelectItem key={region} value={region}>
-                    {region}
+                  <SelectItem key={region.id} value={region.id}>
+                    {region.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.region && <p className="text-sm text-red-600">{errors.region}</p>}
+            {errors.regionId && <p className="text-sm text-red-600">{errors.regionId}</p>}
           </div>
 
           <div className="space-y-2">
@@ -238,6 +243,16 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
             {errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
           </div>
 
+          {/* Input upload ảnh */}
+          <div className="space-y-2">
+            <Label htmlFor="images">Hình ảnh sản phẩm</Label>
+            <Input
+              id="images"
+              type="file"
+              multiple
+              onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
+            />
+          </div>
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose}>
               Hủy
