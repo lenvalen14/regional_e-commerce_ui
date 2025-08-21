@@ -105,6 +105,10 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
       newErrors.regionId = "Vùng miền là bắt buộc"
     }
 
+    if (images.length === 0) {
+      newErrors.images = "Vui lòng tải lên ít nhất một hình ảnh"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -121,28 +125,29 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
       price: Number(formData.price),
       stockQuantity: Number(formData.stock),
       description: formData.description,
-      images, // optional
+      images: images, // luôn gửi images array
     };
 
-    // Dùng FormData để gửi multipart/form-data
-    const formDataObj = new FormData();
-    Object.entries(productDataToSend).forEach(([key, value]) => {
-      if (key === "images" && value) {
-        (value as File[]).forEach((file) => formDataObj.append("images", file));
-      } else if (value !== undefined && value !== null) {
-        formDataObj.append(key, String(value));
-      }
-    });
+    console.log("Dữ liệu gửi đi:", productDataToSend);
+    console.log("Số lượng ảnh:", images.length);
 
     try {
-      await createProduct({ ...productDataToSend }).unwrap();
+      const result = await createProduct(productDataToSend).unwrap();
+      console.log("Kết quả:", result);
       // reset form
       setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" });
       setImages([]);
       setErrors({});
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Thêm sản phẩm thất bại:", err);
+      // Hiển thị lỗi chi tiết hơn
+      if (err?.data?.message) {
+        console.error("Chi tiết lỗi:", err.data.message);
+      }
+      if (err?.status) {
+        console.error("HTTP Status:", err.status);
+      }
     }
   };
 
@@ -245,13 +250,18 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
 
           {/* Input upload ảnh */}
           <div className="space-y-2">
-            <Label htmlFor="images">Hình ảnh sản phẩm</Label>
+            <Label htmlFor="images">Hình ảnh sản phẩm *</Label>
             <Input
               id="images"
               type="file"
               multiple
+              accept="image/*"
               onChange={(e) => setImages(e.target.files ? Array.from(e.target.files) : [])}
             />
+            {errors.images && <p className="text-sm text-red-600">{errors.images}</p>}
+            {images.length > 0 && (
+              <p className="text-sm text-green-600">Đã chọn {images.length} hình ảnh</p>
+            )}
           </div>
           <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose}>
