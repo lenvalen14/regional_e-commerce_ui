@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 
@@ -11,73 +11,86 @@ import CategoryList from "./CategoryList"
 import AddCategoryModal from "./AddCategoryModal"
 import EditCategoryModal from "./EditCategoryModal"
 import DeleteCategoryModal from "./DeleteCategoryModal"
+import { Category, useDeleteCategoryMutation, useGetCategoriesQuery } from "@/features/category/categoryApi"
 
 // Define Category interface
-interface Category {
-  id: number
-  name: string
-  description: string
-  productCount: number
-  status: string
-  image: string
-}
+// interface Category {
+//   id: number
+//   name: string
+//   description: string
+//   productCount: number
+//   status: string
+//   image: string
+// }
 
 interface SearchFilters {
   searchTerm: string
 }
 
 // Sample categories data for Vietnamese specialties
-const initialCategoriesData: Category[] = [
-  {
-    id: 1,
-    name: "Bánh kẹo",
-    description: "Các loại bánh và kẹo đặc sản",
-    productCount: 45,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 2,
-    name: "Gia vị",
-    description: "Gia vị và nước chấm truyền thống",
-    productCount: 28,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 3,
-    name: "Thực phẩm khô",
-    description: "Các loại thực phẩm sấy khô, chà bông",
-    productCount: 32,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 4,
-    name: "Trái cây sấy",
-    description: "Trái cây sấy dẻo các loại",
-    productCount: 18,
-    status: "Active",
-    image: "",
-  },
-  {
-    id: 5,
-    name: "Nước mắm",
-    description: "Nước mắm truyền thống các vùng miền",
-    productCount: 12,
-    status: "Inactive",
-    image: "",
-  },
-]
+// const initialCategoriesData: Category[] = [
+//   {
+//     id: 1,
+//     name: "Bánh kẹo",
+//     description: "Các loại bánh và kẹo đặc sản",
+//     productCount: 45,
+//     status: "Active",
+//     image: "",
+//   },
+//   {
+//     id: 2,
+//     name: "Gia vị",
+//     description: "Gia vị và nước chấm truyền thống",
+//     productCount: 28,
+//     status: "Active",
+//     image: "",
+//   },
+//   {
+//     id: 3,
+//     name: "Thực phẩm khô",
+//     description: "Các loại thực phẩm sấy khô, chà bông",
+//     productCount: 32,
+//     status: "Active",
+//     image: "",
+//   },
+//   {
+//     id: 4,
+//     name: "Trái cây sấy",
+//     description: "Trái cây sấy dẻo các loại",
+//     productCount: 18,
+//     status: "Active",
+//     image: "",
+//   },
+//   {
+//     id: 5,
+//     name: "Nước mắm",
+//     description: "Nước mắm truyền thống các vùng miền",
+//     productCount: 12,
+//     status: "Inactive",
+//     image: "",
+//   },
+// ]
 
 export default function CategoriesPage() {
 
-  const [categories, setCategories] = useState<Category[]>(initialCategoriesData)
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(initialCategoriesData)
+  const { data, isLoading, isError } = useGetCategoriesQuery({ page: 0, size: 20 })
+
+  const [categories, setCategories] = useState<Category[]>([])
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+
+  const categoriesData = data?.data || []
+  const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation()
+
+  useEffect(() => {
+    if (data?.data) {
+      setCategories(data.data)
+      setFilteredCategories(data.data)
+    }
+  }, [data])
 
   // Filter and search categories
   const handleSearch = (filters: SearchFilters) => {
@@ -87,8 +100,8 @@ export default function CategoriesPage() {
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase()
       filtered = filtered.filter(category =>
-        category.name.toLowerCase().includes(searchLower) ||
-        category.description.toLowerCase().includes(searchLower)
+        category.categoryName.toLowerCase().includes(searchLower)
+        // || category.description.toLowerCase().includes(searchLower)
       )
     }
 
@@ -115,11 +128,11 @@ export default function CategoriesPage() {
 
   const handleUpdateCategory = (updatedCategory: Category) => {
     const updatedCategories = categories.map(cat =>
-      cat.id === updatedCategory.id ? updatedCategory : cat
+      cat.categoryId === updatedCategory.categoryId ? updatedCategory : cat
     )
     setCategories(updatedCategories)
     setFilteredCategories(updatedCategories.filter(cat =>
-      filteredCategories.some(filtered => filtered.id === cat.id)
+      filteredCategories.some(filtered => filtered.categoryId === cat.categoryId)
     ))
   }
 
@@ -129,11 +142,11 @@ export default function CategoriesPage() {
     setShowDeleteModal(true)
   }
 
-  const handleConfirmDelete = (categoryId: number) => {
-    const updatedCategories = categories.filter(cat => cat.id !== categoryId)
+  const handleConfirmDelete = (categoryId: string) => {
+    const updatedCategories = categories.filter(cat => cat.categoryId.toString() !== categoryId.toString())
     setCategories(updatedCategories)
     setFilteredCategories(updatedCategories.filter(cat =>
-      filteredCategories.some(filtered => filtered.id === cat.id)
+      filteredCategories.some(filtered => filtered.categoryId === cat.categoryId)
     ))
   }
 
@@ -152,7 +165,7 @@ export default function CategoriesPage() {
       </div>
 
       {/* Statistics */}
-      <CategoryStats categories={categories} />
+      <CategoryStats />
 
       {/* Search and Filters */}
       <CategorySearch

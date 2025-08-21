@@ -3,33 +3,38 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FolderOpen, Package, TrendingUp, AlertTriangle } from "lucide-react"
+import { Category, useGetCategoriesQuery } from "@/features/category/categoryApi"
 
-interface Category {
-  id: number
-  name: string
-  description: string
-  productCount: number
-  status: string
-  image: string
-}
+// interface Category {
+//   id: number
+//   name: string
+//   description: string
+//   productCount: number
+//   status: string
+//   image: string
+// }
 
-interface CategoryStatsProps {
-  categories: Category[]
-}
 
-export default function CategoryStats({ categories }: CategoryStatsProps) {
+export default function CategoryStats() {
+
+  const { data, isLoading, isError } = useGetCategoriesQuery({ page: 0, size: 20 })
+  const categories = data?.data || []
+  if (isLoading) {
+    return <p>Đang tải dữ liệu...</p>
+  }
+
+  if (isError) {
+    return <p>Lỗi khi tải dữ liệu danh mục</p>
+  }
   // Calculate statistics
   const totalCategories = categories.length
-  const activeCategories = categories.filter(c => c.status === "Active").length
-  const inactiveCategories = categories.filter(c => c.status === "Inactive").length
-  const totalProducts = categories.reduce((sum, c) => sum + c.productCount, 0)
+  const totalProducts = categories.reduce((sum, c) => sum + (c.productCount || 0), 0)
   const categoriesWithoutProducts = categories.filter(c => c.productCount === 0).length
   const averageProductsPerCategory = totalCategories > 0 ? Math.round(totalProducts / totalCategories) : 0
 
-  // Get top category by product count
-  const topCategory = categories.reduce((max, category) => 
-    category.productCount > max.productCount ? category : max, 
-    { productCount: 0, name: "Chưa có" }
+  const topCategory = categories.reduce(
+    (max, category) => (category.productCount > max.productCount ? category : max),
+    { productCount: 0, categoryName: "Chưa có" }
   )
 
   return (
@@ -42,17 +47,17 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
           </div>
           <p className="text-2xl font-bold text-gray-900 mb-1">{totalCategories}</p>
           <p className="text-sm text-gray-600">Tổng danh mục</p>
-          
+
           {/* Breakdown */}
           <div className="flex items-center justify-center space-x-2 mt-3">
             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-              {activeCategories} hoạt động
+              {totalCategories} hoạt động
             </Badge>
-            {inactiveCategories > 0 && (
+            {/* {inactiveCategories > 0 && (
               <Badge variant="outline" className="text-xs bg-gray-50 text-gray-700 border-gray-200">
                 {inactiveCategories} tạm dừng
               </Badge>
-            )}
+            )} */}
           </div>
         </CardContent>
       </Card>
@@ -63,13 +68,13 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
           <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mx-auto mb-3">
             <FolderOpen className="h-6 w-6 text-green-600" />
           </div>
-          <p className="text-2xl font-bold text-gray-900 mb-1">{activeCategories}</p>
+          <p className="text-2xl font-bold text-gray-900 mb-1">{totalCategories}</p>
           <p className="text-sm text-gray-600">Đang hoạt động</p>
-          
+
           {/* Percentage */}
           <div className="mt-3">
             <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-              {totalCategories > 0 ? Math.round((activeCategories / totalCategories) * 100) : 0}% tổng số
+              {totalCategories > 0 ? Math.round((totalCategories / totalCategories) * 100) : 0}% tổng số
             </Badge>
           </div>
         </CardContent>
@@ -83,7 +88,7 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
           </div>
           <p className="text-2xl font-bold text-gray-900 mb-1">{totalProducts}</p>
           <p className="text-sm text-gray-600">Tổng sản phẩm</p>
-          
+
           {/* Average */}
           <div className="mt-3">
             <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
@@ -101,11 +106,11 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
           </div>
           <p className="text-2xl font-bold text-gray-900 mb-1">{topCategory.productCount}</p>
           <p className="text-sm text-gray-600">Nhiều SP nhất</p>
-          
+
           {/* Top category name */}
           <div className="mt-3">
             <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 max-w-full truncate">
-              {topCategory.name}
+              {topCategory.categoryName}
             </Badge>
           </div>
         </CardContent>
@@ -124,7 +129,7 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
                   Danh mục không có sản phẩm
                 </h4>
                 <p className="text-sm text-amber-700 mb-3">
-                  Có <strong>{categoriesWithoutProducts}</strong> danh mục chưa có sản phẩm nào. 
+                  Có <strong>{categoriesWithoutProducts}</strong> danh mục chưa có sản phẩm nào.
                   Hãy thêm sản phẩm hoặc xem xét xóa các danh mục không sử dụng.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -132,12 +137,12 @@ export default function CategoryStats({ categories }: CategoryStatsProps) {
                     .filter(c => c.productCount === 0)
                     .slice(0, 5) // Show max 5 categories
                     .map(category => (
-                      <Badge 
-                        key={category.id}
-                        variant="outline" 
+                      <Badge
+                        key={category.categoryId}
+                        variant="outline"
                         className="bg-white text-amber-700 border-amber-300"
                       >
-                        {category.name}
+                        {category.categoryName}
                       </Badge>
                     ))}
                   {categoriesWithoutProducts > 5 && (

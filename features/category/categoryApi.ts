@@ -3,15 +3,20 @@ import { apiSlice } from '../../lib/api/apiSlice'
 export interface Category {
     categoryId: string,
     categoryName: string
+    description: string
+    productCount: number
 }
 
 export interface CategoryFormData {
     categoryId?: string,
     categoryName?: string
+    description?: string
+    productCount?: number
 }
 
 export interface CreateCategoryData {
     categoryName: string
+    description: string
 }
 
 export interface ApiResponse<T> {
