@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { NewType, useGetAllNewsQuery } from '@/features/new/newApi';
+import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
 
 // Human-readable map
 const newTypeMap: Record<NewType, string> = {
@@ -13,11 +14,6 @@ const newTypeMap: Record<NewType, string> = {
   SUC_KHOE: "Sức khỏe",
   CONG_THUC: "Công thức",
   LICH_SU: "Lịch sử",
-};
-
-const formatDate = (timestamp: number | string | Date) => {
-  const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
-  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 export function RelatedArticles() {

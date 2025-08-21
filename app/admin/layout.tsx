@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Settings, ChevronLeft, ChevronRight } from "lucide-react"
+import { Home, Users, Package, FolderOpen, ShoppingCart, Star, User, LogOut, Menu, X, Search, Settings, ChevronLeft, ChevronRight, Newspaper } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { Suspense } from "react"
 import NotificationBell from "../../components/notification/NotificationBell"
@@ -18,6 +18,7 @@ const sidebarItems = [
   { icon: FolderOpen, label: "Quản Lý Danh Mục", href: "/admin/dashboard/categories" },
   { icon: ShoppingCart, label: "Quản Lý Đơn Hàng", href: "/admin/dashboard/orders" },
   { icon: Star, label: "Quản Lý Đánh Giá", href: "/admin/dashboard/reviews" },
+  { icon: Newspaper, label: "Quản Lý Bài Viết", href: "/admin/dashboard/news" },
   { icon: User, label: "Tài Khoản", href: "/admin/dashboard/account" },
 ]
 
@@ -58,27 +59,24 @@ function DashboardLayoutContent({
     <div className="min-h-screen bg-white">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm" 
-          onClick={() => setSidebarOpen(false)} 
+        <div
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 shadow-lg transform transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          sidebarCollapsed ? "w-20" : "w-64"
-        } ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
-       {/* Logo Section */}
-        <div
-          className={`flex items-center border-b border-gray-100 ${
-            sidebarCollapsed
-              ? "justify-center p-5"
-              : "justify-between px-6 py-5"
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 shadow-lg transform transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${sidebarCollapsed ? "w-20" : "w-64"
+          } ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           }`}
+      >
+        {/* Logo Section */}
+        <div
+          className={`flex items-center border-b border-gray-100 ${sidebarCollapsed
+            ? "justify-center p-5"
+            : "justify-between px-6 py-5"
+            }`}
         >
           {!sidebarCollapsed ? (
             <>
@@ -113,20 +111,18 @@ function DashboardLayoutContent({
             <div key={item.href} className="relative group">
               <a
                 href={item.href}
-                className={`flex items-center space-x-3 rounded-xl transition-all duration-300 ease-out no-underline ${
-                  sidebarCollapsed ? "p-4 justify-center" : "px-4 py-3"
-                } ${
-                  isActiveRoute(item.href)
+                className={`flex items-center space-x-3 rounded-xl transition-all duration-300 ease-out no-underline ${sidebarCollapsed ? "p-4 justify-center" : "px-4 py-3"
+                  } ${isActiveRoute(item.href)
                     ? "bg-blue-50 text-blue-600"
                     : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                }`}
+                  }`}
               >
                 <item.icon className={`h-5 w-5 ${isActiveRoute(item.href) ? "text-blue-600" : ""}`} />
                 {!sidebarCollapsed && (
                   <span className="font-medium transition-all duration-300 ease-out">{item.label}</span>
                 )}
               </a>
-              
+
               {/* Tooltip for collapsed state */}
               {sidebarCollapsed && (
                 <div className="absolute left-full ml-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out pointer-events-none whitespace-nowrap z-50 transform translate-x-2 group-hover:translate-x-0">
@@ -167,12 +163,11 @@ function DashboardLayoutContent({
               </div>
             </div>
           )}
-          
+
           <Button
             variant="ghost"
-            className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl ${
-              sidebarCollapsed ? "p-4 justify-center" : "justify-start px-4 py-3"
-            }`}
+            className={`w-full text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl ${sidebarCollapsed ? "p-4 justify-center" : "justify-start px-4 py-3"
+              }`}
             onClick={handleLogout}
             disabled={isLoading}
           >
@@ -188,15 +183,15 @@ function DashboardLayoutContent({
         <header className="bg-white border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="lg:hidden hover:bg-gray-100" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden hover:bg-gray-100"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              
+
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">TRANG QUẢN LÝ</h1>
                 <p className="text-sm text-gray-600">Hệ thống quản lý tổng quan</p>

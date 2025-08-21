@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from "react"
 import ReviewStats from "./ReviewStats"
@@ -10,6 +10,8 @@ import {
   useGetGlobalReviewStatsQuery,
   ReviewResponse,
 } from "@/features/review/reviewApi"
+
+import { useGetCategoriesQuery, CategoryResponse } from "@/features/new/newApi" // ✅ reuse category API
 
 // Define interfaces
 interface SearchFilters {
@@ -27,6 +29,10 @@ export default function AdminReviewsPage() {
   })
   const [reviews, setReviews] = useState<ReviewResponse[]>([])
   const [filteredReviews, setFilteredReviews] = useState<ReviewResponse[]>([])
+
+  // ✅ Lấy list category
+  const { data: categoryRes, isLoading: catLoading } = useGetCategoriesQuery({ page: 0, size: 50 })
+  const categories: CategoryResponse[] = categoryRes?.data || []
 
   const { data, isLoading, isError, refetch } =
     useGetReviewsByRatingAndCategoryQuery({
@@ -87,7 +93,7 @@ export default function AdminReviewsPage() {
     setSearchFilters({ searchTerm: "", rating: "all", category: "all" })
   }
 
-  if (isLoading) return <div>Đang tải...</div>
+  if (isLoading || catLoading) return <div>Đang tải...</div>
 
   return (
     <div className="space-y-6 p-4">
@@ -105,6 +111,7 @@ export default function AdminReviewsPage() {
         searchFilters={searchFilters}
         onSearchChange={handleSearchChange}
         onReset={handleReset}
+        categories={categories}
       />
 
       {/* Danh sách review */}
@@ -113,7 +120,8 @@ export default function AdminReviewsPage() {
         onDeleteSuccess={() => {
           // gọi refetch thủ công khi xóa xong
           refetchStats()
-        }} />
+        }}
+      />
     </div>
   )
 }

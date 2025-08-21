@@ -4,9 +4,11 @@ import { useInView } from 'react-intersection-observer';
 import { Calendar, User, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { NewResponse } from '@/features/new/newApi';
+import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
+import { getExcerpt } from '@/app/news/page';
 
 interface FeaturedNewsProps {
-  articles: NewResponse[]; // Nhận mảng bài viết từ NewsPage
+  articles: NewResponse[];
 }
 
 export function FeaturedNews({ articles }: FeaturedNewsProps) {
@@ -20,26 +22,6 @@ export function FeaturedNews({ articles }: FeaturedNewsProps) {
   // Lấy bài chính (bài đầu tiên trong mảng) và các bài phụ
   const mainArticle = articles[0];
   const sideArticles = articles.slice(1);
-
-  // Hàm tạo excerpt (cắt khoảng 150 ký tự)
-  const getExcerpt = (content: string, length = 150) => {
-    if (!content) return '';
-    return content.length > length ? content.slice(0, length) + '...' : content;
-  };
-
-  // Hàm tính thời gian đọc (trung bình 200 từ/phút)
-  const getReadTime = (content: string) => {
-    if (!content) return '1 phút';
-    const words = content.trim().split(/\s+/).length;
-    const minutes = Math.ceil(words / 200);
-    return `${minutes} phút`;
-  };
-
-  // Chuyển timestamp sang ngày hiển thị
-  const formatDate = (timestamp: number | string | Date) => {
-    const date = typeof timestamp === 'number' ? new Date(timestamp) : new Date(timestamp);
-    return date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
 
   return (
     <section ref={ref} className="py-24 bg-white border-t border-[#e0e0e0]">
@@ -94,10 +76,10 @@ export function FeaturedNews({ articles }: FeaturedNewsProps) {
                         <Calendar className="h-4 w-4" />
                         <span>{formatDate(mainArticle.createAt)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      {/* <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
                         <span>{getReadTime(mainArticle.content)}</span>
-                      </div>
+                      </div> */}
                     </div>
 
                     <div className="text-[#8FBC8F] font-nitti font-bold uppercase tracking-widest text-sm hover:text-[#222] transition-colors duration-300 border-b border-[#8FBC8F] hover:border-[#222] pb-1 flex items-center gap-2 group">
@@ -144,8 +126,6 @@ export function FeaturedNews({ articles }: FeaturedNewsProps) {
                       </p>
                       <div className="flex items-center gap-3 text-xs text-[#888] font-nitti">
                         <span>{formatDate(article.createAt)}</span>
-                        <span>•</span>
-                        <span>{getReadTime(article.content)}</span>
                       </div>
                     </div>
                   </div>

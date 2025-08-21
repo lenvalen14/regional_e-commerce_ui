@@ -53,6 +53,13 @@ export interface PagedResponse<T> {
     }
 }
 
+export interface CategoryResponse {
+    categoryId: string
+    categoryName: string
+    description: string
+}
+
+
 // ======================
 // API Slice
 // ======================
@@ -65,6 +72,11 @@ export const newApi = apiSlice.injectEndpoints({
                 method: "POST",
                 body: formData,
             }),
+        }),
+
+        // GET ALL CATEGORY
+        getCategories: builder.query<PagedResponse<CategoryResponse>, { page?: number; size?: number }>({
+            query: ({ page = 0, size = 10 }) => `/category?page=${page}&size=${size}`,
         }),
 
         // GET ALL
@@ -99,6 +111,23 @@ export const newApi = apiSlice.injectEndpoints({
             query: ({ categoryId, page = 0, size = 10 }) =>
                 `/news/by-category?categoryId=${categoryId}&page=${page}&size=${size}`,
         }),
+
+        // GET BY FILTER (type + category, both nullable)
+        getNewsByFilter: builder.query<
+            PagedResponse<NewResponse>,
+            { type?: NewType; categoryId?: string; page?: number; size?: number }
+        >({
+            query: ({ type, categoryId, page = 0, size = 10 }) => {
+                const params = new URLSearchParams()
+                if (type) params.append("type", type)
+                if (categoryId) params.append("categoryId", categoryId)
+                params.append("page", page.toString())
+                params.append("size", size.toString())
+
+                return `/news/filter?${params.toString()}`
+            },
+        }),
+
     }),
 })
 
@@ -112,4 +141,6 @@ export const {
     useUpdateNewsMutation,
     useDeleteNewsMutation,
     useGetNewsByCategoryQuery,
+    useGetNewsByFilterQuery,
+    useGetCategoriesQuery,
 } = newApi
