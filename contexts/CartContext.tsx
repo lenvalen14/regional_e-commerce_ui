@@ -13,7 +13,8 @@ import {
 } from '../features/cart/cartApi';
 
 export interface CartItem {
-  id: string;
+  id: string; // productId
+  cartItemId?: string; // cartItemId từ server
   name: string;
   price: number;
   priceLabel: string;
@@ -225,12 +226,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     return serverCartItems.map(item => {
       const product = item.product || {};
-      const imageUrl = product.images && product.images.length > 0
-        ? product.images[0].imageUrl
-        : '';
+      console.log('Product data:', product); // Debug product structure
+      console.log('Image data:', product.imageProductResponseList); // Debug image structure
+      
+      // Sửa lại để match với API response structure
+      const imageUrl = product.imageProductResponseList && product.imageProductResponseList.length > 0
+        ? product.imageProductResponseList[0].imageUrl
+        : (product.images && product.images.length > 0 
+          ? product.images[0].imageUrl 
+          : '/images/products-default.png'); // fallback image
+
+      console.log('Final imageUrl:', imageUrl); // Debug final image URL
 
       const localItem = {
         id: product.productId || product.id || item.productId,
+        cartItemId: item.cartItemId, // Lưu cartItemId từ server
         name: product.productName || product.name || 'Unknown Product',
         price: product.price || 0,
         priceLabel: `${(product.price || 0).toLocaleString()}đ`,

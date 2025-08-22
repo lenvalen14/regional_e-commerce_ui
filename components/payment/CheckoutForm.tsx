@@ -1,27 +1,46 @@
 'use client';
 
-import { useState } from "react";
-import { CreditCard, Truck, MapPin, User, Mail, Phone } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CreditCard, MapPin, User, Plus } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { useGetUserAddressesQuery } from "@/features/address/addressApi";
+import { useCreateOrderMutation } from "@/features/order/orderApi";
+import { useCart } from "@/contexts/CartContext";
+import { useRouter } from "next/navigation";
 
 export function CheckoutForm() {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { state, clearCart } = useCart();
+  const router = useRouter();
+  
+  // API hooks
+  const { data: addressesData, isLoading: addressesLoading } = useGetUserAddressesQuery(
+    user?.userId || '',
+    { skip: !user?.userId }
+  );
+  const [createOrder, { isLoading: creatingOrder }] = useCreateOrderMutation();
+
   const [formData, setFormData] = useState({
-    // Thông tin người nhận
-    fullName: '',
-    email: '',
-    phone: '',
-    
-    // Địa chỉ giao hàng
-    address: '',
-    ward: '',
-    city: '',
+    addressId: '',
+    paymentMethod: 'CASH' as 'CASH' | 'VNPAY',
     note: '',
-    
-    // Phương thức thanh toán
-    paymentMethod: 'cod',
-    
-    // Phương thức vận chuyển
-    shippingMethod: 'standard'
   });
+
+  const [showAddressForm, setShowAddressForm] = useState(false);
+
+  // Set default address when addresses are loaded
+  useEffect(() => {
+    if (addressesData && addressesData.length > 0) {
+      const defaultAddress = addressesData.find(addr => addr.isDefault);
+      if (defaultAddress && !formData.addressId) {
+        setFormData(prev => ({
+          ...prev,
+          addressId: defaultAddress.addressId
+        }));
+      }
+    }
+  }, [addressesData, formData.addressId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -31,11 +50,43 @@ export function CheckoutForm() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Xử lý đặt hàng
-    console.log('Order data:', formData);
-    // Redirect đến trang xác nhận hoặc xử lý thanh toán
+    
+    if (!formData.addressId) {
+      alert('Vui lòng chọn địa chỉ giao hàng');
+      return;
+    }
+
+    // Lấy cartItemsId từ giỏ hàng
+    const cartItemsId = state.items
+      .map(item => item.cartItemId)
+      .filter(id => id) as string[]; // Filter out undefined values
+
+    if (cartItemsId.length === 0) {
+      alert('Không tìm thấy cartItemId. Vui lòng thử lại!');
+      return;
+    }
+
+    try {
+      const result = await createOrder({
+        addressId: formData.addressId,
+        method: formData.paymentMethod,
+        cartItemsId: cartItemsId,
+      }).unwrap();
+
+      console.log('Order created successfully:', result);
+      
+      // Clear cart after successful order
+      clearCart();
+      
+      // Redirect to order success page or order detail
+      router.push(`/orders/${result.data.orderId}`);
+      
+    } catch (error) {
+      console.error('Failed to create order:', error);
+      alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!');
+    }
   };
 
   return (
@@ -52,31 +103,26 @@ export function CheckoutForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-              Họ và tên *
+              Họ và tên
             </label>
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-              placeholder="Nhập họ và tên"
+              value={user?.userName || ''}
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti bg-gray-50"
             />
           </div>
           
           <div>
             <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-              Số điện thoại *
+              Số điện thoại
             </label>
             <input
               type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-              placeholder="Nhập số điện thoại"
+              value=""
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti bg-gray-50"
+              placeholder="Chưa cập nhật"
             />
           </div>
           
@@ -86,11 +132,9 @@ export function CheckoutForm() {
             </label>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-              placeholder="Nhập email (không bắt buộc)"
+              value={user?.email || ''}
+              disabled
+              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti bg-gray-50"
             />
           </div>
         </div>
@@ -98,61 +142,80 @@ export function CheckoutForm() {
 
       {/* Địa chỉ giao hàng */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <MapPin className="w-5 h-5 text-[#8FBC8F]" />
-          <h2 className="text-xl font-beaululo text-[#2F3E34] tracking-wider">
-            ĐỊA CHỈ GIAO HÀNG
-          </h2>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-              Tỉnh/Thành phố *
-            </label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleInputChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-              placeholder="Nhập tỉnh/thành phố"
-            />
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-[#8FBC8F]" />
+            <h2 className="text-xl font-beaululo text-[#2F3E34] tracking-wider">
+              ĐỊA CHỈ GIAO HÀNG
+            </h2>
           </div>
-          
-          <div>
-            <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-              Phường/Xã *
-            </label>
-            <input
-              type="text"
-              name="ward"
-              value={formData.ward}
-              onChange={handleInputChange}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-              placeholder="Nhập phường/xã"
-            />
+          <button
+            type="button"
+            onClick={() => setShowAddressForm(true)}
+            className="flex items-center gap-2 text-[#8FBC8F] hover:text-[#7CA87C] font-nitti text-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm địa chỉ mới
+          </button>
+        </div>
+        
+        {addressesLoading ? (
+          <div className="text-center py-4">
+            <p className="font-nitti text-gray-600">Đang tải địa chỉ...</p>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-3">
+            {addressesData && addressesData.length > 0 ? (
+              addressesData.map((address) => (
+                <label
+                  key={address.addressId}
+                  className="flex items-start p-4 border border-gray-200 rounded-md hover:border-[#8FBC8F] cursor-pointer"
+                >
+                  <input
+                    type="radio"
+                    name="addressId"
+                    value={address.addressId}
+                    checked={formData.addressId === address.addressId}
+                    onChange={handleInputChange}
+                    className="mr-3 mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="font-nitti font-medium text-[#2F3E34]">
+                      {address.addressLine}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      {address.province}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      SĐT: {address.phone}
+                    </div>
+                    {address.isDefault && (
+                      <span className="inline-block mt-2 px-2 py-1 bg-[#8FBC8F] text-white text-xs rounded">
+                        Mặc định
+                      </span>
+                    )}
+                  </div>
+                </label>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="font-nitti text-gray-600 mb-4">
+                  Bạn chưa có địa chỉ giao hàng nào
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowAddressForm(true)}
+                  className="bg-[#8FBC8F] hover:bg-[#7CA87C] text-white px-4 py-2 rounded-md font-nitti"
+                >
+                  Thêm địa chỉ
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         
-        <div className="mb-4">
-          <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
-            Địa chỉ cụ thể *
-          </label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleInputChange}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-            placeholder="Số nhà, tên đường..."
-          />
-        </div>
-        
-        <div>
+        {/* Ghi chú đơn hàng */}
+        <div className="mt-6">
           <label className="block text-sm font-nitti font-medium text-[#2F3E34] mb-2">
             Ghi chú đơn hàng
           </label>
@@ -164,62 +227,6 @@ export function CheckoutForm() {
             className="w-full px-4 py-3 border border-gray-300 rounded-md font-nitti focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
             placeholder="Ghi chú cho người giao hàng (không bắt buộc)"
           />
-        </div>
-      </div>
-
-      {/* Phương thức vận chuyển */}
-      <div className="bg-white p-6 rounded-lg shadow-sm">
-        <div className="flex items-center gap-3 mb-6">
-          <Truck className="w-5 h-5 text-[#8FBC8F]" />
-          <h2 className="text-xl font-beaululo text-[#2F3E34] tracking-wider">
-            PHƯƠNG THỨC VẬN CHUYỂN
-          </h2>
-        </div>
-        
-        <div className="space-y-3">
-          <label className="flex items-center p-4 border border-gray-200 rounded-md hover:border-[#8FBC8F] cursor-pointer">
-            <input
-              type="radio"
-              name="shippingMethod"
-              value="standard"
-              checked={formData.shippingMethod === 'standard'}
-              onChange={handleInputChange}
-              className="mr-3"
-            />
-            <div className="flex-1">
-              <div className="font-nitti font-medium text-[#2F3E34]">
-                Giao hàng tiêu chuẩn
-              </div>
-              <div className="text-sm text-gray-600">
-                2-3 ngày làm việc • Miễn phí vận chuyển
-              </div>
-            </div>
-            <div className="font-nitti font-bold text-[#8FBC8F]">
-              Miễn phí
-            </div>
-          </label>
-          
-          <label className="flex items-center p-4 border border-gray-200 rounded-md hover:border-[#8FBC8F] cursor-pointer">
-            <input
-              type="radio"
-              name="shippingMethod"
-              value="express"
-              checked={formData.shippingMethod === 'express'}
-              onChange={handleInputChange}
-              className="mr-3"
-            />
-            <div className="flex-1">
-              <div className="font-nitti font-medium text-[#2F3E34]">
-                Giao hàng nhanh
-              </div>
-              <div className="text-sm text-gray-600">
-                1-2 ngày làm việc
-              </div>
-            </div>
-            <div className="font-nitti font-bold text-[#E53935]">
-              30,000đ
-            </div>
-          </label>
         </div>
       </div>
 
@@ -237,8 +244,8 @@ export function CheckoutForm() {
             <input
               type="radio"
               name="paymentMethod"
-              value="cod"
-              checked={formData.paymentMethod === 'cod'}
+              value="CASH"
+              checked={formData.paymentMethod === 'CASH'}
               onChange={handleInputChange}
               className="mr-3"
             />
@@ -256,36 +263,17 @@ export function CheckoutForm() {
             <input
               type="radio"
               name="paymentMethod"
-              value="bank_transfer"
-              checked={formData.paymentMethod === 'bank_transfer'}
+              value="VNPAY"
+              checked={formData.paymentMethod === 'VNPAY'}
               onChange={handleInputChange}
               className="mr-3"
             />
             <div className="flex-1">
               <div className="font-nitti font-medium text-[#2F3E34]">
-                Chuyển khoản ngân hàng
+                Thanh toán qua VNPay
               </div>
               <div className="text-sm text-gray-600">
-                Chuyển khoản trước khi giao hàng
-              </div>
-            </div>
-          </label>
-          
-          <label className="flex items-center p-4 border border-gray-200 rounded-md hover:border-[#8FBC8F] cursor-pointer">
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="momo"
-              checked={formData.paymentMethod === 'momo'}
-              onChange={handleInputChange}
-              className="mr-3"
-            />
-            <div className="flex-1">
-              <div className="font-nitti font-medium text-[#2F3E34]">
-                Ví MoMo
-              </div>
-              <div className="text-sm text-gray-600">
-                Thanh toán qua ví điện tử MoMo
+                Thanh toán trực tuyến qua VNPay
               </div>
             </div>
           </label>
@@ -296,9 +284,10 @@ export function CheckoutForm() {
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <button
           type="submit"
-          className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] text-white py-4 rounded-full font-nitti font-bold text-lg tracking-widest transition-colors"
+          disabled={creatingOrder || !formData.addressId}
+          className="w-full bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-4 rounded-full font-nitti font-bold text-lg tracking-widest transition-colors"
         >
-          ĐẶT HÀNG NGAY
+          {creatingOrder ? 'ĐANG ĐẶT HÀNG...' : 'ĐẶT HÀNG NGAY'}
         </button>
         
         <p className="text-center text-sm text-gray-600 mt-4 font-nitti">

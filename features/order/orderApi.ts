@@ -68,6 +68,19 @@ export interface UpdateOrderStatusRequest {
   status: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
 }
 
+export interface CreateOrderRequest {
+  addressId: string;
+  method: 'CASH' | 'VNPAY';
+  cartItemsId: string[];
+}
+
+export interface CreateOrderResponse {
+  message: string;
+  code: number;
+  data: Order;
+  meta?: any;
+}
+
 export const orderApi = createApi({
   reducerPath: 'orderApi',
   baseQuery: fetchBaseQuery({
@@ -106,6 +119,16 @@ export const orderApi = createApi({
   }),
   tagTypes: ['Order'],
   endpoints: (builder) => ({
+    // Create new order
+    createOrder: builder.mutation<CreateOrderResponse, CreateOrderRequest>({
+      query: (orderData) => ({
+        url: '/order',
+        method: 'POST',
+        body: orderData,
+      }),
+      invalidatesTags: ['Order'],
+    }),
+
     // Get all orders with pagination and filters
     getOrders: builder.query<OrdersResponse, {
       page?: number;
@@ -176,6 +199,7 @@ export const orderApi = createApi({
 });
 
 export const {
+  useCreateOrderMutation,
   useGetOrdersQuery,
   useGetOrderQuery,
   useUpdateOrderStatusMutation,
