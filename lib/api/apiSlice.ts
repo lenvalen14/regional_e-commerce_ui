@@ -6,6 +6,7 @@ const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1",
   prepareHeaders: (headers, { getState, endpoint }) => {
     const token = (getState() as RootState).auth.token;
+     console.log("prepareHeaders endpoint:", endpoint, "token:", token);
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -73,6 +74,7 @@ const rawBaseQuery = fetchBaseQuery({
       "Notification",
       "Region",
       "Category",
+      "Stats",
     ],
     endpoints: (builder) => ({}),
   });
