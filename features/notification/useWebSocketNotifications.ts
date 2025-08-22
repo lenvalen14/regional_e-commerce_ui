@@ -2,6 +2,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { selectCurrentToken } from "@/features/auth/authSlice";
 import { Client, IMessage } from "@stomp/stompjs";
+import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 interface NotificationResponse {
   title: string;
@@ -26,16 +28,16 @@ export const useWebSocketNotifications = ({
 
   const connect = useCallback(() => {
     if (!userId || !token) {
-      console.log("Missing userId or token, cannot connect WebSocket");
+      logger.debug("Missing userId or token, cannot connect WebSocket");
       return;
     }
 
     if (clientRef.current?.connected) {
-      console.log("Already connected WebSocket");
+      logger.debug("Already connected WebSocket");
       return;
     }
 
-    console.log("Connecting WebSocket for user:", userId);
+    logger.debug("Connecting WebSocket for user:", userId);
 
     const wsUrl = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws";
 
@@ -44,25 +46,26 @@ export const useWebSocketNotifications = ({
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
-      debug: (str) => console.log("STOMP:", str),
+      debug: (str) => logger.debug("STOMP:", str),
       reconnectDelay: 5000,
       onConnect: () => {
-        console.log("WebSocket connected");
+        logger.info("WebSocket connected");
 
         client.subscribe(`/queue/notifications-${userId}`, (message: IMessage) => {
           const notification: NotificationResponse = JSON.parse(message.body);
-          console.log("Notification received:", notification);
+          logger.debug("Notification received:", notification);
           onNewNotification(notification);
         });
 
         onConnectionChange?.(true);
       },
       onDisconnect: () => {
-        console.log("WebSocket disconnected");
+        logger.info("WebSocket disconnected");
         onConnectionChange?.(false);
       },
       onStompError: (frame) => {
-        console.error("STOMP error:", frame.headers["message"]);
+        toast.error("WebSocket error: " + frame.headers["message"]);
+        logger.error("STOMP error:", frame.headers["message"]);
       },
     });
 
@@ -72,7 +75,7 @@ export const useWebSocketNotifications = ({
 
   const disconnect = useCallback(() => {
     if (clientRef.current) {
-      console.log("Disconnecting WebSocket...");
+      logger.debug("Disconnecting WebSocket...");
       clientRef.current.deactivate();
       clientRef.current = null;
     }
