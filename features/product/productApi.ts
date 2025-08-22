@@ -78,6 +78,12 @@ export const productApi = apiSlice.injectEndpoints({
             query: (productId) => `/products/${productId}`,
             providesTags: ['Product'],
         }),
+
+        getProductsByCategory: builder.query<ApiResponse<Product[]>, { categoryId: string }>({
+            query: ({ categoryId }) => `/products/category/${categoryId}`,
+            providesTags: ['Product'],
+        }),
+
         // Create new product
         createProduct: builder.mutation<ApiResponse<Product>, CreateProductData & { images?: File[] }>({
             query: ({ images, ...rest }) => {
@@ -165,6 +171,7 @@ export const productApi = apiSlice.injectEndpoints({
 export const {
     useGetProductsQuery,
     useGetProductQuery,
+    useGetProductsByCategoryQuery,
     useSoftDeleteProductMutation,
     useRestoreProductMutation,
     useCreateProductMutation,
