@@ -42,6 +42,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
       const { quantity = 1, ...item } = action.payload;
+      console.log('Adding item:', { item, quantity });
 
       const existingItemIndex = state.items.findIndex(
         i => i.id === item.id
@@ -49,21 +50,26 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
       let newItems;
       if (existingItemIndex >= 0) {
+        console.log('Item exists, updating quantity');
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
+        console.log('New item, adding to cart');
         newItems = [...state.items, { ...item, quantity }];
       }
 
-      return {
+      const newState = {
         ...state,
         items: newItems,
         total: newItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
         itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0)
       };
+
+      console.log('New cart state:', newState);
+      return newState;
     }
 
     case 'UPDATE_QUANTITY': {
@@ -165,6 +171,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const savedCart = localStorage.getItem('cart');
         if (savedCart) {
           const cartItems = JSON.parse(savedCart);
+          console.log('📱 Loading cart from localStorage:', cartItems.length);
           dispatch({ type: 'LOAD_CART', payload: cartItems });
         }
       } catch (error) {
@@ -172,6 +179,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } else {
       // User is authenticated, clear local cart immediately
+      console.log('🧹 User authenticated, clearing local cart state');
       dispatch({ type: 'CLEAR_CART' });
     }
   }, [isAuthenticated]);
@@ -179,6 +187,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Sync with server when user logs in
   useEffect(() => {
     if (isAuthenticated && user?.userId) {
+      console.log('🔑 User logged in, starting cart sync...');
       // Add a small delay to ensure all auth state is properly set
       const timeoutId = setTimeout(() => {
         syncCartWithServer();
@@ -193,6 +202,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated && state.items.length > 0) {
       try {
         localStorage.setItem('cart', JSON.stringify(state.items));
+        console.log('Saved cart to localStorage:', state.items.length);
       } catch (error) {
         console.error('Error saving cart to localStorage:', error);
       }
@@ -212,9 +222,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Convert server cart format to local cart format
   const convertServerCartToLocal = (serverCartItems: any[]): CartItem[] => {
+    console.log('Converting server cart items:', serverCartItems);
+
     return serverCartItems.map(item => {
       const product = item.product || {};
-<<<<<<< HEAD
       console.log('Product data:', product); // Debug product structure
       console.log('Image data:', product.imageProductResponseList); // Debug image structure
       
@@ -226,81 +237,106 @@ export function CartProvider({ children }: { children: ReactNode }) {
           : '/images/products-default.png'); // fallback image
 
       console.log('Final imageUrl:', imageUrl); // Debug final image URL
-=======
-      const imageUrl = product.imageProductResponseList && product.imageProductResponseList.length > 0
-        ? product.imageProductResponseList[0].imageUrl
-        : '';
->>>>>>> 9fc8b7ff5aa79af9f4a2d003e806c14cce8f1e84
 
-      return {
+      const localItem = {
         id: product.productId || product.id || item.productId,
         cartItemId: item.cartItemId, // Lưu cartItemId từ server
         name: product.productName || product.name || 'Unknown Product',
         price: product.price || 0,
         priceLabel: `${(product.price || 0).toLocaleString()}đ`,
         quantity: item.quantity || 1,
+        // variant: 'default', // Server doesn't seem to support variants yet
         image: imageUrl
       };
+
+      console.log('Converted item:', localItem);
+      return localItem;
     });
   };
 
+  // Sync cart with server - SIMPLIFIED VERSION
   const syncCartWithServer = async () => {
     if (!isAuthenticated || !user?.userId) {
+      console.log('Cannot sync cart: user not authenticated');
       return;
     }
 
     try {
-      localStorage.removeItem('cart');
+      console.log('🔄 Starting simplified cart sync for user:', user.userId);
 
+      // Clear local cart immediately when user logs in
+      localStorage.removeItem('cart');
+      console.log('🗑️ Cleared local cart storage');
+
+      // Get server cart
       const serverCartResult = await refetchCart();
+      console.log('📦 Server cart response:', serverCartResult);
 
       if (serverCartResult.data?.data) {
         const serverCart = serverCartResult.data.data;
         const serverItems = convertServerCartToLocal(serverCart.items || []);
+        console.log('✅ Loading cart from server:', serverItems.length, 'items');
 
         // Load server cart only
         dispatch({ type: 'SYNC_FROM_SERVER', payload: serverItems });
       } else {
+        console.log('📭 No server cart data found - empty cart');
         // No server cart, start with empty cart
         dispatch({ type: 'CLEAR_CART' });
       }
     } catch (error) {
-      console.error('Error syncing cart with server:', error);
+      console.error('❌ Error syncing cart with server:', error);
       // On error, clear cart to avoid confusion
       dispatch({ type: 'CLEAR_CART' });
     }
   };
 
   const addItem = async (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    console.log('🛒 Adding item to cart:', {
+      item: item.name,
+      isAuthenticated,
+      userId: user?.userId
+    });
+
     if (isAuthenticated && user?.userId) {
       // User is logged in - add to server
       try {
+        console.log('➕ Adding item to server cart...');
         const serverResponse = await addToCartAPI({
           productId: item.id,
           quantity: item.quantity || 1,
         }).unwrap();
 
+        console.log('✅ Item added to server, refetching cart...');
+
         // Refetch cart to get updated data
         const updatedCartResult = await refetchCart();
+        console.log('📦 Updated cart result:', updatedCartResult);
 
         if (updatedCartResult.data?.data) {
           const updatedCart = updatedCartResult.data.data;
           const updatedItems = convertServerCartToLocal(updatedCart.items || []);
+          console.log('🔄 Updated cart items:', updatedItems.length);
           dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
+        } else {
+          console.error('❌ No data in updated cart result');
         }
       } catch (error) {
-        console.error('Error adding item to server cart:', error);
+        console.error('❌ Error adding item to server cart:', error);
         // Don't fallback to local when user is authenticated
         // Just show the error and keep server cart state
       }
     } else {
       // User not authenticated - add to local storage
+      console.log('📱 User not authenticated, adding to local cart');
       dispatch({ type: 'ADD_ITEM', payload: item });
     }
   };
 
   const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1) return;
+
+    console.log('🔄 Updating quantity:', { id, quantity, isAuthenticated });
 
     if (isAuthenticated && user?.userId) {
       try {
@@ -323,7 +359,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error updating cart item on server:', error);
+        console.error('❌ Error updating cart item on server:', error);
         // Don't fallback - keep server state consistent
       }
     } else {
@@ -333,6 +369,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeItem = async (id: string) => {
+    console.log('🗑️ Removing item:', { id, isAuthenticated });
+
     if (isAuthenticated && user?.userId) {
       try {
         const currentItem = state.items.find(item => item.id === id);
@@ -348,7 +386,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error removing cart item from server:', error);
+        console.error('❌ Error removing cart item from server:', error);
         // Don't fallback - keep server state consistent
       }
     } else {
@@ -358,12 +396,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const clearCart = async () => {
+    console.log('🧹 Clearing cart:', { isAuthenticated });
+
     if (isAuthenticated && user?.userId) {
       try {
         await clearCartAPI().unwrap();
         dispatch({ type: 'CLEAR_CART' });
       } catch (error) {
-        console.error('Error clearing server cart:', error);
+        console.error('❌ Error clearing server cart:', error);
         // Still clear local state even if server fails
         dispatch({ type: 'CLEAR_CART' });
       }
