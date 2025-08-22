@@ -1,15 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useInView } from 'react-intersection-observer'
 import { ThumbsUp, Send } from 'lucide-react'
 import {
-  useGetReviewsByProductQuery,
   useCreateReviewMutation,
   ReviewResponse,
 } from '@/features/review/reviewApi'
 
-// ⭐ Component hiển thị rating bằng sao
+// ⭐ Hiển thị rating bằng sao
 function StarRating({ rating, size = "w-4 h-4" }: { rating: number; size?: string }) {
   return (
     <div className="flex gap-1">
@@ -34,39 +33,36 @@ function StarRating({ rating, size = "w-4 h-4" }: { rating: number; size?: strin
   )
 }
 
-export function ArticleComments({ productId }: { productId: string }) {
+interface ArticleCommentsProps {
+  productId: string
+  reviews: ReviewResponse[]
+  refetch: () => void
+  isLoading: boolean
+  isError: boolean
+}
+
+export function ArticleComments({
+  productId,
+  reviews,
+  refetch,
+  isLoading,
+  isError,
+}: ArticleCommentsProps) {
   const { ref, inView } = useInView({
     threshold: 0.3,
     triggerOnce: true,
   })
 
-  // API hooks
-  const { data, isLoading, isError, refetch } = useGetReviewsByProductQuery({
-    productId,
-    page: 0,
-    size: 10,
-  })
-
   const [createReview, { isLoading: isPosting }] = useCreateReviewMutation()
 
-  // State lưu danh sách reviews
-  const [reviews, setReviews] = useState<ReviewResponse[]>([])
-
-  useEffect(() => {
-    if (data?.reviews) {
-      // data.data là array reviews từ API
-      const sorted = [...data.reviews].sort(
-        (a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime()
-      )
-      setReviews(sorted)
-    }
-  }, [data])
-
-  // State cho form comment
+  // Form state
   const [newComment, setNewComment] = useState('')
   const [rating, setRating] = useState(5)
 
-  // Submit comment
+  // Pagination state cho bình luận
+  const [visibleCount, setVisibleCount] = useState(3)
+
+  // Submit review
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newComment.trim()) return
@@ -80,7 +76,7 @@ export function ArticleComments({ productId }: { productId: string }) {
 
       setNewComment('')
       setRating(5)
-      refetch() // load lại danh sách
+      refetch() // 🔄 gọi lại từ ProductReviews
     } catch (err) {
       console.error('Error creating review', err)
     }
@@ -101,13 +97,17 @@ export function ArticleComments({ productId }: { productId: string }) {
         </div>
 
         {/* Comment Form */}
-        {/* Comment Form */}
-        <div className={`mb-16 ${inView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-700 delay-200`}>
-          <form onSubmit={handleSubmitComment} className="border border-[#e0e0e0] bg-white p-8 space-y-4">
+        <div
+          className={`mb-16 ${inView ? 'opacity-100' : 'opacity-0'
+            } transition-opacity duration-700 delay-200`}
+        >
+          <form
+            onSubmit={handleSubmitComment}
+            className="border border-[#e0e0e0] bg-white p-8 space-y-4"
+          >
             <div className="flex gap-6">
               <div className="w-12 h-12 bg-[#f5f5f5] rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-4">
-
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -123,7 +123,8 @@ export function ArticleComments({ productId }: { productId: string }) {
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
-                      className={`text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
+                      className={`text-2xl ${star <= rating ? 'text-yellow-400' : 'text-gray-300'
+                        }`}
                     >
                       ★
                     </button>
@@ -146,7 +147,6 @@ export function ArticleComments({ productId }: { productId: string }) {
           </form>
         </div>
 
-
         {/* Comments List */}
         {isLoading && (
           <p className="text-center text-gray-500">Đang tải bình luận...</p>
@@ -156,7 +156,7 @@ export function ArticleComments({ productId }: { productId: string }) {
         )}
 
         <div className="space-y-12">
-          {reviews.map((review, index) => (
+          {reviews.slice(0, visibleCount).map((review, index) => (
             <div
               key={review.reviewId}
               className={`${inView ? 'opacity-100' : 'opacity-0'
@@ -198,6 +198,18 @@ export function ArticleComments({ productId }: { productId: string }) {
             </div>
           ))}
         </div>
+
+        {/* Load more button */}
+        {visibleCount < reviews.length && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 3)}
+              className="px-6 py-2 border border-[#8FBC8F] text-[#8FBC8F] font-nitti uppercase tracking-widest hover:bg-[#8FBC8F] hover:text-white transition-all duration-300"
+            >
+              Xem thêm bình luận
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )
