@@ -1,14 +1,12 @@
 'use client';
 
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
 
 export function OrderSummary() {
   const { state } = useCart();
-  const [shippingFee, setShippingFee] = useState(0);
   
   const subtotal = state.total;
-  const total = subtotal + shippingFee;
+  const total = subtotal; // Không có phí vận chuyển
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm sticky top-24">
@@ -20,11 +18,11 @@ export function OrderSummary() {
         {/* Chi tiết từng sản phẩm */}
         <div className="space-y-4">
           {state.items.map((item) => (
-            <div key={`${item.id}-${item.variant}`} className="flex gap-4">
+            <div key={item.id} className="flex gap-4">
               {/* Hình ảnh sản phẩm */}
               <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
                 <img 
-                  src={item.image} 
+                  src={item.image || '/images/products-default.png'} 
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />
@@ -35,9 +33,6 @@ export function OrderSummary() {
                 <h4 className="font-nitti font-medium text-[#2F3E34] text-sm leading-tight">
                   {item.name}
                 </h4>
-                <div className="text-xs text-gray-600 mt-1">
-                  {item.variant}
-                </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-xs text-gray-600">
                     Số lượng: {item.quantity}
@@ -62,9 +57,7 @@ export function OrderSummary() {
           
           <div className="flex justify-between font-nitti">
             <span className="text-gray-600">Phí vận chuyển:</span>
-            <span className="text-[#2F3E34]">
-              {shippingFee === 0 ? 'Miễn phí' : `${shippingFee.toLocaleString()}đ`}
-            </span>
+            <span className="text-[#8FBC8F]">Miễn phí</span>
           </div>
           
           <hr className="border-gray-200" />
