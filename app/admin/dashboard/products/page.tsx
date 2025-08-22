@@ -17,10 +17,12 @@ import {
   Product,
   ProductWithStatus,
   useCreateProductMutation,
-  useGetProductsQuery
+  useGetProductsQuery,
+  useRestoreProductMutation
 } from "@/features/product/productApi"
 import { useGetCategoriesQuery } from "@/features/category/categoryApi"
 import { useGetRegionsQuery } from "@/features/region"
+import { RestoreProductModal } from "./RestoreProductModal"
 
 // Define Product interface
 // interface Product {
@@ -87,7 +89,7 @@ interface SearchFilters {
 
 export default function ProductsPage() {
 
-  const { data: productData, isLoading: prodLoading, isError: prodError } = useGetProductsQuery({ page: 0, size: 20 });
+  const { data: productData, isLoading: prodLoading, isError: prodError, refetch } = useGetProductsQuery({ page: 0, size: 20 });
   const productsData = productData?.data || [];
 
   const getProductStatus = (stockQuantity: number): "Out of Stock" | "Low Stock" | "In Stock" => {
@@ -129,8 +131,8 @@ export default function ProductsPage() {
 
   // const [products, setProducts] = useState<Product[]>(initialProductsData)
   // const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProductsData)
-  const [products, setProducts] = useState<ProductWithStatus[]>(productsWithStatus);
-  const [filteredProducts, setFilteredProducts] = useState<ProductWithStatus[]>(productsWithStatus);
+  const [products, setProducts] = useState<ProductWithStatus[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ProductWithStatus[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<CreateProductData | null>(null)
   const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null)
   const [filteredEditProducts, setFilteredEditProducts] = useState<Product[]>(productsWithStatus)
@@ -138,25 +140,31 @@ export default function ProductsPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
-  // const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
+  const [selectedProductForRestore, setSelectedProductForRestore] = useState<Product | null>(null)
 
   const [createProduct] = useCreateProductMutation();
+  const [restoreProduct] = useRestoreProductMutation()
 
+  // useEffect(() => {
+  //   if (productsWithStatus.length === 0) return;
+
+  //   // So sánh id để tránh setState vô hạn
+  //   const currentIds = products.map(p => p.productId).join(',');
+  //   const newIds = productsWithStatus.map(p => p.productId).join(',');
+
+  //   if (currentIds !== newIds) {
+  //     setProducts(productsWithStatus);
+  //     setFilteredProducts(productsWithStatus);
+  //   }
+  // }, [productsWithStatus, products]);
   useEffect(() => {
-    if (productsWithStatus.length === 0) return;
+    setProducts(productsWithStatus)
+    setFilteredProducts(productsWithStatus)
+  }, [productData])
 
-    // So sánh id để tránh setState vô hạn
-    const currentIds = products.map(p => p.productId).join(',');
-    const newIds = productsWithStatus.map(p => p.productId).join(',');
 
-    if (currentIds !== newIds) {
-      setProducts(productsWithStatus);
-      setFilteredProducts(productsWithStatus);
-    }
-  }, [productsWithStatus, products]);
   // Filter and search products
-
-
   const handleSearch = (filters: SearchFilters) => {
     let filtered: ProductWithStatus[] = [...productsWithStatus]
 
@@ -236,6 +244,7 @@ export default function ProductsPage() {
       productName: product.productName,
       category: product.category,
       price: product.price,
+      deleted: product.deleted,
       stockQuantity: product.stockQuantity,
       description: product.description,
       region: product.region,
@@ -267,6 +276,20 @@ export default function ProductsPage() {
     setFilteredProducts(updatedProducts.filter(product =>
       filteredProducts.some(filtered => filtered.productId === product.productId)
     ))
+  }
+
+  const handleRestoreProduct = (product: Product) => {
+    setSelectedProductForRestore(product)
+    setShowRestoreModal(true)
+  }
+
+  const confirmRestoreProduct = async (productId: string) => {
+    try {
+      await restoreProduct(productId).unwrap()
+      refetch() // gọi lại API để sync
+    } catch (err) {
+      console.error("Restore failed", err)
+    }
   }
 
   // Delete product
@@ -363,32 +386,45 @@ export default function ProductsPage() {
                 <span className="text-sm text-gray-500">Kho: {product.stockQuantity}</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleViewProduct(product)}
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Xem
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleEditProduct(product)}
-                >
-                  <Edit className="h-4 w-4 mr-1" />
-                  Sửa
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700"
-                  onClick={() => handleDeleteProduct(product)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                {product.deleted ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-green-600 hover:text-green-700"
+                    onClick={() => handleRestoreProduct(product)}
+                  >
+                    Khôi phục
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleViewProduct(product)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Xem
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleEditProduct(product)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Sửa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteProduct(product)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -428,13 +464,22 @@ export default function ProductsPage() {
         product={selectedProductForEdit}
       />
 
-
       <DeleteProductModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleConfirmDelete}
         product={selectedProductForEdit}
+        refetchProducts={refetch}
       />
+
+      {showRestoreModal && selectedProductForRestore && (
+        <RestoreProductModal
+          product={selectedProductForRestore}
+          onClose={() => setShowRestoreModal(false)}
+          onRestore={confirmRestoreProduct}
+        />
+      )}
+
 
       <ViewProductModal
         isOpen={showViewModal}

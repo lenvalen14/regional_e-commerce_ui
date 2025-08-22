@@ -9,7 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
-import { Product, useDeleteProductMutation } from "@/features/product/productApi"
+import { Product, useSoftDeleteProductMutation } from "@/features/product/productApi"
 
 // interface Product {
 //   id: number
@@ -27,17 +27,19 @@ interface DeleteProductModalProps {
   onClose: () => void
   onDelete: (productId: string) => void
   product: Product | null
+  refetchProducts: () => void
 }
 
-export default function DeleteProductModal({ isOpen, onClose, onDelete, product }: DeleteProductModalProps) {
+export default function DeleteProductModal({ isOpen, onClose, onDelete, product, refetchProducts }: DeleteProductModalProps) {
 
-  const [deleteProduct, { isLoading, isError }] = useDeleteProductMutation();
+  const [deleteProduct, { isLoading, isError }] = useSoftDeleteProductMutation();
 
   const handleDelete = async () => {
     if (product) {
       try {
         await deleteProduct(product.productId).unwrap(); // Gọi API xóa
         onDelete(product.productId); // Cập nhật state local ở page
+        await refetchProducts();
         onClose();
       } catch (err) {
         console.error("Xóa sản phẩm thất bại:", err);

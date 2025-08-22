@@ -147,7 +147,7 @@ export default function EditProductModal({ isOpen, onClose, onEdit, product }: E
           stockQuantity: Number(formData.stock),
           description: formData.description,
         },
-        images: images.length > 0 ? images : undefined
+        images: images,
       }).unwrap();
 
       onEdit(result.data); // cập nhật local state
@@ -275,8 +275,12 @@ export default function EditProductModal({ isOpen, onClose, onEdit, product }: E
             <Button type="button" variant="outline" onClick={handleClose}>
               Hủy
             </Button>
-            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-              Cập nhật
+            <Button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang cập nhật..." : "Cập nhật"}
             </Button>
           </div>
         </form>

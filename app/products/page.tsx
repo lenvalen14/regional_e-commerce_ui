@@ -141,9 +141,13 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Lọc sản phẩm
-  let filtered = products.filter((p) =>
-    selectedRegion === "all" ? true : p.region.regionId === selectedRegion
-  );
+  let filtered = products
+    .filter((p) => !p.deleted) // <-- bỏ sản phẩm đã deleted
+    .filter((p) =>
+      selectedRegion === "all" ? true : p.region.regionId === selectedRegion
+    );
+
+
   if (selectedPrices.length > 0) {
     filtered = filtered.filter((p) =>
       selectedPrices.some((pid) => {

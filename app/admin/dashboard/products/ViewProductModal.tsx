@@ -45,7 +45,7 @@ export default function ViewProductModal({ isOpen, onClose, product }: ViewProdu
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-     <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Chi Tiết Sản Phẩm</DialogTitle>
         </DialogHeader>
@@ -54,7 +54,7 @@ export default function ViewProductModal({ isOpen, onClose, product }: ViewProdu
           {/* Product Image Placeholder */}
           <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
             <div className="text-center text-gray-400">
-             {product.imageProductResponseList?.[0] ? (
+              {product.imageProductResponseList?.[0] ? (
                 <img
                   src={product.imageProductResponseList[0].imageUrl}
                   alt={product.productName}

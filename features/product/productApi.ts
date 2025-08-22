@@ -14,6 +14,7 @@ export interface Product {
     description: string
     stockQuantity: number
     rating: number
+    deleted: boolean
     category: Category
     region: Region
     imageProductResponseList: ImageProductResponse[]
@@ -135,6 +136,21 @@ export const productApi = apiSlice.injectEndpoints({
             invalidatesTags: ["Product"],
         }),
 
+        softDeleteProduct: builder.mutation<ApiResponse<void>, string>({
+            query: (productId) => ({
+                url: `/products/soft-delete/${productId}`,
+                method: 'PUT',
+            }),
+            invalidatesTags: ['Product'],
+        }),
+
+        restoreProduct: builder.mutation<ApiResponse<void>, string>({
+            query: (productId) => ({
+                url: `/products/restore/${productId}`,
+                method: 'PUT',
+            }),
+            invalidatesTags: ['Product'],
+        }),
 
         deleteProduct: builder.mutation<ApiResponse<void>, string>({
             query: (productId) => ({
@@ -149,6 +165,8 @@ export const productApi = apiSlice.injectEndpoints({
 export const {
     useGetProductsQuery,
     useGetProductQuery,
+    useSoftDeleteProductMutation,
+    useRestoreProductMutation,
     useCreateProductMutation,
     useUpdateProductMutation,
     useDeleteProductMutation,
