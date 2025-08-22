@@ -14,14 +14,13 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
   const { state, updateQuantity, removeItem } = useCart();
 
   return (
-    <div className={`absolute right-0 top-full pt-2 w-96 z-50 transition-all duration-300 ease-in-out ${
-      isOpen 
-        ? 'opacity-100 visible transform translate-y-0' 
-        : 'opacity-0 invisible transform -translate-y-2'
-    }`}>
+    <div className={`absolute right-0 top-full pt-2 w-96 z-50 transition-all duration-300 ease-in-out ${isOpen
+      ? 'opacity-100 visible transform translate-y-0'
+      : 'opacity-0 invisible transform -translate-y-2'
+      }`}>
       {/* Invisible bridge để tạo vùng hover liền mạch */}
       <div className="h-2 w-full"></div>
-      
+
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <h3 className="font-beaululo text-[#2F3E34] font-medium tracking-widest uppercase">
@@ -40,12 +39,11 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
             <div className="max-h-80 overflow-y-auto">
               {state.items.map((item, index) => (
                 <Link
-                  key={`${item.id}-${item.variant}`}
+                  key={item.id}
                   href={`/products/${item.id}`}
                   onClick={onClose}
-                  className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
-                    isOpen ? 'animate-fade-in-up' : ''
-                  }`}
+                  className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${isOpen ? 'animate-fade-in-up' : ''
+                    }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <div className="flex gap-3">
@@ -60,40 +58,40 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                         }}
                       />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <h4 className="font-nitti font-medium text-[#2F3E34] text-sm truncate hover:text-[#8FBC8F] transition-colors">
                         {item.name}
                       </h4>
-                      <p className="text-xs text-[#666] font-nitti">
+                      {/* <p className="text-xs text-[#666] font-nitti">
                         Phân loại: {item.variant}
-                      </p>
+                      </p> */}
                       <p className="text-sm font-nitti font-bold text-[#E53935] mt-1">
                         {item.priceLabel}
                       </p>
-                      
+
                       <div className="flex items-center gap-2 mt-2 z-10 relative">
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            updateQuantity(item.id, item.variant, item.quantity - 1);
+                            updateQuantity(item.id, item.quantity - 1);
                           }}
                           className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] disabled:opacity-50 flex items-center justify-center transition-all duration-200 hover:scale-110"
                           disabled={item.quantity <= 1}
                         >
                           <Minus className="h-3 w-3" />
                         </button>
-                        
+
                         <span className="font-nitti text-sm w-6 text-center">
                           {item.quantity}
                         </span>
-                        
+
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            updateQuantity(item.id, item.variant, item.quantity + 1);
+                            updateQuantity(item.id, item.quantity + 1);
                           }}
                           className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] flex items-center justify-center transition-all duration-200 hover:scale-110"
                         >
@@ -101,12 +99,12 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                         </button>
                       </div>
                     </div>
-                    
+
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        removeItem(item.id, item.variant);
+                        removeItem(item.id);
                       }}
                       className="text-red-500 hover:text-red-700 p-1 transition-all duration-200 hover:scale-110 z-10 relative"
                     >
@@ -125,7 +123,7 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                   {state.total.toLocaleString()}đ
                 </span>
               </div>
-              
+
               <div className="space-y-2">
                 <Link
                   href="/cart"
@@ -134,7 +132,7 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                 >
                   Xem giỏ hàng
                 </Link>
-                
+
                 <Link
                   href="/checkout"
                   className="block w-full text-center bg-[#8FBC8F] hover:bg-[#7CA87C] text-white py-2 rounded-full font-nitti font-bold text-sm tracking-widest transition-all duration-300 hover:scale-105"
