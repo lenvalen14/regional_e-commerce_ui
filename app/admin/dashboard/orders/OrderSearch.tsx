@@ -19,10 +19,11 @@ interface OrderSearchProps {
 
 const statuses = [
   { value: "all", label: "Tất cả trạng thái", icon: null },
-  { value: "Processing", label: "Đang xử lý", icon: Package },
-  { value: "Shipping", label: "Đang giao", icon: Truck },
-  { value: "Delivered", label: "Đã giao", icon: CheckCircle },
-  { value: "Cancelled", label: "Đã hủy", icon: XCircle }
+  { value: "PENDING", label: "Chờ xác nhận", icon: Package },
+  { value: "CONFIRM", label: "Đã xác nhận", icon: Package },
+  { value: "SHIPPED", label: "Đang giao", icon: Truck },
+  { value: "COMPLETED", label: "Đã giao", icon: CheckCircle },
+  { value: "CANCELLED", label: "Đã hủy", icon: XCircle }
 ]
 
 const dateRanges = [

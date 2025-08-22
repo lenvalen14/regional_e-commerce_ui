@@ -10,49 +10,22 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Package, Truck, CheckCircle, XCircle } from "lucide-react"
-
-interface Order {
-  id: string
-  customer: {
-    name: string
-    email: string
-    phone: string
-  }
-  items: {
-    id: number
-    name: string
-    category: string
-    price: number
-    quantity: number
-    subtotal: number
-  }[]
-  total: number
-  status: string
-  orderDate: string
-  deliveryDate?: string
-  shippingAddress: {
-    street: string
-    ward: string
-    district: string
-    city: string
-  }
-  paymentMethod: string
-  notes?: string
-}
+import { Order } from "@/features/order/orderApi"
 
 interface ChangeStatusModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (orderId: string, newStatus: string) => void
+  onConfirm: (orderId: string, newStatus: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED') => void
   order: Order | null
-  newStatus: string
+  newStatus: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED'
 }
 
 const statusConfig = {
-  Processing: { label: "Đang xử lý", color: "bg-yellow-100 text-yellow-800", icon: Package },
-  Shipping: { label: "Đang giao", color: "bg-blue-100 text-blue-800", icon: Truck },
-  Delivered: { label: "Đã giao", color: "bg-green-100 text-green-800", icon: CheckCircle },
-  Cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-800", icon: XCircle },
+  PENDING: { label: "Chờ xác nhận", color: "bg-yellow-100 text-yellow-800", icon: Package },
+  CONFIRM: { label: "Đã xác nhận", color: "bg-blue-100 text-blue-800", icon: Package },
+  SHIPPED: { label: "Đang giao", color: "bg-blue-100 text-blue-800", icon: Truck },
+  COMPLETED: { label: "Đã giao", color: "bg-green-100 text-green-800", icon: CheckCircle },
+  CANCELLED: { label: "Đã hủy", color: "bg-red-100 text-red-800", icon: XCircle },
 }
 
 export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, newStatus }: ChangeStatusModalProps) {
@@ -62,6 +35,10 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
     return new Intl.NumberFormat('vi-VN').format(price)
   }
 
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('vi-VN')
+  }
+
   const currentStatusConfig = statusConfig[order.status as keyof typeof statusConfig]
   const newStatusConfig = statusConfig[newStatus as keyof typeof statusConfig]
   
@@ -69,7 +46,7 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
   const NewIcon = newStatusConfig.icon
 
   const getStatusChangeMessage = (currentStatus: string, newStatus: string) => {
-    if (newStatus === "Cancelled") {
+    if (newStatus === "CANCELLED") {
       return {
         title: "Hủy Đơn Hàng",
         description: "Bạn có chắc chắn muốn hủy đơn hàng này?",
@@ -77,7 +54,15 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
       }
     }
     
-    if (currentStatus === "Processing" && newStatus === "Shipping") {
+    if (currentStatus === "PENDING" && newStatus === "CONFIRM") {
+      return {
+        title: "Xác Nhận Đơn Hàng",
+        description: "Đơn hàng sẽ được chuyển sang trạng thái đã xác nhận.",
+        warning: "Khách hàng sẽ nhận được thông báo về việc đơn hàng đã được xác nhận."
+      }
+    }
+    
+    if (currentStatus === "CONFIRM" && newStatus === "SHIPPED") {
       return {
         title: "Chuyển Sang Giao Hàng",
         description: "Đơn hàng sẽ được chuyển sang trạng thái đang giao hàng.",
@@ -85,7 +70,7 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
       }
     }
     
-    if (currentStatus === "Shipping" && newStatus === "Delivered") {
+    if (currentStatus === "SHIPPED" && newStatus === "COMPLETED") {
       return {
         title: "Đánh Dấu Đã Giao",
         description: "Đơn hàng sẽ được đánh dấu là đã giao thành công.",
@@ -103,7 +88,7 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
   const statusMessage = getStatusChangeMessage(order.status, newStatus)
 
   const handleConfirm = () => {
-    onConfirm(order.id, newStatus)
+    onConfirm(order.orderId, newStatus)
     onClose()
   }
 
@@ -119,10 +104,10 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
               <div className="bg-gray-50 p-4 rounded-md space-y-3">
                 <h4 className="font-medium text-gray-900">Thông tin đơn hàng:</h4>
                 <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Mã đơn hàng:</span> #{order.id}</p>
-                  <p><span className="font-medium">Khách hàng:</span> {order.customer.name}</p>
-                  <p><span className="font-medium">Tổng tiền:</span> {formatPrice(order.total)}đ</p>
-                  <p><span className="font-medium">Ngày đặt:</span> {order.orderDate}</p>
+                  <p><span className="font-medium">Mã đơn hàng:</span> #{order.orderId}</p>
+                  <p><span className="font-medium">Khách hàng:</span> {order.userResponse.userName}</p>
+                  <p><span className="font-medium">Tổng tiền:</span> {formatPrice(order.totalAmount)}đ</p>
+                  <p><span className="font-medium">Ngày đặt:</span> {formatDate(order.orderDate)}</p>
                 </div>
               </div>
 
@@ -147,12 +132,12 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
               </div>
 
               <div className={`border-l-4 p-3 rounded-md ${
-                newStatus === "Cancelled" 
+                newStatus === "CANCELLED" 
                   ? "bg-red-50 border-red-200" 
                   : "bg-yellow-50 border-yellow-200"
               }`}>
                 <p className={`text-sm ${
-                  newStatus === "Cancelled" ? "text-red-800" : "text-yellow-800"
+                  newStatus === "CANCELLED" ? "text-red-800" : "text-yellow-800"
                 }`}>
                   <strong>Lưu ý:</strong> {statusMessage.warning}
                 </p>
@@ -165,7 +150,7 @@ export default function ChangeStatusModal({ isOpen, onClose, onConfirm, order, n
           <AlertDialogAction
             onClick={handleConfirm}
             className={
-              newStatus === "Cancelled"
+              newStatus === "CANCELLED"
                 ? "bg-red-600 hover:bg-red-700"
                 : "bg-blue-600 hover:bg-blue-700"
             }
