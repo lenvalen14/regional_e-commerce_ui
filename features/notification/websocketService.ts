@@ -27,7 +27,7 @@ export class NotificationWebSocketService {
         Authorization: `Bearer ${this.token}`,
         userId: this.userId,
       },
-      reconnectDelay: 10000,
+      reconnectDelay: 5000,
       debug: (str) => logger.debug("STOMP:", str),
       onConnect: () => {
         this.isConnected = true;

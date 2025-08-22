@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Bell, BellRing, Package, User, ShoppingBag, Star, Settings, Clock, Trash2, CheckCircle2 } from "lucide-react"
@@ -11,7 +11,8 @@ import {
   useMarkAsReadMutation,
   useMarkAllAsReadMutation,
   useDeleteNotificationMutation,
-  useGetUnreadCountQuery
+  useGetUnreadCountQuery,
+  notificationApi
 } from "@/features/notification"
 import { useWebSocketNotifications } from "@/features/notification"
 import { selectCurrentToken } from "@/features/auth/authSlice"
@@ -23,35 +24,66 @@ export default function NotificationBell() {
   const [isMounted, setIsMounted] = useState(false)
   const token = useSelector(selectCurrentToken)
   const [isOpen, setIsOpen] = useState(false)
-  
-  // Get user profile để lấy userId
+  const dispatch = useDispatch()
+
   const { data: userResponse } = useGetProfileQuery(undefined, { skip: !token })
   const userId = userResponse?.data?.userId
   
-  // API hooks
-  const { data: notificationsData, isLoading } = useGetUserNotificationsQuery({}, { skip: !token || !userId })
+  const { 
+    data: notificationsData, 
+    isLoading, 
+    refetch: refetchNotifications 
+  } = useGetUserNotificationsQuery({}, { 
+    skip: !token || !userId,
+    pollingInterval: 0,
+  })
+  
   const notifications = Array.isArray(notificationsData) ? notificationsData : []
-  const { data: unreadCountData } = useGetUnreadCountQuery(undefined, { skip: !token || !userId })
+  
+  const { 
+    data: unreadCountData, 
+    refetch: refetchUnreadCount 
+  } = useGetUnreadCountQuery(undefined, { 
+    skip: !token || !userId,
+    pollingInterval: 0,
+  })
+
   const [markAsRead] = useMarkAsReadMutation()
   const [markAllAsRead] = useMarkAllAsReadMutation()
   const [deleteNotification] = useDeleteNotificationMutation()
   
-  // WebSocket real-time
   const { isConnected: wsConnected } = useWebSocketNotifications({
     userId: userId!,
     onNewNotification: (newNotification) => {
-      toast.success(`🔔 ${newNotification.title}`)
+      logger.info("📨 New notification received:", newNotification)
+      
+      toast.success(`🔔 ${newNotification.title}`, {
+        description: newNotification.message,
+        duration: 4000,
+      })
+
+      dispatch(notificationApi.util.invalidateTags(['Notification']))
+
+      
     },
     onConnectionChange: (connected) => {
-      logger.info(`WebSocket ${connected ? "connected ✅" : "disconnected ❌"} (NotificationBell)`)
+      logger.info(`WebSocket ${connected ? "connected" : "disconnected"} (NotificationBell)`)
     }
   })
   
-  const unreadCount = unreadCountData?.count || 0
+  const unreadCount = unreadCountData?.data || 0
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
+  useEffect(() => {
+    if (wsConnected && userId) {
+      logger.info("WebSocket connected, refreshing notification data...")
+      refetchNotifications()
+      refetchUnreadCount()
+    }
+  }, [wsConnected, userId, refetchNotifications, refetchUnreadCount])
 
   if (!isMounted) {
     return (
@@ -126,6 +158,11 @@ export default function NotificationBell() {
             <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
+          )}
+          
+          {/* Debug indicator - có thể remove sau khi fix */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className={`absolute -bottom-1 -right-1 w-2 h-2 rounded-full ${wsConnected ? 'bg-green-400' : 'bg-red-400'}`} />
           )}
         </Button>
       </DropdownMenuTrigger>
