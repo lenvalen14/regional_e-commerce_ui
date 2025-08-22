@@ -395,7 +395,10 @@ export default function ProductDetailPage() {
           <ProductReviews productId={product.productId} />
 
           {/* Sản phẩm liên quan */}
-          <RelatedProducts currentProductId={product.productId} region={product.region.regionName} />
+          <RelatedProducts currentProductId={product.productId}
+            // region={product.region.regionName
+            categoryId={product.category.categoryId}
+          />
         </div>
 
         {/* Lightbox Modal */}
