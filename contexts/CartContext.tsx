@@ -3,13 +3,13 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../lib/store';
-import { 
-  useGetCartQuery, 
-  useAddToCartMutation, 
-  useUpdateCartItemMutation, 
+import {
+  useGetCartQuery,
+  useAddToCartMutation,
+  useUpdateCartItemMutation,
   useRemoveCartItemMutation,
   useSyncCartToServerMutation,
-  useClearCartMutation 
+  useClearCartMutation
 } from '../features/cart/cartApi';
 
 export interface CartItem {
@@ -18,7 +18,7 @@ export interface CartItem {
   price: number;
   priceLabel: string;
   quantity: number;
-  variant: string;
+  // variant: string;
   image: string;
 }
 
@@ -30,21 +30,21 @@ interface CartState {
 
 type CartAction =
   | { type: 'ADD_ITEM'; payload: Omit<CartItem, 'quantity'> & { quantity?: number } }
-  | { type: 'UPDATE_QUANTITY'; payload: { id: string; variant: string; quantity: number } }
-  | { type: 'REMOVE_ITEM'; payload: { id: string; variant: string } }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
+  | { type: 'REMOVE_ITEM'; payload: { id: string } }
   | { type: 'CLEAR_CART' }
   | { type: 'LOAD_CART'; payload: CartItem[] }
   | { type: 'SYNC_FROM_SERVER'; payload: CartItem[] };
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
-  
+
   switch (action.type) {
     case 'ADD_ITEM': {
       const { quantity = 1, ...item } = action.payload;
       console.log('Adding item:', { item, quantity });
-      
+
       const existingItemIndex = state.items.findIndex(
-        i => i.id === item.id && i.variant === item.variant
+        i => i.id === item.id
       );
 
       let newItems;
@@ -66,14 +66,14 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         total: newItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
         itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0)
       };
-      
+
       console.log('New cart state:', newState);
       return newState;
     }
 
     case 'UPDATE_QUANTITY': {
       const newItems = state.items.map(item =>
-        item.id === action.payload.id && item.variant === action.payload.variant
+        item.id === action.payload.id
           ? { ...item, quantity: action.payload.quantity }
           : item
       );
@@ -88,7 +88,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
     case 'REMOVE_ITEM': {
       const newItems = state.items.filter(
-        item => !(item.id === action.payload.id && item.variant === action.payload.variant)
+        item => !(item.id === action.payload.id)
       );
 
       return {
@@ -130,8 +130,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 interface CartContextType {
   state: CartState;
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-  updateQuantity: (id: string, variant: string, quantity: number) => void;
-  removeItem: (id: string, variant: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string) => void;
   clearCart: () => void;
   syncCartWithServer: () => void;
 }
@@ -191,7 +191,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const timeoutId = setTimeout(() => {
         syncCartWithServer();
       }, 100);
-      
+
       return () => clearTimeout(timeoutId);
     }
   }, [isAuthenticated, user?.userId]);
@@ -222,23 +222,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Convert server cart format to local cart format
   const convertServerCartToLocal = (serverCartItems: any[]): CartItem[] => {
     console.log('Converting server cart items:', serverCartItems);
-    
+
     return serverCartItems.map(item => {
       const product = item.product || {};
-      const imageUrl = product.images && product.images.length > 0 
-        ? product.images[0].imageUrl 
+      const imageUrl = product.images && product.images.length > 0
+        ? product.images[0].imageUrl
         : '/images/placeholder.jpg';
-      
+
       const localItem = {
         id: product.productId || product.id || item.productId,
         name: product.productName || product.name || 'Unknown Product',
         price: product.price || 0,
         priceLabel: `${(product.price || 0).toLocaleString()}đ`,
         quantity: item.quantity || 1,
-        variant: 'default', // Server doesn't seem to support variants yet
+        // variant: 'default', // Server doesn't seem to support variants yet
         image: imageUrl
       };
-      
+
       console.log('Converted item:', localItem);
       return localItem;
     });
@@ -253,7 +253,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       console.log('🔄 Starting simplified cart sync for user:', user.userId);
-      
+
       // Clear local cart immediately when user logs in
       localStorage.removeItem('cart');
       console.log('🗑️ Cleared local cart storage');
@@ -261,12 +261,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Get server cart
       const serverCartResult = await refetchCart();
       console.log('📦 Server cart response:', serverCartResult);
-      
+
       if (serverCartResult.data?.data) {
         const serverCart = serverCartResult.data.data;
         const serverItems = convertServerCartToLocal(serverCart.items || []);
         console.log('✅ Loading cart from server:', serverItems.length, 'items');
-        
+
         // Load server cart only
         dispatch({ type: 'SYNC_FROM_SERVER', payload: serverItems });
       } else {
@@ -282,10 +282,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const addItem = async (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
-    console.log('🛒 Adding item to cart:', { 
-      item: item.name, 
-      isAuthenticated, 
-      userId: user?.userId 
+    console.log('🛒 Adding item to cart:', {
+      item: item.name,
+      isAuthenticated,
+      userId: user?.userId
     });
 
     if (isAuthenticated && user?.userId) {
@@ -296,13 +296,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
           productId: item.id,
           quantity: item.quantity || 1,
         }).unwrap();
-        
+
         console.log('✅ Item added to server, refetching cart...');
-        
+
         // Refetch cart to get updated data
         const updatedCartResult = await refetchCart();
         console.log('📦 Updated cart result:', updatedCartResult);
-        
+
         if (updatedCartResult.data?.data) {
           const updatedCart = updatedCartResult.data.data;
           const updatedItems = convertServerCartToLocal(updatedCart.items || []);
@@ -323,23 +323,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateQuantity = async (id: string, variant: string, quantity: number) => {
+  const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1) return;
-    
+
     console.log('🔄 Updating quantity:', { id, quantity, isAuthenticated });
-    
+
     if (isAuthenticated && user?.userId) {
       try {
         // Find the cart item from current state
-        const currentItem = state.items.find(item => item.id === id && item.variant === variant);
+        const currentItem = state.items.find(item => item.id === id);
         if (currentItem) {
           // Note: We need proper cartItemId mapping here
           // For now, this is a simplified version
           await updateCartItemAPI({
-            id: currentItem.id, 
+            id: currentItem.id,
             data: { quantity }
           }).unwrap();
-          
+
           // Refetch cart
           const updatedCartResult = await refetchCart();
           if (updatedCartResult.data?.data) {
@@ -354,19 +354,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } else {
       // Local update for non-authenticated users
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { id, variant, quantity } });
+      dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
     }
   };
 
-  const removeItem = async (id: string, variant: string) => {
+  const removeItem = async (id: string) => {
     console.log('🗑️ Removing item:', { id, isAuthenticated });
-    
+
     if (isAuthenticated && user?.userId) {
       try {
-        const currentItem = state.items.find(item => item.id === id && item.variant === variant);
+        const currentItem = state.items.find(item => item.id === id);
         if (currentItem) {
           await removeCartItemAPI(currentItem.id).unwrap();
-          
+
           // Refetch cart
           const updatedCartResult = await refetchCart();
           if (updatedCartResult.data?.data) {
@@ -381,13 +381,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } else {
       // Local removal for non-authenticated users
-      dispatch({ type: 'REMOVE_ITEM', payload: { id, variant } });
+      dispatch({ type: 'REMOVE_ITEM', payload: { id } });
     }
   };
 
   const clearCart = async () => {
     console.log('🧹 Clearing cart:', { isAuthenticated });
-    
+
     if (isAuthenticated && user?.userId) {
       try {
         await clearCartAPI().unwrap();
@@ -404,13 +404,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartContext.Provider value={{ 
-      state, 
-      addItem, 
-      updateQuantity, 
-      removeItem, 
-      clearCart, 
-      syncCartWithServer 
+    <CartContext.Provider value={{
+      state,
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearCart,
+      syncCartWithServer
     }}>
       {children}
     </CartContext.Provider>

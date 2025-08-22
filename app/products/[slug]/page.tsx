@@ -16,59 +16,59 @@ import {
   useGetAverageRatingByProductQuery
 } from "@/features/review/reviewApi";
 
-const PRODUCTS = [
-  {
-    id: "cha-com",
-    name: "Chả Cốm Hà Nội",
-    region: "Miền Bắc",
-    price: "120.000đ",
-    rating: 4.6,
-    reviewCount: 16400,
-    description:
-      "Chả cốm thơm ngon, dẻo dai từ cốm làng Vòng, kết hợp cùng thịt băm truyền thống. Món ăn đặc trưng của Hà Nội mỗi độ thu về.",
-    image: "/images/com.jpg",
-    images: [
-      "/images/com.jpg",
-      "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
-      "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
-      "/images/com.jpg"  // Sẽ fallback về com.jpg nếu không có
-    ]
-  },
-  {
-    id: "bun-bo",
-    name: "Bún Bò Huế",
-    region: "Miền Trung",
-    price: "95.000đ",
-    rating: 4.5,
-    reviewCount: 10200,
-    description:
-      "Nước dùng đậm đà, cay nồng, hòa quyện giữa xả, mắm ruốc và thịt bò. Món đặc sản trứ danh của xứ Huế mộng mơ.",
-    image: "/images/bun-bo.jpg",
-    images: [
-      "/images/bun-bo.jpg",
-      "/images/com.jpg",
-      "/images/com.jpg",
-      "/images/bun-bo.jpg"
-    ]
-  },
-  {
-    id: "banh-trang",
-    name: "Bánh Tráng Trộn",
-    region: "Miền Nam",
-    price: "45.000đ",
-    rating: 4.7,
-    reviewCount: 9800,
-    description:
-      "Vị chua, cay, mặn, ngọt hòa quyện từ các nguyên liệu dân dã: bánh tráng, xoài, khô bò, rau răm. Món ăn vặt yêu thích khắp miền Nam.",
-    image: "/images/banh-trang.jpg",
-    images: [
-      "/images/banh-trang.jpg",
-      "/images/bun-bo.jpg",
-      "/images/bun-bo.jpg",
-      "/images/banh-trang.jpg"
-    ]
-  }
-];
+// const PRODUCTS = [
+//   {
+//     id: "cha-com",
+//     name: "Chả Cốm Hà Nội",
+//     region: "Miền Bắc",
+//     price: "120.000đ",
+//     rating: 4.6,
+//     reviewCount: 16400,
+//     description:
+//       "Chả cốm thơm ngon, dẻo dai từ cốm làng Vòng, kết hợp cùng thịt băm truyền thống. Món ăn đặc trưng của Hà Nội mỗi độ thu về.",
+//     image: "/images/com.jpg",
+//     images: [
+//       "/images/com.jpg",
+//       "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
+//       "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
+//       "/images/com.jpg"  // Sẽ fallback về com.jpg nếu không có
+//     ]
+//   },
+//   {
+//     id: "bun-bo",
+//     name: "Bún Bò Huế",
+//     region: "Miền Trung",
+//     price: "95.000đ",
+//     rating: 4.5,
+//     reviewCount: 10200,
+//     description:
+//       "Nước dùng đậm đà, cay nồng, hòa quyện giữa xả, mắm ruốc và thịt bò. Món đặc sản trứ danh của xứ Huế mộng mơ.",
+//     image: "/images/bun-bo.jpg",
+//     images: [
+//       "/images/bun-bo.jpg",
+//       "/images/com.jpg",
+//       "/images/com.jpg",
+//       "/images/bun-bo.jpg"
+//     ]
+//   },
+//   {
+//     id: "banh-trang",
+//     name: "Bánh Tráng Trộn",
+//     region: "Miền Nam",
+//     price: "45.000đ",
+//     rating: 4.7,
+//     reviewCount: 9800,
+//     description:
+//       "Vị chua, cay, mặn, ngọt hòa quyện từ các nguyên liệu dân dã: bánh tráng, xoài, khô bò, rau răm. Món ăn vặt yêu thích khắp miền Nam.",
+//     image: "/images/banh-trang.jpg",
+//     images: [
+//       "/images/banh-trang.jpg",
+//       "/images/bun-bo.jpg",
+//       "/images/bun-bo.jpg",
+//       "/images/banh-trang.jpg"
+//     ]
+//   }
+// ];
 
 const VARIANTS = ["Bột", "Phin giấy", "Túi lọc"];
 
@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
   const reviewCount = reviewCountData?.data ?? 0;
   const averageRating = avgRatingData?.data ?? 0;
   // const product = PRODUCTS.find((p) => p.id === params?.slug);
-  const [variant, setVariant] = useState(VARIANTS[0]);
+  // const [variant, setVariant] = useState(VARIANTS[0]);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -181,7 +181,7 @@ export default function ProductDetailPage() {
           name: product.productName,
           price: priceNumber,
           priceLabel: product.price.toString(),
-          variant: variant,
+          // variant: variant,
           image: product.imageProductResponseList?.[0]?.imageUrl || "images/products-default.png",
           quantity: quantity
         });
@@ -311,7 +311,7 @@ export default function ProductDetailPage() {
               <p className="text-[#E53935] text-2xl font-nitti font-bold tracking-widest mb-4">{product.price}đ</p>
 
               {/* Chọn loại */}
-              <div className="flex gap-2.5 mb-2">
+              {/* <div className="flex gap-2.5 mb-2">
                 {VARIANTS.map((v) => (
                   <button
                     key={v}
@@ -321,7 +321,7 @@ export default function ProductDetailPage() {
                     {v}
                   </button>
                 ))}
-              </div>
+              </div> */}
 
               {/* Số lượng */}
               <div className="flex items-center gap-2 mb-4">
