@@ -8,88 +8,105 @@ import { OrderDetailInfo } from "@/components/orders/OrderDetailInfo";
 import { OrderActions } from "@/components/orders/OrderActions";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useGetOrderQuery } from "@/features/order/orderApi";
 
 interface Props {
   params: Promise<{ id: string }>
 }
 
-// Mock data cho demo
-const mockOrder = {
-  id: "250812MNTGN423",
-  date: "2025-08-12",
-  status: "completed",
-  total: 1105500,
-  customerInfo: {
-    name: "Phan Phạm Ngọc Thạch",
-    phone: "0123456789",
-    email: "pngthach@gmail.com",
-    address: "123 Nguyễn Văn Linh, Phường Tân Phú, TP. Hồ Chí Minh"
-  },
-  paymentMethod: "COD",
-  shippingMethod: "Giao hàng tiêu chuẩn",
-  items: [
-    {
-      id: "1",
-      name: "Bánh tráng nướng Tây Ninh",
-      variant: "Hộp 500g",
-      quantity: 2,
-      price: 150000,
-      image: "/images/products/banh-trang-nuong.jpg"
+export default function OrderDetailPage({ params }: Props) {
+  const { id } = use(params);
+  
+  const { data: orderResponse, isLoading, error } = useGetOrderQuery(id);
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <SiteHeader />
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#8FBC8F] mx-auto"></div>
+            <p className="mt-4 text-gray-600 font-nitti">Đang tải thông tin đơn hàng...</p>
+          </div>
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (error || !orderResponse?.data) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <SiteHeader />
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <p className="text-red-600 font-nitti">Không thể tải thông tin đơn hàng</p>
+            <Link 
+              href="/orders"
+              className="mt-4 inline-block text-[#8FBC8F] hover:underline font-nitti"
+            >
+              ← Quay lại danh sách đơn hàng
+            </Link>
+          </div>
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  const order = orderResponse.data;
+
+  // Convert order data to match component interface
+  const orderDetail = {
+    id: order.orderId,
+    date: new Date(order.orderDate).toISOString().split('T')[0],
+    status: order.status.toLowerCase(),
+    total: order.totalAmount,
+    customerInfo: {
+      name: order.userResponse.userName,
+      phone: order.addressResponse.phone,
+      email: order.userResponse.email,
+      address: `${order.addressResponse.addressLine}, ${order.addressResponse.province}`
     },
-    {
-      id: "2", 
-      name: "Mắm tôm Cà Mau",
-      variant: "Hũ 250g",
-      quantity: 1,
-      price: 250000,
-      image: "/images/products/mam-tom.jpg"
-    },
-    {
-      id: "3",
-      name: "Chà bông gà Đà Lạt", 
-      variant: "Hũ 200g",
-      quantity: 3,
-      price: 180000,
-      image: "/images/products/cha-bong-ga.jpg"
-    }
-  ],
-  statusHistory: [
+    paymentMethod: order.status === 'PENDING' ? 'Chờ thanh toán' : 'COD',
+    shippingMethod: 'Giao hàng tiêu chuẩn',
+    items: order.orderItemResponses.map(item => ({
+      id: item.productResponse.productId,
+      name: item.productResponse.productName,
+      variant: 'Mặc định', // Backend không có variant
+      quantity: item.quantity,
+      price: item.unitPrice,
+      image: item.productResponse.imageProductResponseList?.[0]?.imageUrl || '/images/products-default.png'
+    }))
+  };
+
+  // Mock status history for now - you can enhance this later
+  const statusHistory = [
     {
       status: "confirmed",
       label: "Đơn Hàng Đã Đặt",
-      date: "22:10 12-08-2025",
+      date: new Date(order.orderDate).toLocaleDateString('vi-VN'),
       completed: true
     },
     {
       status: "paid",
       label: "Đơn Hàng Đã Thanh Toán",
-      amount: "1.105.500",
-      date: "22:11 12-08-2025", 
-      completed: true
+      date: order.status !== 'PENDING' ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '',
+      completed: order.status !== 'PENDING'
     },
     {
       status: "shipping",
       label: "Đã Giao Cho ĐVVC",
-      date: "10:48 13-08-2025",
-      completed: true
+      date: order.status === 'SHIPPED' || order.status === 'COMPLETED' ? '' : '',
+      completed: order.status === 'SHIPPED' || order.status === 'COMPLETED'
     },
     {
       status: "delivered",
       label: "Đã Nhận Được Hàng",
-      date: "13:02 14-08-2025",
-      completed: true
-    },
-    {
-      status: "rated",
-      label: "Đánh Giá",
-      date: "",
-      completed: false
+      date: order.status === 'COMPLETED' ? '' : '',
+      completed: order.status === 'COMPLETED'
     }
-  ]
-};
-
-export default function OrderDetailPage({ params }: Props) {
-  const { id } = use(params);
+  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,28 +127,26 @@ export default function OrderDetailPage({ params }: Props) {
           
           <div className="text-right">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>MÃ ĐƠN HÀNG: {mockOrder.id}</span>
-              <span>|</span>
-              <span className="text-[#E53935] font-medium">ĐƠN HÀNG ĐÃ HOÀN THÀNH</span>
+              <span>MÃ ĐƠN HÀNG: {orderDetail.id}</span>
             </div>
           </div>
         </div>
 
-        {/* Order Status Tracker */}
+        {/* Order status tracker */}
         <div className="mb-8">
-          <OrderStatusTracker statusHistory={mockOrder.statusHistory} />
+          <OrderStatusTracker statusHistory={statusHistory} />
         </div>
 
-        {/* Order Details */}
+        {/* Main content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Order Info */}
+          {/* Chi tiết đơn hàng */}
           <div className="lg:col-span-2">
-            <OrderDetailInfo order={mockOrder} />
+            <OrderDetailInfo order={orderDetail} />
           </div>
           
-          {/* Actions */}
+          {/* Hành động */}
           <div className="lg:col-span-1">
-            <OrderActions order={mockOrder} />
+            <OrderActions order={orderDetail} />
           </div>
         </div>
       </div>

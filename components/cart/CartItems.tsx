@@ -43,10 +43,15 @@ export function CartItems() {
           <div className="flex gap-4">
             <div className="w-24 h-24 relative flex-shrink-0">
               <Image
-                src={item.image}
+                src={item.image || '/images/products-default.png'}
                 alt={item.name}
                 fill
                 className="object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
+                onError={(e) => {
+                  console.log('Image load error for item:', item);
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/images/products-default.png';
+                }}
               />
             </div>
 

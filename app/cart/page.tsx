@@ -9,6 +9,16 @@ import { useCart } from "@/contexts/CartContext";
 export default function CartPage() {
   const { state } = useCart();
 
+  // Console log tất cả cartItemId và productId
+  console.log('Cart Items IDs (productId):', state.items.map(item => item.id));
+  console.log('Cart Items IDs (cartItemId):', state.items.map(item => item.cartItemId));
+  console.log('Cart Items Detail:', state.items.map(item => ({
+    productId: item.id,
+    cartItemId: item.cartItemId,
+    name: item.name,
+    quantity: item.quantity
+  })));
+
   return (
     <>
       <SiteHeader />
