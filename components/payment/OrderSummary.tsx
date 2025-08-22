@@ -24,7 +24,7 @@ export function OrderSummary() {
               {/* Hình ảnh sản phẩm */}
               <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
                 <img 
-                  src={item.image || '/images/placeholder.jpg'} 
+                  src={item.image} 
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />

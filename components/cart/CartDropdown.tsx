@@ -53,9 +53,6 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                         alt={item.name}
                         fill
                         className="object-cover rounded transition-transform duration-200 hover:scale-105"
-                        onError={(e) => {
-                          e.currentTarget.src = '/images/placeholder.jpg';
-                        }}
                       />
                     </div>
 

@@ -47,9 +47,6 @@ export function CartItems() {
                 alt={item.name}
                 fill
                 className="object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
-                onError={(e) => {
-                  e.currentTarget.src = '/images/placeholder.jpg';
-                }}
               />
             </div>
 

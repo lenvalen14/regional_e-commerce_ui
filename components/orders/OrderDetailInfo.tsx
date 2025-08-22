@@ -53,7 +53,7 @@ export function OrderDetailInfo({ order }: OrderDetailInfoProps) {
               {/* Hình ảnh sản phẩm */}
               <div className="w-20 h-20 bg-gray-100 rounded-md flex-shrink-0 overflow-hidden">
                 <img 
-                  src={item.image || '/images/placeholder.jpg'} 
+                  src={item.image} 
                   alt={item.name}
                   className="w-full h-full object-cover"
                 />

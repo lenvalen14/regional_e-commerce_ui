@@ -227,7 +227,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const product = item.product || {};
       const imageUrl = product.images && product.images.length > 0
         ? product.images[0].imageUrl
-        : '/images/placeholder.jpg';
+        : '';
 
       const localItem = {
         id: product.productId || product.id || item.productId,
