@@ -462,6 +462,9 @@ export default function ProductsPage() {
         onClose={() => setShowEditModal(false)}
         onEdit={handleUpdateProduct}
         product={selectedProductForEdit}
+        categories={categories}
+        regions={regions}
+        loading={catLoading || isLoading}
       />
 
       <DeleteProductModal
