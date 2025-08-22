@@ -1,5 +1,7 @@
-import { NotificationResponse } from './notificationApi';
-import { Client as StompClient } from '@stomp/stompjs';
+import { NotificationResponse } from "./notificationApi";
+import { Client as StompClient } from "@stomp/stompjs";
+import { toast } from "sonner";
+import { logger } from "@/utils/logger";
 
 export class NotificationWebSocketService {
   private stompClient: StompClient | null = null;
@@ -9,13 +11,13 @@ export class NotificationWebSocketService {
 
   constructor(
     private wsUrl: string,
-    private userId: string,
+    public userId: string,
     private token: string
   ) {}
 
   connect(): void {
     if (this.stompClient?.active) {
-      console.log('WebSocket already active');
+      logger.debug("WebSocket already active");
       return;
     }
 
@@ -25,24 +27,26 @@ export class NotificationWebSocketService {
         Authorization: `Bearer ${this.token}`,
         userId: this.userId,
       },
-      reconnectDelay: 100000,
-      debug: (str) => console.log('STOMP Debug:', str),
+      reconnectDelay: 10000,
+      debug: (str) => logger.debug("STOMP:", str),
       onConnect: () => {
-        console.log('STOMP WebSocket connected successfully');
         this.isConnected = true;
         this.onConnectionChangeCallback?.(true);
         this.subscribeToNotifications();
+        logger.info("STOMP WebSocket connected successfully");
       },
       onDisconnect: () => {
-        console.log('STOMP WebSocket disconnected');
         this.isConnected = false;
         this.onConnectionChangeCallback?.(false);
+        logger.info("STOMP WebSocket disconnected");
       },
       onStompError: (frame) => {
-        console.error('STOMP Error:', frame.headers['message'], frame.body);
+        toast.error("WebSocket error " + frame.headers["message"]);
+        logger.error("STOMP Error:", frame.headers["message"], frame.body);
       },
       onWebSocketError: (error) => {
-        console.error('WebSocket Error:', error);
+        toast.error("WebSocket connection failed");
+        logger.error("WebSocket Error:", error);
       },
     });
 
@@ -51,7 +55,7 @@ export class NotificationWebSocketService {
 
   private subscribeToNotifications(): void {
     if (!this.stompClient || !this.stompClient.connected) {
-      console.warn('Cannot subscribe: STOMP client not connected');
+      logger.warn("Cannot subscribe: STOMP client not connected");
       return;
     }
 
@@ -60,8 +64,9 @@ export class NotificationWebSocketService {
       try {
         const notification: NotificationResponse = JSON.parse(message.body);
         this.onNotificationCallback?.(notification);
+        logger.debug("Notification received:", notification);
       } catch (error) {
-        console.error('Error parsing notification message:', error);
+        logger.error("Error parsing notification message:", error);
       }
     });
   }
@@ -73,6 +78,8 @@ export class NotificationWebSocketService {
     }
     this.isConnected = false;
     this.onConnectionChangeCallback?.(false);
+    toast("WebSocket disconnected");
+    logger.info("WebSocket disconnected manually");
   }
 
   onNotification(callback: (notification: NotificationResponse) => void): void {
@@ -95,11 +102,8 @@ export const getNotificationWebSocketService = (
   userId: string,
   token: string
 ): NotificationWebSocketService => {
-  if (
-    globalWebSocketService &&
-    (globalWebSocketService as any).userId !== userId
-  ) {
-    console.log('User changed, reconnecting...');
+  if (globalWebSocketService && globalWebSocketService.userId !== userId) {
+    logger.info("User changed, reconnecting WebSocket...");
     globalWebSocketService.disconnect();
     globalWebSocketService = null;
   }

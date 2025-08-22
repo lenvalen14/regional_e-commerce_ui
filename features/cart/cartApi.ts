@@ -1,14 +1,10 @@
 import { apiSlice } from '../../lib/api/apiSlice'
+import { Product } from '../product/productApi'
 
 export interface CartItem {
   cartItemId: string
   quantity: number
-  product: {
-    productId: string
-    productName: string
-    price: number
-    images?: Array<{ imageId: string; imageUrl: string }>
-  }
+  product: Product
 }
 
 export interface Cart {

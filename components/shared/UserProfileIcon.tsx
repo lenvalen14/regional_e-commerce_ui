@@ -21,8 +21,6 @@ export function UserProfileIcon() {
     setIsClient(true);
   }, []);
 
-  console.log('User Profile Icon Rendered:', { isLoggedIn, user });
-
   const isAdmin = user?.userName === "Admin" || user?.role === "ADMIN";
 
   return (
