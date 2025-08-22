@@ -329,12 +329,21 @@ export default function ProductsPage() {
         {filteredProducts.map((product) => (
           <Card key={product.productId} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="aspect-square bg-gray-100 relative">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center text-gray-400">
-                  <div className="text-4xl mb-2">📦</div>
-                  <p className="text-xs">Chưa có hình ảnh</p>
+              {product.imageProductResponseList?.[0] ? (
+                <img
+                  src={product.imageProductResponseList[0].imageUrl}
+                  alt={product.productName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl mb-2">📦</div>
+                    <p className="text-xs">Chưa có hình ảnh</p>
+                  </div>
                 </div>
-              </div>
+              )}
+
               <div className="absolute top-2 right-2">
                 {getStatusBadge(product.status)}
               </div>
@@ -344,6 +353,7 @@ export default function ProductsPage() {
                 </Badge>
               </div>
             </div>
+
             <CardContent className="p-4">
               <h3 className="font-semibold text-gray-900 mb-1 line-clamp-2">{product.productName}</h3>
               <p className="text-sm text-gray-500 mb-2">{product.category.categoryName}</p>
@@ -384,6 +394,7 @@ export default function ProductsPage() {
           </Card>
         ))}
       </div>
+
 
       {/* Empty state */}
       {filteredProducts.length === 0 && (
