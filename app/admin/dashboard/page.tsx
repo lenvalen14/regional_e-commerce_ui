@@ -5,22 +5,30 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, Package, DollarSign, Clock, TrendingUp, TrendingDown } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
-
-// Sample data for the chart
-const salesData = [
-  { name: "1k", value: 20 },
-  { name: "5k", value: 45 },
-  { name: "10k", value: 35 },
-  { name: "15k", value: 60 },
-  { name: "20k", value: 85 },
-  { name: "25k", value: 75 },
-  { name: "30k", value: 90 },
-  { name: "35k", value: 65 },
-  { name: "40k", value: 80 },
-  { name: "45k", value: 70 },
-]
+import { Order, useGetOverviewStatsQuery, useGetRevenueStatsQuery } from "@/features/stats/statsApi"
 
 export default function DashboardPage() {
+  const { data: overview, isLoading: loadingOverview, isError: errorOverview } = useGetOverviewStatsQuery()
+  const { data: revenueStats, isLoading: loadingRevenue, isError: errorRevenue } = useGetRevenueStatsQuery()
+
+  if (loadingOverview || loadingRevenue) {
+    return <div className="p-6">Đang tải dữ liệu...</div>
+  }
+
+  if (errorOverview || errorRevenue || !overview || !revenueStats) {
+    return <div className="p-6">Không thể tải dữ liệu</div>
+  }
+
+  const stats = overview
+  const revenues = revenueStats.revenues || []
+  const recentOrders = revenueStats.recentOrders || []
+
+  // Chuyển đổi revenue sang data cho chart
+  const chartData = revenues.map((r: any) => ({
+    name: `${r.month}/${r.year}`,
+    value: r.total
+  }))
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -34,58 +42,80 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Tổng người dùng */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-2xl font-bold">{stats.totalUsers.value.toLocaleString()}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +12% so với tháng trước
+              {stats.totalUsers.change >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+              )}
+              {stats.totalUsers.change} {stats.totalUsers.unit}
             </div>
           </CardContent>
         </Card>
 
+        {/* Tổng sản phẩm */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tổng sản phẩm</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">456</div>
+            <div className="text-2xl font-bold">{stats.totalProducts.value.toLocaleString()}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-              +8% so với tháng trước
+              {stats.totalProducts.change >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+              )}
+              {stats.totalProducts.change} {stats.totalProducts.unit}
             </div>
           </CardContent>
         </Card>
 
+        {/* Doanh thu */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Doanh thu</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₫12,345,678</div>
+            <div className="text-2xl font-bold">
+              ₫{stats.totalRevenue.value.toLocaleString()}
+            </div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-              -3% so với tháng trước
+              {stats.totalRevenue.change >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+              )}
+              {stats.totalRevenue.change} {stats.totalRevenue.unit}
             </div>
           </CardContent>
         </Card>
 
+        {/* Đơn hàng chờ */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Đơn hàng chờ</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">23</div>
+            <div className="text-2xl font-bold">{stats.pendingOrders.value}</div>
             <div className="flex items-center text-xs text-muted-foreground">
-              <TrendingUp className="h-3 w-3 text-orange-500 mr-1" />
-              +5 đơn hàng mới
+              {stats.pendingOrders.change >= 0 ? (
+                <TrendingUp className="h-3 w-3 text-orange-500 mr-1" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
+              )}
+              {stats.pendingOrders.change} {stats.pendingOrders.unit}
             </div>
           </CardContent>
         </Card>
@@ -100,7 +130,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={salesData}>
+              <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -124,69 +154,40 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {[
-                { id: "#DH001", customer: "Nguyễn Văn A", amount: "₫320,000", status: "pending" },
-                { id: "#DH002", customer: "Trần Thị B", amount: "₫450,000", status: "completed" },
-                { id: "#DH003", customer: "Lê Văn C", amount: "₫280,000", status: "processing" },
-                { id: "#DH004", customer: "Phạm Thị D", amount: "₫650,000", status: "completed" },
-                { id: "#DH005", customer: "Hoàng Văn E", amount: "₫190,000", status: "pending" },
-              ].map((order) => (
-                <div key={order.id} className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{order.id}</div>
-                    <div className="text-sm text-gray-600">{order.customer}</div>
+              {recentOrders.length === 0 ? (
+                <p className="text-gray-500">Không có đơn hàng gần đây</p>
+              ) : (
+                recentOrders.map((order: Order) => (
+                  <div key={order.orderId} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">#{order.orderId}</div>
+                      <div className="text-sm text-gray-600">{order.user.userName}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">₫{order.totalAmount.toLocaleString()}</div>
+                      <Badge
+                        variant={
+                          order.status === "COMPLETED"
+                            ? "default"
+                            : order.status === "PROCESSING"
+                            ? "secondary"
+                            : "outline"
+                        }
+                      >
+                        {order.status === "COMPLETED"
+                          ? "Hoàn thành"
+                          : order.status === "PROCESSING"
+                          ? "Đang xử lý"
+                          : "Chờ xử lý"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">{order.amount}</div>
-                    <Badge
-                      variant={
-                        order.status === "completed"
-                          ? "default"
-                          : order.status === "processing"
-                          ? "secondary"
-                          : "outline"
-                      }
-                    >
-                      {order.status === "completed"
-                        ? "Hoàn thành"
-                        : order.status === "processing"
-                        ? "Đang xử lý"
-                        : "Chờ xử lý"}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Thao tác nhanh</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Users className="h-6 w-6 mb-2" />
-              Thêm người dùng
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Package className="h-6 w-6 mb-2" />
-              Thêm sản phẩm
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <DollarSign className="h-6 w-6 mb-2" />
-              Xem báo cáo
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col">
-              <Clock className="h-6 w-6 mb-2" />
-              Xử lý đơn hàng
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
