@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import axios from "axios";
 import { CreditCard, MapPin, User, Plus } from "lucide-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
@@ -52,7 +53,7 @@ export function CheckoutForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.addressId) {
       alert('Vui lòng chọn địa chỉ giao hàng');
       return;
@@ -61,7 +62,7 @@ export function CheckoutForm() {
     // Lấy cartItemsId từ giỏ hàng
     const cartItemsId = state.items
       .map(item => item.cartItemId)
-      .filter(id => id) as string[]; // Filter out undefined values
+      .filter(id => id) as string[];
 
     if (cartItemsId.length === 0) {
       alert('Không tìm thấy cartItemId. Vui lòng thử lại!');
@@ -75,14 +76,28 @@ export function CheckoutForm() {
         cartItemsId: cartItemsId,
       }).unwrap();
 
-      console.log('Order created successfully:', result);
-      
-      // Clear cart after successful order
+      // Nếu chọn VNPAY thì gọi API lấy paymentUrl và redirect
+      if (formData.paymentMethod === 'VNPAY') {
+        const orderId = result.data.orderId;
+        const amount = result.data.totalAmount;
+        // Gọi API lấy paymentUrl
+        const paymentApi = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1'}/payment/vn-pay?amount=${amount}&bankCode=NCB&method=VNPAY&orderId=${orderId}`;
+        const paymentRes = await axios.get(paymentApi);
+        const paymentUrl = paymentRes?.data?.data?.paymentUrl;
+        if (paymentUrl) {
+          clearCart();
+          window.location.href = paymentUrl;
+          return;
+        } else {
+          alert('Không lấy được link thanh toán VNPAY. Vui lòng thử lại!');
+          return;
+        }
+      }
+
+      // Nếu là CASH thì xử lý như cũ
       clearCart();
-      
-      // Redirect to order success page or order detail
       router.push(`/orders/${result.data.orderId}`);
-      
+
     } catch (error) {
       console.error('Failed to create order:', error);
       alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!');
