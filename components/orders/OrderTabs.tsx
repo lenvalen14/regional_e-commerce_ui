@@ -8,10 +8,11 @@ interface OrderTabsProps {
 export function OrderTabs({ selectedTab, setSelectedTab }: OrderTabsProps) {
   const tabs = [
     { key: "all", label: "Tất cả" },
-    { key: "processing", label: "Đang xử lý" },
-    { key: "shipping", label: "Đang giao" },
-    { key: "delivered", label: "Đã giao" },
-    { key: "cancelled", label: "Đã hủy" }
+    { key: "PENDING", label: "Chờ xác nhận" },
+    { key: "CONFIRM", label: "Đã xác nhận" },
+    { key: "SHIPPED", label: "Đang giao" },
+    { key: "COMPLETED", label: "Đã giao" },
+    { key: "CANCELLED", label: "Đã huỷ" }
   ];
   return (
     <div className="bg-white rounded-lg shadow-sm mb-6">

@@ -161,10 +161,10 @@ export default function ViewOrderModal({ isOpen, onClose, order, onStatusChange 
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">{formatPrice(item.unitPrice)}đ</td>
+                      <td className="py-3 px-4">{formatPrice(item.unitPrice / item.quantity)}đ</td>
                       <td className="py-3 px-4">{item.quantity}</td>
                       <td className="py-3 px-4 text-right font-medium">
-                        {formatPrice(item.unitPrice * item.quantity)}đ
+                        {formatPrice(item.unitPrice)}đ
                       </td>
                     </tr>
                   ))}

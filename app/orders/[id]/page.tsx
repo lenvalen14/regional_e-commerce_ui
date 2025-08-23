@@ -60,7 +60,7 @@ export default function OrderDetailPage({ params }: Props) {
   const orderDetail = {
     id: order.orderId,
     date: new Date(order.orderDate).toISOString().split('T')[0],
-    status: order.status.toLowerCase(),
+    status: order.status,
     total: order.totalAmount,
     customerInfo: {
       name: order.userResponse.userName,
@@ -73,39 +73,45 @@ export default function OrderDetailPage({ params }: Props) {
     items: order.orderItemResponses.map(item => ({
       id: item.productResponse.productId,
       name: item.productResponse.productName,
-      variant: 'Mặc định', // Backend không có variant
+      variant: 'Mặc định',
       quantity: item.quantity,
       price: item.unitPrice,
       image: item.productResponse.imageProductResponseList?.[0]?.imageUrl || '/images/products-default.png'
     }))
   };
 
-  // Mock status history for now - you can enhance this later
+  // Trạng thái đơn hàng đúng chuẩn backend
   const statusHistory = [
     {
-      status: "confirmed",
-      label: "Đơn Hàng Đã Đặt",
+      status: "PENDING",
+      label: "Chờ xác nhận",
       date: new Date(order.orderDate).toLocaleDateString('vi-VN'),
-      completed: true
-    },
-    {
-      status: "paid",
-      label: "Đơn Hàng Đã Thanh Toán",
-      date: order.status !== 'PENDING' ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '',
       completed: order.status !== 'PENDING'
     },
     {
-      status: "shipping",
-      label: "Đã Giao Cho ĐVVC",
-      date: order.status === 'SHIPPED' || order.status === 'COMPLETED' ? '' : '',
-      completed: order.status === 'SHIPPED' || order.status === 'COMPLETED'
+      status: "CONFIRM",
+      label: "Đã xác nhận",
+      date: order.status === 'CONFIRM' || order.status === 'SHIPPED' || order.status === 'COMPLETED' ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '',
+      completed: order.status === 'SHIPPED' || order.status === 'COMPLETED' || order.status === 'CONFIRM'
     },
     {
-      status: "delivered",
-      label: "Đã Nhận Được Hàng",
-      date: order.status === 'COMPLETED' ? '' : '',
+      status: "SHIPPED",
+      label: "Đang giao",
+      date: order.status === 'SHIPPED' || order.status === 'COMPLETED' ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '',
+      completed: order.status === 'COMPLETED' || order.status === 'SHIPPED'
+    },
+    {
+      status: "COMPLETED",
+      label: "Đã giao",
+      date: order.status === 'COMPLETED' ? new Date(order.orderDate).toLocaleDateString('vi-VN') : '',
       completed: order.status === 'COMPLETED'
-    }
+    },
+    ...(order.status === 'CANCELLED' ? [{
+      status: "CANCELLED",
+      label: "Đã huỷ",
+      date: new Date(order.orderDate).toLocaleDateString('vi-VN'),
+      completed: true
+    }] : [])
   ];
 
   return (
