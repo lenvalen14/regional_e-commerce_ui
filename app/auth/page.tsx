@@ -60,6 +60,21 @@ export default function AuthPage() {
     setFormData({ email: "", password: "", name: "", confirmPassword: "", phone: "" });
 
   const validateRegister = () => {
+    // Email phải có đuôi @gmail.com
+    if (!/^[\w.+-]+@gmail\.com$/.test(formData.email)) {
+      toast.error("Email phải có đuôi @gmail.com");
+      return false;
+    }
+    // Số điện thoại phải từ 9-10 số, bắt đầu bằng 0
+    if (!/^0\d{8,9}$/.test(formData.phone)) {
+      toast.error("Số điện thoại phải từ 9-10 số và bắt đầu bằng số 0");
+      return false;
+    }
+    // Mật khẩu mạnh: ít nhất 8 ký tự, có hoa, thường, số, ký tự đặc biệt
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(formData.password)) {
+      toast.error("Mật khẩu phải tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt");
+      return false;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error("Mật khẩu xác nhận không khớp!");
       return false;

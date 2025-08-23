@@ -324,31 +324,45 @@ export default function ProductDetailPage() {
               </div> */}
 
               {/* Số lượng */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="font-nitti text-sm">Số lượng:</span>
-                <button
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
-                    hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
-                >-</button>
-                <span className="font-nitti text-base w-8 text-center">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(q => q + 1)}
-                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
-                    hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
-                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
-                >+</button>
+              <div className="flex flex-col gap-1 mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="font-nitti text-sm">Số lượng:</span>
+                  <button
+                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
+                      hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
+                    disabled={quantity <= 1}
+                  >-</button>
+                  <span className="font-nitti text-base w-8 text-center">{quantity}</span>
+                  <button
+                    onClick={() => {
+                      if (quantity < product.stockQuantity) {
+                        setQuantity(q => q + 1);
+                      }
+                    }}
+                    className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150
+                      hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] hover:scale-110
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8FBC8F]"
+                    disabled={quantity >= product.stockQuantity}
+                  >+</button>
+                </div>
+                {quantity >= product.stockQuantity && product.stockQuantity > 0 && (
+                  <span className="text-xs text-red-500 font-nitti mt-1">Đã đạt số lượng tối đa trong kho</span>
+                )}
               </div>
 
-              {/* Nút thêm vào giỏ */}
+              {/* Nút thêm vào giỏ hoặc hết hàng */}
               <button
                 onClick={handleAddToCart}
-                disabled={isAdding}
-                className={`relative overflow-hidden bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-[#bbb] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-all duration-300 ${showSuccess ? 'bg-green-600' : ''
-                  }`}
+                disabled={isAdding || product.stockQuantity === 0}
+                className={`relative overflow-hidden bg-[#8FBC8F] hover:bg-[#7CA87C] disabled:bg-[#bbb] text-white px-8 py-3 rounded-full text-base font-nitti font-bold tracking-widest transition-all duration-300 ${showSuccess ? 'bg-green-600' : ''}`}
               >
-                {isAdding ? (
+                {product.stockQuantity === 0 ? (
+                  <span className="flex items-center justify-center gap-2">
+                    Đã hết hàng
+                  </span>
+                ) : isAdding ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     Đang thêm...
