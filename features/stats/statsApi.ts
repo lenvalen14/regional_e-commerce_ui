@@ -22,7 +22,7 @@ export interface MonthlyRevenue {
 
 export interface Order {
   orderId: string
-  user: User
+  userResponse: User
   totalAmount: number
   status: string
   orderDate: string
@@ -33,6 +33,7 @@ export interface RevenueStats {
   revenues: MonthlyRevenue[]
   recentOrders: Order[]
 }
+
 
 export const statsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

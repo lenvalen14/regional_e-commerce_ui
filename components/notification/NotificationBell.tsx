@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
@@ -38,7 +38,16 @@ export default function NotificationBell() {
     pollingInterval: 0,
   })
   
-  const notifications = Array.isArray(notificationsData) ? notificationsData : []
+  const rawNotifications = Array.isArray(notificationsData) ? notificationsData : []
+  
+  // Sort notifications by createdAt in descending order (newest first)
+  const notifications = useMemo(() => {
+    return [...rawNotifications].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime()
+      const dateB = new Date(b.createdAt).getTime()
+      return dateB - dateA // Descending order (newest first)
+    })
+  }, [rawNotifications])
   
   const { 
     data: unreadCountData, 
@@ -63,8 +72,6 @@ export default function NotificationBell() {
       })
 
       dispatch(notificationApi.util.invalidateTags(['Notification']))
-
-      
     },
     onConnectionChange: (connected) => {
       logger.info(`WebSocket ${connected ? "connected" : "disconnected"} (NotificationBell)`)

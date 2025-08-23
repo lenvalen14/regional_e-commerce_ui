@@ -11,6 +11,8 @@ export default function DashboardPage() {
   const { data: overview, isLoading: loadingOverview, isError: errorOverview } = useGetOverviewStatsQuery()
   const { data: revenueStats, isLoading: loadingRevenue, isError: errorRevenue } = useGetRevenueStatsQuery()
 
+  console.log('Revenue Stats Data:', revenueStats)
+
   if (loadingOverview || loadingRevenue) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6">
@@ -41,6 +43,7 @@ export default function DashboardPage() {
   const stats = overview
   const revenues = revenueStats.revenues || []
   const recentOrders = revenueStats.recentOrders || []
+  console.log('Recent Orders:', recentOrders)
 
   // Chuyển đổi revenue sang data cho chart với gradient colors
   const chartData = revenues.map((r: any) => ({
@@ -216,9 +219,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Enhanced Charts and Recent Activity */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
           {/* Enhanced Sales Chart */}
-          <Card className="xl:col-span-2 bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
+          <Card className="xl:col-span-3 bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
             <CardHeader className="pb-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -272,68 +275,72 @@ export default function DashboardPage() {
           </Card>
 
           {/* Enhanced Recent Orders */}
-          <Card className="bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
-            <CardHeader className="pb-4">
+          <Card className="xl:col-span-2 bg-white/80 backdrop-blur-sm border-white/20 shadow-xl">
+            <CardHeader>
               <CardTitle className="text-xl font-bold text-slate-800">Đơn hàng gần đây</CardTitle>
               <p className="text-slate-500">Hoạt động mới nhất</p>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentOrders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="text-4xl text-slate-300 mb-4">📦</div>
-                    <p className="text-slate-500 font-medium">Không có đơn hàng gần đây</p>
-                    <p className="text-sm text-slate-400 mt-1">Dữ liệu sẽ xuất hiện khi có đơn hàng mới</p>
-                  </div>
-                ) : (
-                  recentOrders.map((order: Order, index: number) => (
-                    <div 
-                      key={order.orderId} 
-                      className="group flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-xl border border-slate-200/50 hover:shadow-md transition-all duration-300 hover:scale-[1.02]"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <div className="font-bold text-slate-800">#{order.orderId}</div>
-                          <div className="text-sm text-slate-600 font-medium">{order.user.userName}</div>
-                        </div>
+              <CardContent>
+                <div className="space-y-2">
+                  {recentOrders.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M9 9h.01M15 9h.01M9 15h.01M15 15h.01" />
+                        </svg>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-lg text-slate-800 mb-1">
-                          ₫{order.totalAmount.toLocaleString()}
-                        </div>
-                        <Badge
-                          variant={
-                            order.status === "COMPLETED"
-                              ? "default"
-                              : order.status === "PROCESSING"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          className={`
-                            font-medium transition-colors
-                            ${order.status === "COMPLETED" 
-                              ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" 
-                              : order.status === "PROCESSING"
-                              ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                              : "bg-amber-100 text-amber-700 hover:bg-amber-200 border-amber-300"
-                            }
-                          `}
-                        >
-                          {order.status === "COMPLETED"
-                            ? "✅ Hoàn thành"
-                            : order.status === "PROCESSING"
-                            ? "⚡ Đang xử lý"
-                            : "⏳ Chờ xử lý"}
-                        </Badge>
-                      </div>
+                      <p className="text-slate-700 font-medium mb-1">Chưa có đơn hàng</p>
+                      <p className="text-sm text-slate-500">Đơn hàng mới sẽ hiển thị ở đây</p>
                     </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
+                  ) : (
+                    recentOrders?.map((order: Order) => (
+                      <div key={order.orderId} className="flex items-center justify-between p-3 transition-colors hover:bg-slate-50/80 rounded-lg">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-500">
+                            {order.userResponse.userName?.split(' ').pop()?.charAt(0) ?? 'A'}
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="truncate text-sm font-semibold text-slate-800">
+                              {order.userResponse.userName}
+                            </p>
+                            <p className="text-xs text-slate-500 font-mono">
+                              {order.orderId.substring(0, 12)}...
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right flex-shrink-0 ml-4">
+                          <p className="text-sm font-bold text-slate-800">
+                            ₫{order.totalAmount.toLocaleString()}
+                          </p>
+                          <div className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${
+                            order.status === 'COMPLETED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : order.status === 'PROCESSING'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            <span className={`h-2 w-2 rounded-full ${
+                              order.status === 'COMPLETED'
+                                ? 'bg-emerald-500'
+                                : order.status === 'PROCESSING'
+                                ? 'bg-blue-500'
+                                : 'bg-amber-500'
+                            }`} />
+                            <span>
+                              {order.status === 'COMPLETED'
+                                ? 'Hoàn thành'
+                                : order.status === 'PROCESSING'
+                                ? 'Đang xử lý'
+                                : 'Chờ xử lý'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
           </Card>
         </div>
       </div>

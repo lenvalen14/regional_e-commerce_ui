@@ -11,17 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Product, useSoftDeleteProductMutation } from "@/features/product/productApi"
 
-// interface Product {
-//   id: number
-//   name: string
-//   category: string
-//   price: number
-//   stock: number
-//   status: string
-//   description: string
-//   region: string
-// }
-
 interface DeleteProductModalProps {
   isOpen: boolean
   onClose: () => void
@@ -58,15 +47,6 @@ export default function DeleteProductModal({ isOpen, onClose, onDelete, product,
     if (stockQuantity <= 20) return <Badge className="bg-yellow-100 text-yellow-800">Sắp hết</Badge>
     return <Badge className="bg-green-100 text-green-800">Còn hàng</Badge>
   }
-
-  // // const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["Out of Stock"]
-
-  // return (
-  //   <Badge className={config.className}>
-  //     {config.label}
-  //   </Badge>
-  // )
-
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>

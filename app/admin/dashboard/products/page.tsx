@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Edit, Trash2, Eye } from "lucide-react"
+import { Plus, Edit, Trash2, Eye, RefreshCw } from "lucide-react"
 
 // Import components
 import ProductSearch from "./ProductSearch"
@@ -24,18 +24,6 @@ import { useGetCategoriesQuery } from "@/features/category/categoryApi"
 import { useGetRegionsQuery } from "@/features/region"
 import { RestoreProductModal } from "./RestoreProductModal"
 
-// Define Product interface
-// interface Product {
-//   id: number
-//   name: string
-//   category: string
-//   price: number
-//   stock: number
-//   status: string
-//   description: string
-//   region: string
-// }
-
 interface SearchFilters {
   searchTerm: string
   category: string
@@ -43,61 +31,40 @@ interface SearchFilters {
   region: string
 }
 
-// Sample products data for Vietnamese specialties
-// const initialProductsData: Product[] = [
-//   {
-//     id: 1,
-//     name: "Bánh tráng nướng Tây Ninh",
-//     category: "Bánh kẹo",
-//     price: 45000,
-//     stock: 150,
-//     status: "In Stock",
-//     description: "Bánh tráng nướng đặc sản Tây Ninh với hương vị thơm ngon, giòn tan được làm từ gạo tẻ cao cấp",
-//     region: "Tây Ninh"
-//   },
-//   {
-//     id: 2,
-//     name: "Mắm ruốc Huế",
-//     category: "Gia vị",
-//     price: 85000,
-//     stock: 75,
-//     status: "In Stock",
-//     description: "Mắm ruốc truyền thống Huế với hương vị đậm đà, được ủ theo phương pháp cổ truyền",
-//     region: "Huế"
-//   },
-//   {
-//     id: 3,
-//     name: "Chà bông Đà Lạt",
-//     category: "Thực phẩm khô",
-//     price: 120000,
-//     stock: 0,
-//     status: "Out of Stock",
-//     description: "Chà bông heo thơm ngon Đà Lạt được chế biến từ thịt heo tươi ngon nhất",
-//     region: "Đà Lạt"
-//   },
-//   {
-//     id: 4,
-//     name: "Bánh pía Sóc Trăng",
-//     category: "Bánh kẹo",
-//     price: 65000,
-//     stock: 25,
-//     status: "Low Stock",
-//     description: "Bánh pía đậu xanh Sóc Trăng với lớp vỏ mỏng, nhân đậu xanh ngọt thơm",
-//     region: "Sóc Trăng"
-//   },
-// ]
-
 export default function ProductsPage() {
-
-  const { data: productData, isLoading: prodLoading, isError: prodError, refetch } = useGetProductsQuery({ page: 0, size: 20 });
+  const { data: productData, isLoading: prodLoading, isError: prodError, refetch } = useGetProductsQuery({ page: 0, size: 50 });
   const productsData = productData?.data || [];
 
-  const getProductStatus = (stockQuantity: number): "Out of Stock" | "Low Stock" | "In Stock" => {
-    if (stockQuantity === 0) return "Out of Stock"
-    if (stockQuantity > 0 && stockQuantity <= 20) return "Low Stock"
-    return "In Stock"
-  }
+  const { data: regionData, isLoading: regionLoading } = useGetRegionsQuery({ page: 0, size: 50 });
+  const regions = [
+    { categoryId: "all", categoryName: "Tất cả vùng miền" },
+    ...(regionData?.data.map(r => ({
+      categoryId: r.regionId,
+      categoryName: r.regionName
+    })) || [])
+  ];
 
+  const { data: categoryData, isLoading: catLoading } = useGetCategoriesQuery({ page: 0, size: 50 });
+  const categories = [
+    { categoryId: "all", categoryName: "Tất cả danh mục" },
+    ...(categoryData?.data.map(c => ({
+      categoryId: c.categoryId,
+      categoryName: c.categoryName
+    })) || [])
+  ];
+
+  const [filteredProducts, setFilteredProducts] = useState<ProductWithStatus[]>([])
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
+
+  const [createProduct] = useCreateProductMutation();
+  const [restoreProduct] = useRestoreProductMutation()
+
+  // Transform products with status
   const productsWithStatus = useMemo(() => {
     const getProductStatus = (stockQuantity: number): "Out of Stock" | "Low Stock" | "In Stock" => {
       if (stockQuantity === 0) return "Out of Stock";
@@ -111,63 +78,14 @@ export default function ProductsPage() {
     }));
   }, [productsData]);
 
-  const { data, isLoading, isError } = useGetRegionsQuery({ page: 0, size: 20 });
-  const regions = [
-    { id: "all", name: "Tất cả vùng miền" },
-    ...(data?.data.map(r => ({
-      id: r.regionId,
-      name: r.regionName
-    })) || [])
-  ];
-
-  const { data: categoryData, isLoading: catLoading, isError: catError } = useGetCategoriesQuery({ page: 0, size: 20 });
-  const categories = [
-    { id: "all", name: "Tất cả danh mục" },
-    ...(categoryData?.data.map(c => ({
-      id: c.categoryId,
-      name: c.categoryName
-    })) || [])
-  ];
-
-  // const [products, setProducts] = useState<Product[]>(initialProductsData)
-  // const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProductsData)
-  const [products, setProducts] = useState<ProductWithStatus[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<ProductWithStatus[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<CreateProductData | null>(null)
-  const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null)
-  const [filteredEditProducts, setFilteredEditProducts] = useState<Product[]>(productsWithStatus)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [showViewModal, setShowViewModal] = useState(false)
-  const [showRestoreModal, setShowRestoreModal] = useState(false)
-  const [selectedProductForRestore, setSelectedProductForRestore] = useState<Product | null>(null)
-
-  const [createProduct] = useCreateProductMutation();
-  const [restoreProduct] = useRestoreProductMutation()
-
-  // useEffect(() => {
-  //   if (productsWithStatus.length === 0) return;
-
-  //   // So sánh id để tránh setState vô hạn
-  //   const currentIds = products.map(p => p.productId).join(',');
-  //   const newIds = productsWithStatus.map(p => p.productId).join(',');
-
-  //   if (currentIds !== newIds) {
-  //     setProducts(productsWithStatus);
-  //     setFilteredProducts(productsWithStatus);
-  //   }
-  // }, [productsWithStatus, products]);
+  // Initialize filtered products
   useEffect(() => {
-    setProducts(productsWithStatus)
     setFilteredProducts(productsWithStatus)
-  }, [productData])
-
+  }, [productsWithStatus])
 
   // Filter and search products
   const handleSearch = (filters: SearchFilters) => {
     let filtered: ProductWithStatus[] = [...productsWithStatus]
-
 
     // Search by name or description
     if (filters.searchTerm) {
@@ -184,7 +102,7 @@ export default function ProductsPage() {
     }
 
     // Filter by status
-    if (filters.status) {
+    if (filters.status && filters.status !== "all") {
       filtered = filtered.filter(product => product.status === filters.status)
     }
 
@@ -196,48 +114,42 @@ export default function ProductsPage() {
     setFilteredProducts(filtered)
   }
 
-  const mapToCreateProductData = (product: ProductWithStatus): CreateProductData => ({
-    // productId: product.productId,
-    productName: product.productName,
-    categoryId: product.category.categoryId,
-    price: product.price,
-    stockQuantity: product.stockQuantity,
-    description: product.description,
-    regionId: product.region.regionId
-  })
-
   // Reset search filters
   const handleResetSearch = () => {
-    setFilteredProducts(products)
+    setFilteredProducts(productsWithStatus)
   }
 
-  // Add new product
-  const handleAddProduct = async (data: CreateProductData & { images?: File[] }) => {
-    try {
-      const created = await createProduct(data).unwrap();
-      const productWithStatus: ProductWithStatus = {
-        ...created.data,
-        status: getProductStatus(created.data.stockQuantity),
-      };
-      setProducts((prev) => [...prev, productWithStatus]);
-      setFilteredProducts((prev) => [...prev, productWithStatus]);
+  const handleAddProduct = async (data: FormData) => {
+  try {
+    const result = await createProduct(data).unwrap();
+    if (result.data) {
+      await refetch();
       setShowAddModal(false);
-    } catch (error) {
-      console.error("Tạo sản phẩm thất bại", error);
     }
-  };
+  } catch (error) {
+    console.error("Tạo sản phẩm thất bại", error);
+  }
+};
 
   // View product
   const handleViewProduct = (product: ProductWithStatus) => {
-    setSelectedProduct(mapToCreateProductData(product))
+    const productForView: Product = {
+      productId: product.productId,
+      productName: product.productName,
+      category: product.category,
+      price: product.price,
+      deleted: product.deleted,
+      stockQuantity: product.stockQuantity,
+      description: product.description,
+      region: product.region,
+      rating: product.rating || 0.0,
+      imageProductResponseList: product.imageProductResponseList || []
+    }
+    setSelectedProduct(productForView)
     setShowViewModal(true)
   }
 
   // Edit product
-  // const handleEditProduct = (product: ProductWithStatus) => {
-  //   setSelectedProduct(mapToCreateProductData(product))
-  //   setShowEditModal(true)
-  // }
   const handleEditProduct = (product: ProductWithStatus) => {
     const productForEdit: Product = {
       productId: product.productId,
@@ -251,42 +163,37 @@ export default function ProductsPage() {
       rating: product.rating || 0.0,
       imageProductResponseList: product.imageProductResponseList || []
     }
-    setSelectedProductForEdit(productForEdit)
+    setSelectedProduct(productForEdit)
     setShowEditModal(true)
   }
 
-  // const handleUpdateProduct = (updatedProduct: Product) => {
-  //   const updatedProducts = products.map(product =>
-  //     product.productId === updatedProduct.productId ? updatedProduct : product
-  //   )
-  //   setProducts(updatedProducts)
-  //   setFilteredProducts(updatedProducts.filter(product =>
-  //     filteredProducts.some(filtered => filtered.productId === product.productId)
-  //   ))
-  // }
-
-
-  const handleUpdateProduct = (updatedProduct: Product) => {
-    const updatedProducts = products.map(product =>
-      product.productId === updatedProduct.productId
-        ? { ...updatedProduct, status: getProductStatus(updatedProduct.stockQuantity) }
-        : product
-    )
-    setProducts(updatedProducts)
-    setFilteredProducts(updatedProducts.filter(product =>
-      filteredProducts.some(filtered => filtered.productId === product.productId)
-    ))
+  const handleUpdateProduct = async (updatedProduct: Product) => {
+    await refetch(); // Refresh the list to get updated data
+    setShowEditModal(false);
   }
 
-  const handleRestoreProduct = (product: Product) => {
-    setSelectedProductForRestore(product)
+  const handleRestoreProduct = (product: ProductWithStatus) => {
+    const productForRestore: Product = {
+      productId: product.productId,
+      productName: product.productName,
+      category: product.category,
+      price: product.price,
+      deleted: product.deleted,
+      stockQuantity: product.stockQuantity,
+      description: product.description,
+      region: product.region,
+      rating: product.rating || 0.0,
+      imageProductResponseList: product.imageProductResponseList || []
+    }
+    setSelectedProduct(productForRestore)
     setShowRestoreModal(true)
   }
 
   const confirmRestoreProduct = async (productId: string) => {
     try {
       await restoreProduct(productId).unwrap()
-      refetch() // gọi lại API để sync
+      await refetch() // Refresh the list
+      setShowRestoreModal(false)
     } catch (err) {
       console.error("Restore failed", err)
     }
@@ -294,18 +201,28 @@ export default function ProductsPage() {
 
   // Delete product
   const handleDeleteProduct = (product: ProductWithStatus) => {
-    setSelectedProduct(mapToCreateProductData(product))
+    const productForDelete: Product = {
+      productId: product.productId,
+      productName: product.productName,
+      category: product.category,
+      price: product.price,
+      deleted: product.deleted,
+      stockQuantity: product.stockQuantity,
+      description: product.description,
+      region: product.region,
+      rating: product.rating || 0.0,
+      imageProductResponseList: product.imageProductResponseList || []
+    }
+    setSelectedProduct(productForDelete)
     setShowDeleteModal(true)
   }
 
-  const handleConfirmDelete = (productId: string) => {
-    const updatedProducts = products.filter(product => product.productId.toString() !== productId.toString())
-    setProducts(updatedProducts)
-    setFilteredProducts(updatedProducts.filter(product =>
-      filteredProducts.some(filtered => filtered.productId === product.productId)
-    ))
+  const handleConfirmDelete = async () => {
+    await refetch() // Refresh the list
+    setShowDeleteModal(false)
   }
 
+  // Utility functions
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN').format(price)
   }
@@ -326,37 +243,81 @@ export default function ProductsPage() {
     )
   }
 
+  // Loading state
+  if (prodLoading || catLoading || regionLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (prodError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Có lỗi xảy ra khi tải dữ liệu</p>
+          <Button onClick={() => refetch()}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Thử lại
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Quản Lý Sản Phẩm</h2>
-        <Button
-          className="bg-green-600 hover:bg-green-700"
-          onClick={() => setShowAddModal(true)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Thêm sản phẩm mới
-        </Button>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Quản Lý Sản Phẩm</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            Tổng cộng: {productsWithStatus.length} sản phẩm
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => refetch()}
+            size="sm"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Làm mới
+          </Button>
+          <Button
+            className="bg-green-600 hover:bg-green-700"
+            onClick={() => setShowAddModal(true)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Thêm sản phẩm mới
+          </Button>
+        </div>
       </div>
 
-      {/* Search and Filters */}
-      <ProductSearch
-        onSearch={handleSearch}
-        onReset={handleResetSearch}
-        totalResults={filteredProducts.length}
-      />
+     <ProductSearch
+      onSearch={handleSearch}
+      onReset={handleResetSearch}
+      totalResults={filteredProducts.length}
+    />
 
       {/* Products Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredProducts.map((product) => (
           <Card key={product.productId} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="aspect-square bg-gray-100 relative">
-              {product.imageProductResponseList?.[0] ? (
+              {!product.deleted && product.imageProductResponseList?.[0] ? (
                 <img
                   src={product.imageProductResponseList[0].imageUrl}
                   alt={product.productName}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/no-image.png"; // fallback
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -375,6 +336,14 @@ export default function ProductsPage() {
                   {product.region.regionName}
                 </Badge>
               </div>
+              
+              {product.deleted && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <Badge className="bg-red-500 text-white">
+                    Đã xóa
+                  </Badge>
+                </div>
+              )}
             </div>
 
             <CardContent className="p-4">
@@ -431,21 +400,26 @@ export default function ProductsPage() {
         ))}
       </div>
 
-
       {/* Empty state */}
-      {filteredProducts.length === 0 && (
+      {filteredProducts.length === 0 && !prodLoading && (
         <Card className="p-12 text-center">
           <div className="text-gray-400 mb-4">
             <div className="text-6xl mb-4">📦</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
-            <p className="text-gray-500">Thử điều chỉnh bộ lọc hoặc thêm sản phẩm mới</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {productsWithStatus.length === 0 ? "Chưa có sản phẩm nào" : "Không tìm thấy sản phẩm"}
+            </h3>
+            <p className="text-gray-500">
+              {productsWithStatus.length === 0 
+                ? "Hãy thêm sản phẩm đầu tiên của bạn" 
+                : "Thử điều chỉnh bộ lọc hoặc thêm sản phẩm mới"}
+            </p>
           </div>
           <Button
             className="bg-green-600 hover:bg-green-700"
             onClick={() => setShowAddModal(true)}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Thêm sản phẩm đầu tiên
+            {productsWithStatus.length === 0 ? "Thêm sản phẩm đầu tiên" : "Thêm sản phẩm mới"}
           </Button>
         </Card>
       )}
@@ -455,39 +429,41 @@ export default function ProductsPage() {
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={handleAddProduct}
+        categories={categoryData?.data || []}
+        regions={regionData?.data || []}
+        loading={catLoading || regionLoading}
       />
 
       <EditProductModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onEdit={handleUpdateProduct}
-        product={selectedProductForEdit}
-        categories={categories}
-        regions={regions}
-        loading={catLoading || isLoading}
+        product={selectedProduct}
+        categories={categoryData?.data || []}
+        regions={regionData?.data || []}
+        loading={catLoading || regionLoading}
       />
 
       <DeleteProductModal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleConfirmDelete}
-        product={selectedProductForEdit}
+        product={selectedProduct}
         refetchProducts={refetch}
       />
 
-      {showRestoreModal && selectedProductForRestore && (
+      {showRestoreModal && selectedProduct && (
         <RestoreProductModal
-          product={selectedProductForRestore}
+          product={selectedProduct}
           onClose={() => setShowRestoreModal(false)}
           onRestore={confirmRestoreProduct}
         />
       )}
 
-
       <ViewProductModal
         isOpen={showViewModal}
         onClose={() => setShowViewModal(false)}
-        product={selectedProductForEdit}
+        product={selectedProduct}
       />
     </div>
   )

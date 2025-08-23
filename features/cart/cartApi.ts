@@ -84,9 +84,9 @@ export const cartApi = apiSlice.injectEndpoints({
     }),
 
     // Clear all cart items for user
-    clearCart: builder.mutation<ApiResponse<string>, void>({
-      query: () => ({
-        url: '/my-cart/cart-item/by-user',
+    clearCart: builder.mutation<ApiResponse<string>, string>({
+      query: (userId) => ({
+        url: `/my-cart/cart-item/by-user/${userId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Cart'],
