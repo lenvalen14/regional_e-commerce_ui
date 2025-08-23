@@ -42,7 +42,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_ITEM': {
       const { quantity = 1, ...item } = action.payload;
-      console.log('Adding item:', { item, quantity });
+  // ...
 
       const existingItemIndex = state.items.findIndex(
         i => i.id === item.id
@@ -50,14 +50,14 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
       let newItems;
       if (existingItemIndex >= 0) {
-        console.log('Item exists, updating quantity');
+  // ...
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        console.log('New item, adding to cart');
+  // ...
         newItems = [...state.items, { ...item, quantity }];
       }
 
@@ -68,7 +68,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         itemCount: newItems.reduce((sum, item) => sum + item.quantity, 0)
       };
 
-      console.log('New cart state:', newState);
+  // ...
       return newState;
     }
 
@@ -171,7 +171,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const savedCart = localStorage.getItem('cart');
         if (savedCart) {
           const cartItems = JSON.parse(savedCart);
-          console.log('📱 Loading cart from localStorage:', cartItems.length);
+          // ...
           dispatch({ type: 'LOAD_CART', payload: cartItems });
         }
       } catch (error) {
@@ -179,7 +179,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     } else {
       // User is authenticated, clear local cart immediately
-      console.log('🧹 User authenticated, clearing local cart state');
+  // ...
       dispatch({ type: 'CLEAR_CART' });
     }
   }, [isAuthenticated]);
@@ -187,7 +187,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Sync with server when user logs in
   useEffect(() => {
     if (isAuthenticated && user?.userId) {
-      console.log('🔑 User logged in, starting cart sync...');
+  // ...
       // Add a small delay to ensure all auth state is properly set
       const timeoutId = setTimeout(() => {
         syncCartWithServer();
@@ -202,7 +202,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isAuthenticated && state.items.length > 0) {
       try {
         localStorage.setItem('cart', JSON.stringify(state.items));
-        console.log('Saved cart to localStorage:', state.items.length);
+  // ...
       } catch (error) {
         console.error('Error saving cart to localStorage:', error);
       }
@@ -222,12 +222,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Convert server cart format to local cart format
   const convertServerCartToLocal = (serverCartItems: any[]): CartItem[] => {
-    console.log('Converting server cart items:', serverCartItems);
+  // ...
 
     return serverCartItems.map(item => {
       const product = item.product || {};
-      console.log('Product data:', product); // Debug product structure
-      console.log('Image data:', product.imageProductResponseList); // Debug image structure
+  // ...
       
       // Sửa lại để match với API response structure
       const imageUrl = product.imageProductResponseList && product.imageProductResponseList.length > 0
@@ -236,7 +235,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ? product.images[0].imageUrl 
           : '/images/products-default.png'); // fallback image
 
-      console.log('Final imageUrl:', imageUrl); // Debug final image URL
+  // ...
 
       const localItem = {
         id: product.productId || product.id || item.productId,
@@ -249,7 +248,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         image: imageUrl
       };
 
-      console.log('Converted item:', localItem);
+  // ...
       return localItem;
     });
   };
@@ -262,25 +261,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      console.log('🔄 Starting simplified cart sync for user:', user.userId);
+  // ...
 
       // Clear local cart immediately when user logs in
       localStorage.removeItem('cart');
-      console.log('🗑️ Cleared local cart storage');
+  // ...
 
       // Get server cart
       const serverCartResult = await refetchCart();
-      console.log('📦 Server cart response:', serverCartResult);
+  // ...
 
       if (serverCartResult.data?.data) {
         const serverCart = serverCartResult.data.data;
         const serverItems = convertServerCartToLocal(serverCart.items || []);
-        console.log('✅ Loading cart from server:', serverItems.length, 'items');
+  // ...
 
         // Load server cart only
         dispatch({ type: 'SYNC_FROM_SERVER', payload: serverItems });
       } else {
-        console.log('📭 No server cart data found - empty cart');
+  // ...
         // No server cart, start with empty cart
         dispatch({ type: 'CLEAR_CART' });
       }
@@ -292,31 +291,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const addItem = async (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
-    console.log('🛒 Adding item to cart:', {
-      item: item.name,
-      isAuthenticated,
-      userId: user?.userId
-    });
+  // ...
 
     if (isAuthenticated && user?.userId) {
       // User is logged in - add to server
       try {
-        console.log('➕ Adding item to server cart...');
+  // ...
         const serverResponse = await addToCartAPI({
           productId: item.id,
           quantity: item.quantity || 1,
         }).unwrap();
 
-        console.log('✅ Item added to server, refetching cart...');
+  // ...
 
         // Refetch cart to get updated data
         const updatedCartResult = await refetchCart();
-        console.log('📦 Updated cart result:', updatedCartResult);
+  // ...
 
         if (updatedCartResult.data?.data) {
           const updatedCart = updatedCartResult.data.data;
           const updatedItems = convertServerCartToLocal(updatedCart.items || []);
-          console.log('🔄 Updated cart items:', updatedItems.length);
+          // ...
           dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
         } else {
           console.error('❌ No data in updated cart result');
@@ -336,19 +331,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = async (id: string, quantity: number) => {
     if (quantity < 1) return;
 
-    console.log('🔄 Updating quantity:', { id, quantity, isAuthenticated });
+  // ...
 
     if (isAuthenticated && user?.userId) {
       try {
-        // Find the cart item from current state
+        // Tìm cart item từ state hiện tại
         const currentItem = state.items.find(item => item.id === id);
-        if (currentItem) {
-          // Note: We need proper cartItemId mapping here
-          // For now, this is a simplified version
-          await updateCartItemAPI({
-            id: currentItem.id,
-            data: { quantity }
-          }).unwrap();
+  // ...
+        if (currentItem && currentItem.cartItemId) {
+          const updatePayload = {
+            id: currentItem.cartItemId,
+            data: { quantity, productId: currentItem.id }
+          };
+          // ...
+          await updateCartItemAPI(updatePayload).unwrap();
 
           // Refetch cart
           const updatedCartResult = await refetchCart();
@@ -357,25 +353,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const updatedItems = convertServerCartToLocal(updatedCart.items || []);
             dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
           }
+        } else {
+          console.error('❌ Không tìm thấy cartItemId để cập nhật:', currentItem);
         }
       } catch (error) {
         console.error('❌ Error updating cart item on server:', error);
-        // Don't fallback - keep server state consistent
       }
     } else {
-      // Local update for non-authenticated users
+      // Cập nhật local cho user chưa đăng nhập
       dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
     }
   };
 
   const removeItem = async (id: string) => {
-    console.log('🗑️ Removing item:', { id, isAuthenticated });
+  // ...
 
     if (isAuthenticated && user?.userId) {
       try {
         const currentItem = state.items.find(item => item.id === id);
-        if (currentItem) {
-          await removeCartItemAPI(currentItem.id).unwrap();
+        if (currentItem && currentItem.cartItemId) {
+          await removeCartItemAPI(currentItem.cartItemId).unwrap();
 
           // Refetch cart
           const updatedCartResult = await refetchCart();
@@ -384,19 +381,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const updatedItems = convertServerCartToLocal(updatedCart.items || []);
             dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
           }
+        } else {
+          console.error('❌ Không tìm thấy cartItemId để xoá:', currentItem);
         }
       } catch (error) {
-        console.error('❌ Error removing cart item from server:', error);
-        // Don't fallback - keep server state consistent
+        console.error('❌ Lỗi khi xoá sản phẩm khỏi server:', error);
       }
     } else {
-      // Local removal for non-authenticated users
+      // Xoá local cho user chưa đăng nhập
       dispatch({ type: 'REMOVE_ITEM', payload: { id } });
     }
   };
 
   const clearCart = async () => {
-    console.log('🧹 Clearing cart:', { isAuthenticated });
+  // ...
 
     if (isAuthenticated && user?.userId) {
       try {

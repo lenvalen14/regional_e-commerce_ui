@@ -37,79 +37,85 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
           <>
             {/* Cart Items */}
             <div className="max-h-80 overflow-y-auto">
-              {state.items.map((item, index) => (
-                <Link
-                  key={item.id}
-                  href={`/products/${item.id}`}
-                  onClick={onClose}
-                  className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${isOpen ? 'animate-fade-in-up' : ''
-                    }`}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <div className="flex gap-3">
-                    <div className="w-16 h-16 relative flex-shrink-0">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover rounded transition-transform duration-200 hover:scale-105"
-                      />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-nitti font-medium text-[#2F3E34] text-sm truncate hover:text-[#8FBC8F] transition-colors">
-                        {item.name}
-                      </h4>
-                      {/* <p className="text-xs text-[#666] font-nitti">
-                        Phân loại: {item.variant}
-                      </p> */}
-                      <p className="text-sm font-nitti font-bold text-[#E53935] mt-1">
-                        {item.priceLabel}
-                      </p>
-
-                      <div className="flex items-center gap-2 mt-2 z-10 relative">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updateQuantity(item.id, item.quantity - 1);
-                          }}
-                          className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] disabled:opacity-50 flex items-center justify-center transition-all duration-200 hover:scale-110"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-
-                        <span className="font-nitti text-sm w-6 text-center">
-                          {item.quantity}
-                        </span>
-
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            updateQuantity(item.id, item.quantity + 1);
-                          }}
-                          className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] flex items-center justify-center transition-all duration-200 hover:scale-110"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
+              {state.items.map((item, index) => {
+                const disableUpdate = !item.cartItemId;
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/products/${item.id}`}
+                    onClick={onClose}
+                    className={`block p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${isOpen ? 'animate-fade-in-up' : ''}`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex gap-3">
+                      <div className="w-16 h-16 relative flex-shrink-0">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover rounded transition-transform duration-200 hover:scale-105"
+                        />
                       </div>
-                    </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeItem(item.id);
-                      }}
-                      className="text-red-500 hover:text-red-700 p-1 transition-all duration-200 hover:scale-110 z-10 relative"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </Link>
-              ))}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-nitti font-medium text-[#2F3E34] text-sm truncate hover:text-[#8FBC8F] transition-colors">
+                          {item.name}
+                        </h4>
+                        {/* <p className="text-xs text-[#666] font-nitti">
+                          Phân loại: {item.variant}
+                        </p> */}
+                        <p className="text-sm font-nitti font-bold text-[#E53935] mt-1">
+                          {item.priceLabel}
+                        </p>
+
+                        <div className="flex items-center gap-2 mt-2 z-10 relative">
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateQuantity(item.id, item.quantity - 1);
+                            }}
+                            className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:border-[#bbb] flex items-center justify-center transition-all duration-200 hover:scale-110"
+                            disabled={item.quantity <= 1 || disableUpdate}
+                            title={item.quantity <= 1 ? "Không thể giảm thêm" : (disableUpdate ? "Vui lòng chờ..." : "Giảm số lượng")}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+
+                          <span className="font-nitti text-sm w-6 text-center">
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              updateQuantity(item.id, item.quantity + 1);
+                            }}
+                            className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] flex items-center justify-center transition-all duration-200 hover:scale-110"
+                            disabled={disableUpdate}
+                            title={disableUpdate ? "Vui lòng chờ..." : "Tăng số lượng"}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeItem(item.id);
+                        }}
+                        className="text-red-500 hover:text-red-700 p-1 transition-all duration-200 hover:scale-110 z-10 relative"
+                        title={`Xóa ${item.name} khỏi giỏ hàng`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Cart Summary */}
