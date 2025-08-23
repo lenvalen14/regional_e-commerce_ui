@@ -20,7 +20,6 @@ const newTypeMap: Record<NewType, string> = {
   LICH_SU: "Lịch sử",
 };
 
-
 export function ArticleDetail({ articleId }: Props) {
   const { ref, inView } = useInView({ threshold: 0.3, triggerOnce: true });
   const [scrollY, setScrollY] = useState(0);
@@ -40,7 +39,10 @@ export function ArticleDetail({ articleId }: Props) {
       const articleEl = document.getElementById('article-content');
       if (articleEl) {
         const { offsetTop, offsetHeight } = articleEl;
-        const progress = Math.min(Math.max((window.scrollY - offsetTop + window.innerHeight) / offsetHeight, 0), 1);
+        const progress = Math.min(
+          Math.max((window.scrollY - offsetTop + window.innerHeight) / offsetHeight, 0),
+          1
+        );
         setReadingProgress(progress * 100);
       }
     };
@@ -55,12 +57,12 @@ export function ArticleDetail({ articleId }: Props) {
     author: { name: 'Admin', avatar: '/images/author.jpg', bio: 'Người Quản Lý Trang Web' },
     category: articleData?.type ? newTypeMap[articleData.type] : "Khác",
     publishDate: formatDate(articleData?.createAt || new Date()),
-    image: articleData?.images[0].imageUrl,
-    content: articleData?.content
+    image: articleData?.images?.[0]?.imageUrl,
+    content: articleData?.content || ''
   };
 
   const handleShare = (platform: string) => {
-    const url = window.location.href; // Lấy URL bài viết hiện tại
+    const url = window.location.href;
     if (platform === 'facebook') window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
     if (platform === 'twitter') window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}`, '_blank');
     if (platform === 'copy') { navigator.clipboard.writeText(url); alert('Link đã được sao chép!'); }
@@ -90,7 +92,7 @@ export function ArticleDetail({ articleId }: Props) {
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{
-              backgroundImage: `url('/images/nuoc-mam-hero.jpg')`,
+              backgroundImage: `url('${article.image || '/images/nuoc-mam-hero.jpg'}')`,
               transform: isMounted ? `translateY(${scrollY * 0.3}px)` : undefined
             }}
           />
@@ -153,10 +155,11 @@ export function ArticleDetail({ articleId }: Props) {
             <div className="lg:col-span-3">
               <div
                 id="article-content"
-                className={`prose prose-lg max-w-none ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}
+                className={`prose prose-lg max-w-none whitespace-pre-line ${inView ? 'animate-fadeInUp' : 'opacity-0'}`}
                 style={{ '--tw-prose-headings': '#222', '--tw-prose-body': '#4C5C4C' } as React.CSSProperties}
-                dangerouslySetInnerHTML={{ __html: article.content || '' }}
-              />
+              >
+                {article.content}
+              </div>
 
               {/* Call to Action */}
               <div className="mt-12 bg-gradient-to-r from-[#8FBC8F] to-[#7CA87C] rounded-2xl p-8 text-white text-center">

@@ -14,7 +14,7 @@ export const getExcerpt = (content: string, length = 150) => {
 };
 
 export default function NewsPage() {
-  const { data, error, isLoading } = useGetAllNewsQuery({ page: 0, size: 6 })
+  const { data, error, isLoading } = useGetAllNewsQuery({ page: 0, size: 7 })
 
   const newsList: NewResponse[] = (data?.data || [])
     .slice()

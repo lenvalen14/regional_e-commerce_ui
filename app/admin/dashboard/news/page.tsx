@@ -25,11 +25,12 @@ export default function NewsListPage() {
     const [category, setCategory] = useState<string>("")
     const [type, setType] = useState<NewType | "">("")
     const [open, setOpen] = useState(false)
+    const [page, setPage] = useState(0)
     const [keyword, setKeyword] = useState<string>("")
 
     // Call API theo filter
     const { data, error, isLoading, refetch } = useGetNewsByFilterQuery({
-        page: 0,
+        page,
         size: 6,
         categoryId: category || undefined,
         type: type === "" ? undefined : type
@@ -148,7 +149,7 @@ export default function NewsListPage() {
                     )}
 
                     {filteredNews.length > 0 && (
-                        <NewsItems news={filteredNews} onDelete={handleDeleteNews} />
+                        <NewsItems news={filteredNews} onDelete={handleDeleteNews} meta={data?.meta} onPageChange={(p) => setPage(p)} />
                     )}
                 </CardContent>
             </Card>

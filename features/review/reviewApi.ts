@@ -43,20 +43,20 @@ export interface ReviewResponse {
     }
 }
 
+export interface PageMeta {
+    page: number
+    size: number
+    totalElements: number
+    totalPages: number
+    last: boolean
+}
+
 export interface PagedResponse<T> {
     code: number
     message: string
-    data: {
-        content: T[]
-        meta: {
-            pageNumber: number
-            pageSize: number
-            totalElements: number
-            totalPages: number
-        }
-    }
+    data: T[]
+    meta: PageMeta
 }
-
 export interface ApiResponse<T> {
     code: number
     message: string
@@ -146,7 +146,7 @@ export const reviewApi = apiSlice.injectEndpoints({
         }),
 
         getReviewsByRatingAndCategory: builder.query<
-            { reviews: ReviewResponse[]; meta: any },
+            { reviews: ReviewResponse[]; meta: PageMeta },
             { rating?: number; categoryId?: string; page?: number; size?: number }
         >({
             query: ({ rating, categoryId, page = 0, size = 10 }) => {
