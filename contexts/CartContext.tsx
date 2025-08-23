@@ -254,6 +254,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const updatedItems = convertServerCartToLocal(updatedCart.items || []);
             dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
           }
+        } else {
+          console.error('❌ Không tìm thấy cartItemId để cập nhật:', currentItem);
         }
       } catch {
         // ignore
@@ -267,8 +269,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (isAuthenticated && user?.userId) {
       try {
         const currentItem = state.items.find(item => item.id === id);
-        if (currentItem) {
-          await removeCartItemAPI(currentItem.id).unwrap();
+        if (currentItem && currentItem.cartItemId) {
+          await removeCartItemAPI(currentItem.cartItemId).unwrap();
 
           const updatedCartResult = await refetchCart();
           if (updatedCartResult.data?.data) {
@@ -276,6 +278,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             const updatedItems = convertServerCartToLocal(updatedCart.items || []);
             dispatch({ type: 'SYNC_FROM_SERVER', payload: updatedItems });
           }
+        } else {
+          console.error('❌ Không tìm thấy cartItemId để xoá:', currentItem);
         }
       } catch {
         // ignore

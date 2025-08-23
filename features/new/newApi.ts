@@ -33,11 +33,20 @@ export interface NewResponse {
     images: ImageOfNewResponse[]
 }
 
+
+export interface PageMeta {
+    pageNumber: number
+    pageSize: number
+    totalElements: number
+    totalPages: number
+    last: boolean
+}
+
 export interface ApiResponse<T> {
     code: number
     message: string
     data: T
-    meta?: any
+    meta?: PageMeta
 }
 
 export interface PagedResponse<T> {

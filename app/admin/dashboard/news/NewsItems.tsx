@@ -26,6 +26,14 @@ import { NewResponse } from "@/features/new/newApi"
 interface Props {
     news: NewResponse[]
     onDelete: (id: string) => void
+    meta?: {
+        page: number
+        size: number
+        totalElements: number
+        totalPages: number
+        last: boolean
+    }
+    onPageChange?: (page: number) => void
 }
 
 // Chuyển timestamp sang ngày hiển thị (ổn định với TZ + giây/ms)
@@ -39,7 +47,7 @@ export const formatDate = (timestamp: number | string | Date) => {
     });
 };
 
-export default function NewsItems({ news, onDelete }: Props) {
+export default function NewsItems({ news, onDelete, meta, onPageChange }: Props) {
     if (news.length === 0) {
         return (
             <div className="text-center py-8 text-gray-500">
@@ -160,6 +168,45 @@ export default function NewsItems({ news, onDelete }: Props) {
                     </div>
                 </div>
             ))}
+
+            {meta && (
+                <div className="flex justify-end pt-4 border-t">
+                    <nav className="flex items-center space-x-2" aria-label="Pagination">
+                        {/* Prev */}
+                        <button
+                            onClick={() => onPageChange && onPageChange(meta.page - 1)}
+                            disabled={meta.page === 0}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 
+                   hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                   transition-transform duration-200 disabled:opacity-30 
+                   disabled:cursor-not-allowed disabled:hover:bg-white"
+                        >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </button>
+
+                        {/* Page Info */}
+                        <span className="text-sm font-semibold text-gray-800 px-4">
+                            Trang {meta.page + 1} / {meta.totalPages}
+                        </span>
+
+                        {/* Next */}
+                        <button
+                            onClick={() => onPageChange && onPageChange(meta.page + 1)}
+                            disabled={meta.last}
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 
+                   hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                   transition-transform duration-200 disabled:opacity-30 
+                   disabled:cursor-not-allowed disabled:hover:bg-white"
+                        >
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </nav>
+                </div>
+            )}
         </div>
     )
 }

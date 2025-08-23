@@ -36,7 +36,7 @@ export function OrderDetailInfo({ order }: OrderDetailInfoProps) {
     return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
   };
 
-  const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = order.items.reduce((sum, item) => sum + item.price, 0);
   const shippingFee = 0; // Miễn phí vận chuyển
   
   return (
@@ -75,10 +75,10 @@ export function OrderDetailInfo({ order }: OrderDetailInfoProps) {
               {/* Giá */}
               <div className="text-right">
                 <p className="font-nitti font-bold text-[#2F3E34] text-lg">
-                  {formatPrice(item.price * item.quantity)}
+                  {formatPrice(item.price)}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {formatPrice(item.price)}/sản phẩm
+                  {formatPrice(item.price / item.quantity)}/sản phẩm
                 </p>
               </div>
             </div>

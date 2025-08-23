@@ -76,10 +76,12 @@ export default function OrdersPage() {
   const orders = ordersResponse?.data || []
   const meta = ordersResponse?.meta
 
+  // Sắp xếp đơn hàng mới nhất lên đầu
+  const sortedOrders = [...orders].sort((a, b) => b.orderDate - a.orderDate)
+
   // Filter orders locally by search term (since BE doesn't have search endpoint)
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = sortedOrders.filter(order => {
     if (!searchTerm) return true
-    
     const searchLower = searchTerm.toLowerCase()
     return (
       order.orderId.toLowerCase().includes(searchLower) ||

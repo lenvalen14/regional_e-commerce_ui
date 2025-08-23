@@ -87,8 +87,9 @@ export function CartItems() {
                     e.stopPropagation();
                     updateQuantity(item.id, item.quantity - 1);
                   }}
-                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150 hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] disabled:opacity-50"
+                  className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150 hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:border-[#bbb]"
                   disabled={item.quantity <= 1}
+                  title={item.quantity <= 1 ? "Không thể giảm thêm" : "Giảm số lượng"}
                 >
                   <Minus className="h-4 w-4 mx-auto" />
                 </button>
@@ -104,6 +105,7 @@ export function CartItems() {
                     updateQuantity(item.id, item.quantity + 1);
                   }}
                   className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150 hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F]"
+                  title="Tăng số lượng"
                 >
                   <Plus className="h-4 w-4 mx-auto" />
                 </button>

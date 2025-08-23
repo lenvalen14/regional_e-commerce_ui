@@ -4,13 +4,23 @@ import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { Calendar, User, Clock, ArrowRight, Search, Filter } from 'lucide-react';
 import Link from 'next/link';
-import { NewResponse } from '@/features/new/newApi';
+import { NewResponse, NewType } from '@/features/new/newApi';
 import { formatDate } from '@/app/admin/dashboard/news/NewsItems';
 import { getExcerpt } from '@/app/news/page';
 
 interface NewsGridProps {
   articles: NewResponse[]; // nhận từ NewsPage
 }
+
+const newTypeMap: Record<NewType, string> = {
+  AM_THUC: "Ẩm thực",
+  VAN_HOA: "Văn hóa",
+  DU_LICH: "Du lịch",
+  SUC_KHOE: "Sức khỏe",
+  CONG_THUC: "Công thức",
+  LICH_SU: "Lịch sử",
+};
+
 
 export function NewsGrid({ articles }: NewsGridProps) {
   const { ref, inView } = useInView({
@@ -89,7 +99,7 @@ export function NewsGrid({ articles }: NewsGridProps) {
                   )}
                   <div className="absolute top-4 left-4">
                     <span className="bg-[#8FBC8F] text-white px-3 py-1 text-xs font-beaululo uppercase tracking-widest font-bold">
-                      {article.category?.categoryName}
+                      {article?.type ? newTypeMap[article.type] : "Khác"}
                     </span>
                   </div>
                 </div>

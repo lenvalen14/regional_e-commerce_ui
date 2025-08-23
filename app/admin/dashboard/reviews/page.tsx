@@ -12,6 +12,7 @@ import {
 } from "@/features/review/reviewApi"
 
 import { useGetCategoriesQuery, CategoryResponse } from "@/features/new/newApi" // ✅ reuse category API
+import { da } from "date-fns/locale"
 
 // Define interfaces
 interface SearchFilters {
@@ -22,6 +23,7 @@ interface SearchFilters {
 
 export default function AdminReviewsPage() {
   const { refetch: refetchStats } = useGetGlobalReviewStatsQuery()
+  const [page, setPage] = useState(0)
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     searchTerm: "",
     rating: "all",
@@ -44,7 +46,7 @@ export default function AdminReviewsPage() {
         searchFilters.category === "all"
           ? undefined
           : searchFilters.category,
-      page: 0,
+      page,
       size: 10,
     })
 
@@ -95,6 +97,8 @@ export default function AdminReviewsPage() {
 
   if (isLoading || catLoading) return <div>Đang tải...</div>
 
+  console.log(data);
+
   return (
     <div className="space-y-6 p-4">
       <div className="flex items-center justify-between">
@@ -121,6 +125,8 @@ export default function AdminReviewsPage() {
           // gọi refetch thủ công khi xóa xong
           refetchStats()
         }}
+        meta={data?.meta}
+        onPageChange={(p) => setPage(p)}
       />
     </div>
   )

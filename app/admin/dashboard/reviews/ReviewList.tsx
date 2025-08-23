@@ -8,14 +8,17 @@ import { useToast } from "@/components/ui/use-toast"
 import {
   useDeleteReviewMutation,
   ReviewResponse,
+  PageMeta,
 } from "@/features/review/reviewApi"
 
 interface ReviewListProps {
   reviews: ReviewResponse[]
   onDeleteSuccess?: () => void
+  meta?: PageMeta
+  onPageChange?: (page: number) => void
 }
 
-export default function ReviewList({ reviews, onDeleteSuccess }: ReviewListProps) {
+export default function ReviewList({ reviews, onDeleteSuccess, meta, onPageChange }: ReviewListProps) {
   const { toast } = useToast()
   const [deleteReview] = useDeleteReviewMutation()
   const [localReviews, setLocalReviews] = useState<ReviewResponse[]>(reviews)
@@ -158,6 +161,44 @@ export default function ReviewList({ reviews, onDeleteSuccess }: ReviewListProps
             ))
           )}
         </div>
+        {meta && (
+          <div className="flex justify-end pt-4 border-t">
+            <nav className="flex items-center space-x-2" aria-label="Pagination">
+              {/* Prev */}
+              <button
+                onClick={() => onPageChange && onPageChange(meta.page - 1)}
+                disabled={meta.page === 0}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 
+                   hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                   transition-transform duration-200 disabled:opacity-30 
+                   disabled:cursor-not-allowed disabled:hover:bg-white"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+
+              {/* Page Info */}
+              <span className="text-sm font-semibold text-gray-800 px-4">
+                Trang {meta.page + 1} / {meta.totalPages}
+              </span>
+
+              {/* Next */}
+              <button
+                onClick={() => onPageChange && onPageChange(meta.page + 1)}
+                disabled={meta.last}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-500 
+                   hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 
+                   transition-transform duration-200 disabled:opacity-30 
+                   disabled:cursor-not-allowed disabled:hover:bg-white"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </nav>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

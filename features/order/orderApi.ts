@@ -49,6 +49,7 @@ export interface Order {
   totalAmount: number;
   status: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
   orderDate: number; // timestamp
+  method: string;
 }
 
 export interface OrdersResponse {

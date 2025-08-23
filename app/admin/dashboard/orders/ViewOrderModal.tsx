@@ -92,6 +92,13 @@ export default function ViewOrderModal({ isOpen, onClose, order, onStatusChange 
                 <span className="font-medium">Tổng tiền:</span>
                 <span className="font-semibold text-green-600">{formatPrice(order.totalAmount)}đ</span>
               </div>
+              <div className="flex items-center space-x-2 text-sm mt-1">
+                <CreditCard className="h-4 w-4 text-gray-500" />
+                <span className="font-medium">Phương thức thanh toán:</span>
+                  <span>
+                    {order.method === 'CASH' ? 'COD' : order.method === 'VNPAY' ? 'VNPAY' : (order.method || '---')}
+                  </span>
+              </div>
             </div>
           </div>
 
@@ -161,10 +168,10 @@ export default function ViewOrderModal({ isOpen, onClose, order, onStatusChange 
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">{formatPrice(item.unitPrice)}đ</td>
+                      <td className="py-3 px-4">{formatPrice(item.unitPrice / item.quantity)}đ</td>
                       <td className="py-3 px-4">{item.quantity}</td>
                       <td className="py-3 px-4 text-right font-medium">
-                        {formatPrice(item.unitPrice * item.quantity)}đ
+                        {formatPrice(item.unitPrice)}đ
                       </td>
                     </tr>
                   ))}
