@@ -68,7 +68,7 @@ export default function NotificationBell() {
       
       toast.success(`🔔 ${newNotification.title}`, {
         description: newNotification.message,
-        duration: 4000,
+        duration: 2000,
       })
 
       dispatch(notificationApi.util.invalidateTags(['Notification']))
