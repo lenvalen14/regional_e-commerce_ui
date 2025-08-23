@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from "react";
+import { useCancelOrderMutation } from "@/features/order/orderApi";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { Star, MessageCircle, Phone, RefreshCw } from "lucide-react";
 
 interface Order {
@@ -17,6 +20,9 @@ export function OrderActions({ order }: OrderActionsProps) {
   const [showRating, setShowRating] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelOrder, { isLoading: isCancelling }] = useCancelOrderMutation();
+  const router = useRouter();
 
   const handleRatingSubmit = () => {
     // Xử lý submit đánh giá
@@ -27,6 +33,19 @@ export function OrderActions({ order }: OrderActionsProps) {
 
   const isCompleted = order.status === 'completed';
   const canRate = isCompleted; // Có thể đánh giá khi đơn hàng hoàn thành
+
+  const isPending = order.status === 'pending' || order.status === 'PENDING' || order.status === 'awaiting_confirmation';
+
+  const handleCancelOrder = async () => {
+    try {
+      await cancelOrder(order.id).unwrap();
+      toast.error('Huỷ đơn thất bại!');
+      setShowCancelModal(false);
+      router.refresh?.();
+    } catch (err) {
+      toast.success('Huỷ đơn hàng thành công!');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -109,11 +128,45 @@ export function OrderActions({ order }: OrderActionsProps) {
         </h3>
         
         <div className="space-y-3">
-          {/* Mua lại */}
-          <button className="w-full border border-[#8FBC8F] text-[#8FBC8F] hover:bg-[#8FBC8F] hover:text-white py-3 rounded-lg font-nitti font-medium transition-colors flex items-center justify-center gap-2">
-            <RefreshCw className="w-5 h-5" />
-            Mua lại
-          </button>
+          {/* Huỷ đơn hàng */}
+          {isPending && (
+            <>
+              <button
+                className="w-full border border-red-500 text-red-500 hover:bg-red-500 hover:text-white py-3 rounded-lg font-nitti font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                onClick={() => setShowCancelModal(true)}
+                disabled={isCancelling}
+              >
+                <RefreshCw className="w-5 h-5" />
+                {isCancelling ? 'Đang huỷ...' : 'Huỷ đơn hàng'}
+              </button>
+
+              {/* Modal xác nhận huỷ */}
+              {showCancelModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                  <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm animate-fade-in">
+                    <h4 className="text-lg font-nitti font-medium mb-4 text-[#2F3E34]">Xác nhận huỷ đơn hàng</h4>
+                    <p className="mb-6 text-gray-700">Bạn chắc chắn muốn huỷ đơn hàng này?</p>
+                    <div className="flex gap-3">
+                      <button
+                        className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-nitti font-medium transition-colors disabled:opacity-60"
+                        onClick={handleCancelOrder}
+                        disabled={isCancelling}
+                      >
+                        {isCancelling ? 'Đang huỷ...' : 'Xác nhận'}
+                      </button>
+                      <button
+                        className="flex-1 border border-gray-300 text-gray-600 hover:bg-gray-50 py-2 rounded-lg font-nitti font-medium transition-colors"
+                        onClick={() => setShowCancelModal(false)}
+                        disabled={isCancelling}
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           
           {/* Liên hệ người bán */}
           <button className="w-full border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white py-3 rounded-lg font-nitti font-medium transition-colors flex items-center justify-center gap-2">
