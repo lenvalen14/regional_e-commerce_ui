@@ -5,42 +5,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Upload } from "lucide-react"
-
-interface Category {
-  categoryId: string
-  categoryName: string
-}
-
-interface Region {
-  regionId: string
-  regionName: string
-}
+import { CreateProductData, Product, useCreateProductMutation } from "@/features/product/productApi"
+import { Category, useGetCategoriesQuery } from "@/features/category/categoryApi"
+import { useGetRegionsQuery } from "@/features/region"
+import { Upload, X } from "lucide-react"
 
 interface AddProductModalProps {
   isOpen: boolean
   onClose: () => void
-  onAdd: (data: FormData) => Promise<void>
-  categories: Category[]
-  regions: Region[]
-  loading: boolean
+  onAdd: (product: CreateProductData) => void
 }
 
 
-export default function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
-  // Mock data for demo
-  const categories = [
-    { id: "1", name: "Điện tử" },
-    { id: "2", name: "Thời trang" },
-    { id: "3", name: "Gia dụng" },
-    { id: "4", name: "Thực phẩm" }
-  ]
+export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductModalProps) {
 
-  const regions = [
-    { id: "1", name: "Miền Bắc" },
-    { id: "2", name: "Miền Trung" },
-    { id: "3", name: "Miền Nam" }
-  ]
+  const { data: categoryData } = useGetCategoriesQuery({ page: 0, size: 20 });
+  const categories = categoryData?.data.map(c => ({ id: c.categoryId, name: c.categoryName })) || [];
+
+  const { data: regionData } = useGetRegionsQuery({ page: 0, size: 20 });
+  const regions = regionData?.data.map(r => ({ id: r.regionId, name: r.regionName })) || [];
+
 
   const [formData, setFormData] = useState({
     name: "",
@@ -52,118 +36,128 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [images, setImages] = useState<File[]>([])
-  const [isDragOver, setIsDragOver] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [images, setImages] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const [createProduct, { isLoading }] = useCreateProductMutation();
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) newErrors.name = "Tên sản phẩm là bắt buộc"
-    if (!formData.categoryId) newErrors.categoryId = "Danh mục là bắt buộc"
-    if (!formData.price.trim()) newErrors.price = "Giá là bắt buộc"
-    else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) newErrors.price = "Giá phải là số dương"
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên sản phẩm là bắt buộc"
+    }
 
-    if (!formData.stock.trim()) newErrors.stock = "Số lượng kho là bắt buộc"
-    else if (isNaN(Number(formData.stock)) || Number(formData.stock) < 0) newErrors.stock = "Số lượng kho phải là số không âm"
+    if (!formData.categoryId) {
+      newErrors.categoryId = "Danh mục là bắt buộc"
+    }
 
-    if (!formData.description.trim()) newErrors.description = "Mô tả sản phẩm là bắt buộc"
-    if (!formData.regionId) newErrors.regionId = "Vùng miền là bắt buộc"
-    if (images.length === 0) newErrors.images = "Vui lòng tải lên ít nhất một hình ảnh"
+    if (!formData.price.trim()) {
+      newErrors.price = "Giá là bắt buộc"
+    } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+      newErrors.price = "Giá phải là số dương"
+    }
+
+    if (!formData.stock.trim()) {
+      newErrors.stock = "Số lượng kho là bắt buộc"
+    } else if (isNaN(Number(formData.stock)) || Number(formData.stock) < 0) {
+      newErrors.stock = "Số lượng kho phải là số không âm"
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Mô tả sản phẩm là bắt buộc"
+    }
+
+    if (!formData.regionId) {
+      newErrors.regionId = "Vùng miền là bắt buộc"
+    }
+
+    if (images.length === 0) {
+      newErrors.images = "Vui lòng tải lên ít nhất một hình ảnh"
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleImageChange = async (files: FileList | null) => {
-    if (!files) return
-
-    const validFiles: File[] = []
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) continue
-      
-      // Validate file size (max 5MB)
-      if (file.size > 100 * 1024 * 1024) continue
-      
-      validFiles.push(file)
-    }
-
-    setImages(prev => [...prev, ...validFiles])
-    
-    // Clear file input
-    const fileInput = document.getElementById('images') as HTMLInputElement
-    if (fileInput) fileInput.value = ''
-  }
-
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    
-    const files = e.dataTransfer.files
-    await handleImageChange(files)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateForm()) return
+    e.preventDefault();
+    if (!validateForm()) return;
 
-    setIsLoading(true)
+    // Chuẩn bị dữ liệu đúng type
+    const productDataToSend: CreateProductData & { images?: File[] } = {
+      productName: formData.name,
+      categoryId: formData.categoryId,
+      regionId: formData.regionId,
+      price: Number(formData.price),
+      stockQuantity: Number(formData.stock),
+      description: formData.description,
+      images: images, // luôn gửi images array
+    };
 
-    const formDataToSend = new FormData()
-    formDataToSend.append("productName", formData.name)
-    formDataToSend.append("categoryId", formData.categoryId)
-    formDataToSend.append("regionId", formData.regionId)
-    formDataToSend.append("price", formData.price)
-    formDataToSend.append("stockQuantity", formData.stock)
-    formDataToSend.append("description", formData.description)
-
-    // Append multiple images
-    images.forEach((img) => {
-      formDataToSend.append("images", img)
-    })
+    console.log("Dữ liệu gửi đi:", productDataToSend);
+    console.log("Số lượng ảnh:", images.length);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log("Form submitted successfully!")
-      
-      // Reset form
-      handleClose()
-    } catch (err) {
-      console.error("Submission failed:", err)
-    } finally {
-      setIsLoading(false)
+      const result = await createProduct(productDataToSend).unwrap();
+      console.log("Kết quả:", result);
+      // reset form
+      setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" });
+      setImages([]);
+      setErrors({});
+      onClose();
+    } catch (err: any) {
+      console.error("Thêm sản phẩm thất bại:", err);
+      // Hiển thị lỗi chi tiết hơn
+      if (err?.data?.message) {
+        console.error("Chi tiết lỗi:", err.data.message);
+      }
+      if (err?.status) {
+        console.error("HTTP Status:", err.status);
+      }
     }
-  }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith("image/"));
+    if (files.length > 0) {
+      setImages(prev => [...prev, ...files]);
+    }
+  };
+
+  const handleImageChange = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const files = Array.from(fileList).filter(file => file.type.startsWith("image/"));
+    setImages(prev => [...prev, ...files]);
+  };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleClose = () => {
-    setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" })
-    setImages([])
-    setErrors({})
-    onClose()
+    setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" });
+    setImages([]);
+    setErrors({});
+    onClose();
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Thêm Sản Phẩm Mới</DialogTitle>
         </DialogHeader>
@@ -251,17 +245,14 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
             {errors.description && <p className="text-sm text-red-600">{errors.description}</p>}
           </div>
 
-          {/* Enhanced Image Upload Section */}
           <div className="space-y-3">
             <Label>Hình ảnh sản phẩm *</Label>
-            
             {/* Drag and Drop Area */}
             <div
-              className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-                isDragOver 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-300 hover:border-gray-400'
-              }`}
+              className={`border-2 border-dashed rounded-lg p-6 transition-colors ${isDragOver
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -289,9 +280,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
                 onChange={(e) => handleImageChange(e.target.files)}
               />
             </div>
-
             {errors.images && <p className="text-sm text-red-600">{errors.images}</p>}
-
             {/* File List Display */}
             {images.length > 0 && (
               <div className="space-y-2">
@@ -328,8 +317,12 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
             <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Hủy
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
-              {isLoading ? "Đang thêm..." : "Thêm sản phẩm"}
+            <Button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang thêm sản phẩm..." : "Thêm sản phẩm"}
             </Button>
           </div>
         </form>

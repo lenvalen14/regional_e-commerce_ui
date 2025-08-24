@@ -85,14 +85,31 @@ export const productApi = apiSlice.injectEndpoints({
         }),
 
         // Create new product
-        createProduct: builder.mutation<ApiResponse<Product>, FormData>({
-            query: (formData) => ({
-                url: "/products",
-                method: "POST",
-                body: formData,
-            }),
+        createProduct: builder.mutation<ApiResponse<Product>, CreateProductData & { images?: File[] }>({
+            query: ({ images, ...rest }) => {
+                const formData = new FormData();
+
+                // Thêm các trường bình thường
+                Object.entries(rest).forEach(([key, value]) => {
+                    formData.append(key, String(value));
+                });
+
+                // Thêm ảnh (nếu có)
+                if (images) {
+                    images.forEach((file) => {
+                        formData.append("images", file);
+                    });
+                }
+
+                return {
+                    url: "/products",
+                    method: "POST",
+                    body: formData,
+                };
+            },
             invalidatesTags: ["Product"],
         }),
+
 
         // Update product
         updateProduct: builder.mutation<

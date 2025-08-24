@@ -1,19 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { MapPin, Tag, Package, DollarSign } from "lucide-react"
+import { MapPin, Tag, Package, DollarSign, Image } from "lucide-react"
 import { Product } from "@/features/product/productApi"
 
-// interface Product {
-//   id: number
-//   name: string
-//   category: string
-//   price: number
-//   stock: number
-//   status: string
-//   description: string
-//   region: string
-// }
 
 interface ViewProductModalProps {
   isOpen: boolean
@@ -34,14 +24,7 @@ export default function ViewProductModal({ isOpen, onClose, product }: ViewProdu
     return <Badge className="bg-green-100 text-green-800">Còn hàng</Badge>
   }
 
-  // const config = statusConfig[status as keyof typeof statusConfig] || statusConfig["Out of Stock"]
-
-  // return (
-  //   <Badge className={config.className}>
-  //     {config.label}
-  //   </Badge>
-  // )
-
+  const additionalImages = product.imageProductResponseList?.slice(1) || []
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -121,6 +104,30 @@ export default function ViewProductModal({ isOpen, onClose, product }: ViewProdu
                 <p className="text-gray-700 leading-relaxed">{product.description}</p>
               </div>
             </div>
+
+            {/* Additional Images */}
+            {additionalImages.length > 0 && (
+              <div>
+                <div className="flex items-center space-x-2 mb-3">
+                  <Image className="h-4 w-4 text-gray-600" />
+                  <h4 className="font-medium text-gray-900">Hình ảnh khác</h4>
+                  <span className="text-sm text-gray-500">({additionalImages.length} ảnh)</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {additionalImages.map((image, index) => (
+                    <div key={image.imageId || index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                      <img
+                        src={image.imageUrl}
+                        alt={`${product.productName} - ảnh ${index + 2}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-200 cursor-pointer"
+                        onClick={() => window.open(image.imageUrl, '_blank')}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">💡 Nhấp vào ảnh để xem kích thước đầy đủ</p>
+              </div>
+            )}
 
             {/* Stock Warning */}
             {product.stockQuantity <= 20 && (

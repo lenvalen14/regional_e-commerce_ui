@@ -5,209 +5,181 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Upload } from "lucide-react"
 import { Product, useUpdateProductMutation } from "@/features/product/productApi"
+import { Upload, X } from "lucide-react"
 
 interface EditProductModalProps {
   isOpen: boolean
   onClose: () => void
   onEdit: (product: Product) => void
   product: Product | null
-  categories: { categoryId: string, categoryName: string }[]
-  regions: { regionId: string, regionName: string }[]
+  categories: { id: string, name: string }[]
+  regions: { id: string, name: string }[]
   loading: boolean
 }
 
-export default function EditProductModal({ 
-  isOpen, 
-  onClose, 
-  onEdit, 
-  product, 
-  categories, 
-  regions, 
-  loading 
-}: EditProductModalProps) {
-  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation()
+
+export default function EditProductModal({ isOpen, onClose, onEdit, product, categories, regions, loading }: EditProductModalProps) {
+
+  const [updateProduct, { isLoading, isError }] = useUpdateProductMutation();
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const [formData, setFormData] = useState({
-    productName: "",
+    name: "",
     categoryId: "",
     price: "",
-    stockQuantity: "",
+    stock: "",
     description: "",
     regionId: ""
   })
 
-  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [images, setImages] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isDragOver, setIsDragOver] = useState(false)
 
   useEffect(() => {
     if (product) {
       setFormData({
-        productName: product.productName,
+        name: product.productName,
         categoryId: product.category.categoryId,
         price: product.price.toString(),
-        stockQuantity: product.stockQuantity.toString(),
+        stock: product.stockQuantity.toString(),
         description: product.description,
         regionId: product.region.regionId
-      })
-      setSelectedImages([])
+      });
+      setImages([]); // reset ảnh khi mở modal
     }
-  }, [product])
+  }, [product]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.productName.trim()) newErrors.productName = "Tên sản phẩm là bắt buộc"
-    if (!formData.categoryId) newErrors.categoryId = "Danh mục là bắt buộc"
-    if (!formData.price.trim()) newErrors.price = "Giá là bắt buộc"
-    else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) newErrors.price = "Giá phải là số dương"
-
-    if (!formData.stockQuantity.trim()) newErrors.stockQuantity = "Số lượng kho là bắt buộc"
-    else if (isNaN(Number(formData.stockQuantity)) || Number(formData.stockQuantity) < 0) {
-      newErrors.stockQuantity = "Số lượng kho phải là số không âm"
+    if (!formData.name.trim()) {
+      newErrors.name = "Tên sản phẩm là bắt buộc"
     }
 
-    if (!formData.description.trim()) newErrors.description = "Mô tả sản phẩm là bắt buộc"
-    if (!formData.regionId) newErrors.regionId = "Vùng miền là bắt buộc"
+    if (!formData.categoryId) {
+      newErrors.categoryId = "Danh mục là bắt buộc"
+    }
+
+    if (!formData.price.trim()) {
+      newErrors.price = "Giá là bắt buộc"
+    } else if (isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+      newErrors.price = "Giá phải là số dương"
+    }
+
+    if (!formData.stock.trim()) {
+      newErrors.stock = "Số lượng kho là bắt buộc"
+    } else if (isNaN(Number(formData.stock)) || Number(formData.stock) < 0) {
+      newErrors.stock = "Số lượng kho phải là số không âm"
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Mô tả sản phẩm là bắt buộc"
+    }
+
+    if (!formData.regionId) {
+      newErrors.regionId = "Vùng miền là bắt buộc"
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleImageChange = async (files: FileList | null) => {
-    if (!files) return
-
-    const validFiles: File[] = []
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      
-      // Validate file type
-      if (!file.type.startsWith('image/')) continue
-      
-      // Validate file size (max 5MB)
-      if (file.size > 100 * 1024 * 1024) continue
-      
-      validFiles.push(file)
-    }
-
-    setSelectedImages(prev => [...prev, ...validFiles])
-    
-    // Clear file input
-    const fileInput = document.getElementById('edit-images') as HTMLInputElement
-    if (fileInput) fileInput.value = ''
-  }
-
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index))
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(true)
-  }
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-  }
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragOver(false)
-    
-    const files = e.dataTransfer.files
-    await handleImageChange(files)
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateForm() || !product) return
+    e.preventDefault();
+    if (!validateForm() || !product) return;
 
     try {
-      const productData = {
-        productName: formData.productName,
-        categoryId: formData.categoryId,
-        regionId: formData.regionId,
-        price: Number(formData.price),
-        stockQuantity: Number(formData.stockQuantity),
-        description: formData.description,
-      }
-
       const result = await updateProduct({
         productId: product.productId,
-        productData,
-        images: selectedImages.length > 0 ? selectedImages : undefined
-      }).unwrap()
+        productData: {
+          productName: formData.name,
+          categoryId: formData.categoryId,
+          regionId: formData.regionId,
+          price: Number(formData.price),
+          stockQuantity: Number(formData.stock),
+          description: formData.description,
+        },
+        images: selectedImages, // gửi ảnh mới
+      }).unwrap();
 
-      if (result.data) {
-        onEdit(result.data)
-        setErrors({})
-        handleClose()
-      }
-    } catch (error: any) {
-      console.error("Cập nhật sản phẩm thất bại:", error)
-      
-      // Handle validation errors from API
-      if (error?.data?.errors) {
-        setErrors(error.data.errors)
-      } else {
-        setErrors({ general: "Có lỗi xảy ra khi cập nhật sản phẩm" })
-      }
+      onEdit(result.data); // cập nhật local state
+      setErrors({});
+      onClose();
+    } catch (err) {
+      console.error("Cập nhật sản phẩm thất bại:", err);
     }
-  }
+  };
+
+  const handleImageChange = (fileList: FileList | null) => {
+    if (!fileList) return;
+    const files = Array.from(fileList).filter(file => file.type.startsWith("image/"));
+    setSelectedImages(prev => [...prev, ...files]);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith("image/"));
+    if (files.length > 0) {
+      setSelectedImages(prev => [...prev, ...files]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+  };
 
   const handleClose = () => {
-    setErrors({})
-    setSelectedImages([])
-    onClose()
-  }
+    setErrors({});
+    setImages([]);
+    onClose();
+  };
 
-  if (!product) return null
+  if (!product) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Chỉnh Sửa Sản Phẩm</DialogTitle>
         </DialogHeader>
-        
         {loading ? (
           <div className="py-12 text-center text-gray-500">Đang tải dữ liệu...</div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {errors.general && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-600">{errors.general}</p>
-              </div>
-            )}
-
             <div className="space-y-2">
-              <Label htmlFor="edit-productName">Tên sản phẩm *</Label>
+              <Label htmlFor="edit-name">Tên sản phẩm *</Label>
               <Input
-                id="edit-productName"
-                value={formData.productName}
-                onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Nhập tên sản phẩm"
               />
-              {errors.productName && <p className="text-sm text-red-600">{errors.productName}</p>}
+              {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-category">Danh mục *</Label>
-              <Select 
-                value={formData.categoryId} 
-                onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
-              >
+              <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category.categoryId} value={category.categoryId}>
-                      {category.categoryName}
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -221,8 +193,6 @@ export default function EditProductModal({
                 <Input
                   id="edit-price"
                   type="number"
-                  min="0"
-                  step="1000"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   placeholder="0"
@@ -231,32 +201,28 @@ export default function EditProductModal({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-stockQuantity">Số lượng kho *</Label>
+                <Label htmlFor="edit-stock">Số lượng kho *</Label>
                 <Input
-                  id="edit-stockQuantity"
+                  id="edit-stock"
                   type="number"
-                  min="0"
-                  value={formData.stockQuantity}
-                  onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                   placeholder="0"
                 />
-                {errors.stockQuantity && <p className="text-sm text-red-600">{errors.stockQuantity}</p>}
+                {errors.stock && <p className="text-sm text-red-600">{errors.stock}</p>}
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="edit-region">Vùng miền *</Label>
-              <Select 
-                value={formData.regionId} 
-                onValueChange={(value) => setFormData({ ...formData, regionId: value })}
-              >
+              <Select value={formData.regionId} onValueChange={(value) => setFormData({ ...formData, regionId: value })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn vùng miền" />
                 </SelectTrigger>
                 <SelectContent>
                   {regions.map((region) => (
-                    <SelectItem key={region.regionId} value={region.regionId}>
-                      {region.regionName}
+                    <SelectItem key={region.id} value={region.id}>
+                      {region.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -308,14 +274,12 @@ export default function EditProductModal({
             {/* New Images Upload */}
             <div className="space-y-3">
               <Label>Thêm ảnh mới (tùy chọn)</Label>
-              
               {/* Drag and Drop Area */}
               <div
-                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-                  isDragOver 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'border-gray-300 hover:border-gray-400'
-                }`}
+                className={`border-2 border-dashed rounded-lg p-6 transition-colors ${isDragOver
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-300 hover:border-gray-400'
+                  }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -377,15 +341,15 @@ export default function EditProductModal({
             </div>
 
             <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isUpdating}>
+              <Button type="button" variant="outline" onClick={handleClose}>
                 Hủy
               </Button>
               <Button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700"
-                disabled={isUpdating}
+                disabled={isLoading}
               >
-                {isUpdating ? "Đang cập nhật..." : "Cập nhật"}
+                {isLoading ? "Đang cập nhật..." : "Cập nhật"}
               </Button>
             </div>
           </form>
