@@ -16,7 +16,7 @@ const getStatusInfo = (status: string) => {
     case "SHIPPED":
       return { label: "Đang giao", color: "text-blue-600 bg-blue-100", icon: Truck };
     case "COMPLETED":
-      return { label: "Đã giao", color: "text-green-600 bg-green-100", icon: CheckCircle };
+      return { label: "Đã hoàn thành", color: "text-green-600 bg-green-100", icon: CheckCircle };
     case "CANCELLED":
       return { label: "Đã hủy", color: "text-red-600 bg-red-100", icon: XCircle };
     default:
@@ -27,6 +27,7 @@ const getStatusInfo = (status: string) => {
 export default function OrdersPage() {
   const [selectedTab, setSelectedTab] = useState("all");
   const { data, isLoading, isError, error } = useGetOrdersByCustomerQuery({ page: 0, size: 20 });
+  console.log("Orders data:", data);
 
   // Map dữ liệu từ BE sang props cho FE
   const orders = (data?.data || []).map(order => ({

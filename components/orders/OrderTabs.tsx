@@ -11,7 +11,7 @@ export function OrderTabs({ selectedTab, setSelectedTab }: OrderTabsProps) {
     { key: "PENDING", label: "Chờ xác nhận" },
     { key: "CONFIRM", label: "Đã xác nhận" },
     { key: "SHIPPED", label: "Đang giao" },
-    { key: "COMPLETED", label: "Đã giao" },
+    { key: "COMPLETED", label: "Đã hoàn thành" },
     { key: "CANCELLED", label: "Đã huỷ" }
   ];
   return (
