@@ -6,6 +6,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Upload } from "lucide-react"
+import { useGetCategoriesQuery } from "../../../../features/category/categoryApi"
+import { useGetRegionsQuery } from "../../../../features/region/regionApi"
+import { useCreateProductMutation } from "../../../../features/product/productApi"
 
 interface Category {
   categoryId: string
@@ -26,21 +29,24 @@ interface AddProductModalProps {
   loading: boolean
 }
 
-
 export default function AddProductModal({ isOpen, onClose }: AddProductModalProps) {
-  // Mock data for demo
-  const categories = [
-    { id: "1", name: "Điện tử" },
-    { id: "2", name: "Thời trang" },
-    { id: "3", name: "Gia dụng" },
-    { id: "4", name: "Thực phẩm" }
-  ]
+  // API calls to get categories and regions
+  const { data: categoriesResponse, isLoading: categoriesLoading } = useGetCategoriesQuery({ 
+    page: 0, 
+    size: 1000 // Get all categories
+  })
+  
+  const { data: regionsResponse, isLoading: regionsLoading } = useGetRegionsQuery({ 
+    page: 0, 
+    size: 1000 // Get all regions
+  })
 
-  const regions = [
-    { id: "1", name: "Miền Bắc" },
-    { id: "2", name: "Miền Trung" },
-    { id: "3", name: "Miền Nam" }
-  ]
+  // API mutation for creating product
+  const [createProduct, { isLoading: createProductLoading }] = useCreateProductMutation()
+
+  // Extract data from API responses
+  const categories = categoriesResponse?.data || []
+  const regions = regionsResponse?.data || []
 
   const [formData, setFormData] = useState({
     name: "",
@@ -54,7 +60,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [images, setImages] = useState<File[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string>("")
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -87,7 +93,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
       if (!file.type.startsWith('image/')) continue
       
       // Validate file size (max 5MB)
-      if (file.size > 100 * 1024 * 1024) continue
+      if (file.size > 5 * 1024 * 1024) continue
       
       validFiles.push(file)
     }
@@ -125,7 +131,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsLoading(true)
+    setSubmitError("")
 
     const formDataToSend = new FormData()
     formDataToSend.append("productName", formData.name)
@@ -141,16 +147,22 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     })
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log("Form submitted successfully!")
+      const result = await createProduct(formDataToSend).unwrap()
+      console.log("Product created successfully:", result)
       
-      // Reset form
+      // Reset form and close modal
       handleClose()
-    } catch (err) {
-      console.error("Submission failed:", err)
-    } finally {
-      setIsLoading(false)
+    } catch (err: any) {
+      console.error("Failed to create product:", err)
+      
+      // Handle different types of errors
+      if (err?.data?.message) {
+        setSubmitError(err.data.message)
+      } else if (err?.message) {
+        setSubmitError(err.message)
+      } else {
+        setSubmitError("Đã có lỗi xảy ra khi tạo sản phẩm. Vui lòng thử lại.")
+      }
     }
   }
 
@@ -158,6 +170,7 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
     setFormData({ name: "", categoryId: "", price: "", stock: "", description: "", regionId: "" })
     setImages([])
     setErrors({})
+    setSubmitError("")
     onClose()
   }
 
@@ -167,6 +180,14 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
         <DialogHeader>
           <DialogTitle>Thêm Sản Phẩm Mới</DialogTitle>
         </DialogHeader>
+        
+        {/* Display API error if any */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+            <p className="text-sm text-red-600">{submitError}</p>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Tên sản phẩm *</Label>
@@ -181,14 +202,18 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
 
           <div className="space-y-2">
             <Label htmlFor="category">Danh mục *</Label>
-            <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
+            <Select 
+              value={formData.categoryId} 
+              onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+              disabled={categoriesLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn danh mục" />
+                <SelectValue placeholder={categoriesLoading ? "Đang tải..." : "Chọn danh mục"} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                  <SelectItem key={category.categoryId} value={category.categoryId}>
+                    {category.categoryName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -224,14 +249,18 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
 
           <div className="space-y-2">
             <Label htmlFor="region">Vùng miền *</Label>
-            <Select value={formData.regionId} onValueChange={(value) => setFormData({ ...formData, regionId: value })}>
+            <Select 
+              value={formData.regionId} 
+              onValueChange={(value) => setFormData({ ...formData, regionId: value })}
+              disabled={regionsLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn vùng miền" />
+                <SelectValue placeholder={regionsLoading ? "Đang tải..." : "Chọn vùng miền"} />
               </SelectTrigger>
               <SelectContent>
                 {regions.map((region) => (
-                  <SelectItem key={region.id} value={region.id}>
-                    {region.name}
+                  <SelectItem key={region.regionId} value={region.regionId}>
+                    {region.regionName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -325,11 +354,15 @@ export default function AddProductModal({ isOpen, onClose }: AddProductModalProp
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={createProductLoading}>
               Hủy
             </Button>
-            <Button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700">
-              {isLoading ? "Đang thêm..." : "Thêm sản phẩm"}
+            <Button 
+              type="submit" 
+              disabled={createProductLoading || categoriesLoading || regionsLoading} 
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {createProductLoading ? "Đang thêm..." : "Thêm sản phẩm"}
             </Button>
           </div>
         </form>
