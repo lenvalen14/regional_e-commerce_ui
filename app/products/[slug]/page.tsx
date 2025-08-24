@@ -16,59 +16,6 @@ import {
   useGetAverageRatingByProductQuery
 } from "@/features/review/reviewApi";
 
-// const PRODUCTS = [
-//   {
-//     id: "cha-com",
-//     name: "Chả Cốm Hà Nội",
-//     region: "Miền Bắc",
-//     price: "120.000đ",
-//     rating: 4.6,
-//     reviewCount: 16400,
-//     description:
-//       "Chả cốm thơm ngon, dẻo dai từ cốm làng Vòng, kết hợp cùng thịt băm truyền thống. Món ăn đặc trưng của Hà Nội mỗi độ thu về.",
-//     image: "/images/com.jpg",
-//     images: [
-//       "/images/com.jpg",
-//       "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
-//       "/images/bun-bo.jpg", // Sẽ fallback về com.jpg nếu không có
-//       "/images/com.jpg"  // Sẽ fallback về com.jpg nếu không có
-//     ]
-//   },
-//   {
-//     id: "bun-bo",
-//     name: "Bún Bò Huế",
-//     region: "Miền Trung",
-//     price: "95.000đ",
-//     rating: 4.5,
-//     reviewCount: 10200,
-//     description:
-//       "Nước dùng đậm đà, cay nồng, hòa quyện giữa xả, mắm ruốc và thịt bò. Món đặc sản trứ danh của xứ Huế mộng mơ.",
-//     image: "/images/bun-bo.jpg",
-//     images: [
-//       "/images/bun-bo.jpg",
-//       "/images/com.jpg",
-//       "/images/com.jpg",
-//       "/images/bun-bo.jpg"
-//     ]
-//   },
-//   {
-//     id: "banh-trang",
-//     name: "Bánh Tráng Trộn",
-//     region: "Miền Nam",
-//     price: "45.000đ",
-//     rating: 4.7,
-//     reviewCount: 9800,
-//     description:
-//       "Vị chua, cay, mặn, ngọt hòa quyện từ các nguyên liệu dân dã: bánh tráng, xoài, khô bò, rau răm. Món ăn vặt yêu thích khắp miền Nam.",
-//     image: "/images/banh-trang.jpg",
-//     images: [
-//       "/images/banh-trang.jpg",
-//       "/images/bun-bo.jpg",
-//       "/images/bun-bo.jpg",
-//       "/images/banh-trang.jpg"
-//     ]
-//   }
-// ];
 
 const VARIANTS = ["Bột", "Phin giấy", "Túi lọc"];
 
@@ -215,12 +162,12 @@ export default function ProductDetailPage() {
     <>
       <SiteHeader />
       <main className="py-16 min-h-screen">
-        <div className="max-w-6xl mx-auto px-4 flex gap-8 items-start mb-16">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 lg:gap-8 items-start mb-16">
           {/* Image Gallery */}
-          <div className="w-[840px] flex-shrink-0 relative">
+          <div className="lg:col-span-7 relative">
             {/* Thumbnail Gallery - absolute + sticky */}
-            <div className="absolute ml-[-90px] top-0 h-full flex items-start pointer-events-none">
-              <div className="flex flex-col gap-3 sticky top-20 z-10 pointer-events-auto">
+            <div className="absolute ml-[-90px] top-0 h-full flex-col items-start pointer-events-none hidden lg:flex">
+              <div className="flex flex-col gap-3 sticky top-24 z-10 pointer-events-auto">
                 {productImages.map((img, index) => (
                   <button
                     key={index}
@@ -254,12 +201,12 @@ export default function ProductDetailPage() {
               </div>
             </div>
             {/* Main Images */}
-            <div className="space-y-4 pl-20"> {/* pl-20 để tránh thumbnail gallery che ảnh */}
+            <div className="space-y-4 lg:pl-20"> {/* pl-20 để tránh thumbnail gallery che ảnh */}
               {productImages.map((img, index) => (
                 <div
                   key={index}
                   ref={(el) => { imageRefs.current[index] = el; }}
-                  className="relative w-full h-[840px] rounded-lg overflow-hidden cursor-zoom-in group"
+                  className="relative w-full aspect-square rounded-lg overflow-hidden cursor-zoom-in group"
                   onClick={() => setLightboxIndex(index)}
                   tabIndex={0}
                   aria-label="Xem ảnh lớn"
@@ -293,7 +240,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
           {/* Thông tin sản phẩm */}
-          <div className="w-[490px] flex-shrink-0 sticky top-17">
+          <div className="lg:col-span-5 sticky top-24">
             <div className="flex flex-col gap-6">
               <h1 className="text-2xl md:text-4xl font-beaululo text-[#222] uppercase tracking-widest mb-2">{product.productName}</h1>
               {/* Rating và Reviews */}
