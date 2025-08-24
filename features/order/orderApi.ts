@@ -50,6 +50,7 @@ export interface Order {
   status: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
   orderDate: number; // timestamp
   method: string;
+  paymentMethod?: string;
 }
 
 export interface OrdersResponse {

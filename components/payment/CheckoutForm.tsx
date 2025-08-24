@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { CreditCard, MapPin, User, Plus } from "lucide-react";
@@ -9,12 +8,13 @@ import { useGetUserAddressesQuery } from "@/features/address/addressApi";
 import { useCreateOrderMutation } from "@/features/order/orderApi";
 import { useCart } from "@/contexts/CartContext";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export function CheckoutForm() {
   const { user } = useSelector((state: RootState) => state.auth);
   const { state, clearCart } = useCart();
   const router = useRouter();
-  
+  const [hideForm, setHideForm] = useState(false);
   // API hooks
   const { data: addressesData, isLoading: addressesLoading } = useGetUserAddressesQuery(
     user?.userId || '',
@@ -42,6 +42,34 @@ export function CheckoutForm() {
       }
     }
   }, [addressesData, formData.addressId]);
+
+  // Xử lý callback VNPAY khi quay lại từ trang thanh toán
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const vnpStatus = url.searchParams.get('vnp_TransactionStatus');
+      if (vnpStatus === '00') {
+        setHideForm(true);
+        // Gọi API callback ngầm
+        (async () => {
+          try {
+            const callbackUrl = window.location.href;
+            const res = await axios.get(callbackUrl);
+            if (res?.data?.code === 200 && res?.data?.data?.status === '00') {
+              toast.success('Thanh toán thành công!');
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 2000);
+            } else {
+              toast.error('Thanh toán thất bại!');
+            }
+          } catch (err) {
+            toast.error('Thanh toán thất bại!');
+          }
+        })();
+      }
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -103,6 +131,8 @@ export function CheckoutForm() {
       alert('Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!');
     }
   };
+
+  if (hideForm) return null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
