@@ -55,14 +55,10 @@ export default function ProductsPage() {
 
   // Lọc sản phẩm
   let filtered = products
-    .filter((p) => !p.deleted) // <-- bỏ sản phẩm đã deleted
+    .filter((p) => !p.deleted)
     .filter((p) =>
       selectedRegion === "all" ? true : p.region.regionId === selectedRegion
     );
-
-  const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginatedProducts = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-
 
   if (selectedPrices.length > 0) {
     filtered = filtered.filter((p) =>
@@ -72,9 +68,18 @@ export default function ProductsPage() {
       })
     );
   }
+
   if (selectedCategory !== "all") {
     filtered = filtered.filter((p) => p.category.categoryId === selectedCategory);
   }
+
+  // 👉 Tính phân trang sau khi lọc
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginatedProducts = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
 
   // Xử lý chọn miền
   function handleRegionChange(id: string) {
