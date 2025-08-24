@@ -105,7 +105,8 @@ export function CartItems() {
                     updateQuantity(item.id, item.quantity + 1);
                   }}
                   className="w-8 h-8 rounded border border-[#bbb] font-nitti text-lg transition-all duration-150 hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F]"
-                  title="Tăng số lượng"
+                  disabled={typeof item.stockQuantity === 'number' && item.quantity >= item.stockQuantity}
+                  title={typeof item.stockQuantity === 'number' && item.quantity >= item.stockQuantity ? 'Đã đạt giới hạn tồn kho' : 'Tăng số lượng'}
                 >
                   <Plus className="h-4 w-4 mx-auto" />
                 </button>

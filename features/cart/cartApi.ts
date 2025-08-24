@@ -24,7 +24,8 @@ export interface AddToCartRequest {
 }
 
 export interface UpdateCartItemRequest {
-  quantity: number
+  quantity: number;
+  productId: string;
 }
 
 export interface ApiResponse<T> {
