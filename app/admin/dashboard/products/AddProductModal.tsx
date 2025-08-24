@@ -16,7 +16,6 @@ interface AddProductModalProps {
   onAdd: (product: CreateProductData) => void
 }
 
-
 export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductModalProps) {
 
   const { data: categoryData } = useGetCategoriesQuery({ page: 0, size: 20 });
@@ -161,6 +160,14 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
         <DialogHeader>
           <DialogTitle>Thêm Sản Phẩm Mới</DialogTitle>
         </DialogHeader>
+
+        {/* Display API error if any */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4">
+            <p className="text-sm text-red-600">{submitError}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Tên sản phẩm *</Label>
@@ -175,14 +182,18 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
 
           <div className="space-y-2">
             <Label htmlFor="category">Danh mục *</Label>
-            <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
+            <Select
+              value={formData.categoryId}
+              onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+              disabled={categoriesLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn danh mục" />
+                <SelectValue placeholder={categoriesLoading ? "Đang tải..." : "Chọn danh mục"} />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
+                  <SelectItem key={category.categoryId} value={category.categoryId}>
+                    {category.categoryName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -218,14 +229,18 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
 
           <div className="space-y-2">
             <Label htmlFor="region">Vùng miền *</Label>
-            <Select value={formData.regionId} onValueChange={(value) => setFormData({ ...formData, regionId: value })}>
+            <Select
+              value={formData.regionId}
+              onValueChange={(value) => setFormData({ ...formData, regionId: value })}
+              disabled={regionsLoading}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Chọn vùng miền" />
+                <SelectValue placeholder={regionsLoading ? "Đang tải..." : "Chọn vùng miền"} />
               </SelectTrigger>
               <SelectContent>
                 {regions.map((region) => (
-                  <SelectItem key={region.id} value={region.id}>
-                    {region.name}
+                  <SelectItem key={region.regionId} value={region.regionId}>
+                    {region.regionName}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -314,7 +329,7 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={createProductLoading}>
               Hủy
             </Button>
             <Button
