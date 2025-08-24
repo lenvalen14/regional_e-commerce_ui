@@ -39,11 +39,11 @@ export default function ProductsPage() {
     })) || [])
   ];
 
-  const { data: productData, isLoading: prodLoading, isError: prodError } = useGetProductsQuery({ page: 0, size: 20 });
+  // Lấy tất cả sản phẩm - tăng size lên để lấy hết
+  const { data: productData, isLoading: prodLoading, isError: prodError } = useGetProductsQuery({ page: 0, size: 100 });
   const products = productData?.data || [];
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 16;
-
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -53,13 +53,14 @@ export default function ProductsPage() {
   const [selectedPrices, setSelectedPrices] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
 
-  // Lọc sản phẩm
+  // Lọc sản phẩm - thực hiện tất cả bộ lọc trước khi phân trang
   let filtered = products
-    .filter((p) => !p.deleted)
+    .filter((p) => !p.deleted) // Bỏ sản phẩm đã deleted
     .filter((p) =>
       selectedRegion === "all" ? true : p.region.regionId === selectedRegion
     );
 
+  // Lọc theo giá
   if (selectedPrices.length > 0) {
     filtered = filtered.filter((p) =>
       selectedPrices.some((pid) => {
@@ -69,21 +70,19 @@ export default function ProductsPage() {
     );
   }
 
+  // Lọc theo danh mục
   if (selectedCategory !== "all") {
     filtered = filtered.filter((p) => p.category.categoryId === selectedCategory);
   }
 
-  // 👉 Tính phân trang sau khi lọc
+  // Tính phân trang sau khi đã lọc
   const totalPages = Math.ceil(filtered.length / pageSize);
-  const paginatedProducts = filtered.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
+  const paginatedProducts = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Xử lý chọn miền
   function handleRegionChange(id: string) {
     setSelectedRegion(id);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
     const params = new URLSearchParams(searchParams.toString());
     if (id === "all") {
       params.delete("region");
@@ -98,19 +97,21 @@ export default function ProductsPage() {
     setSelectedPrices((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
   }
 
   // Xử lý chọn danh mục
   function handleCategoryChange(id: string) {
     setSelectedCategory(id);
+    setCurrentPage(1); // Reset về trang 1 khi thay đổi bộ lọc
   }
 
   return (
     <>
       <SiteHeader />
       <main className="py-16 min-h-screen">
-        {isLoading && <p>Đang tải sản phẩm...</p>}
-        {isError && <p>Lỗi khi tải sản phẩm</p>}
+        {(isLoading || prodLoading) && <p>Đang tải sản phẩm...</p>}
+        {(isError || prodError) && <p>Lỗi khi tải sản phẩm</p>}
         <div className="flex max-w-7xl mx-auto px-4 gap-10">
           {/* Filter sidebar */}
           <aside className="w-64 shrink-0 hidden md:block border-r border-[#e0e0e0] pr-6">
