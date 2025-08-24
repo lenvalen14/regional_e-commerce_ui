@@ -96,7 +96,12 @@ export default function ViewOrderModal({ isOpen, onClose, order, onStatusChange 
                 <CreditCard className="h-4 w-4 text-gray-500" />
                 <span className="font-medium">Phương thức thanh toán:</span>
                   <span>
-                    {order.method === 'CASH' ? 'COD' : order.method === 'VNPAY' ? 'VNPAY' : (order.method || '---')}
+                    {(() => {
+                      const method = order.paymentMethod || '';
+                      if (method === 'CASH') return 'COD';
+                      if (method === 'VNPAY') return 'VNPAY';
+                      return method || '---';
+                    })()}
                   </span>
               </div>
             </div>

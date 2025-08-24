@@ -94,25 +94,6 @@ export function OrderSummary() {
           </div>
         </div>
       </div>
-      
-      {/* Mã giảm giá */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
-        <div className="space-y-3">
-          <h4 className="font-nitti font-medium text-[#2F3E34]">
-            Mã giảm giá
-          </h4>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Nhập mã giảm giá"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md font-nitti text-sm focus:outline-none focus:ring-2 focus:ring-[#8FBC8F] focus:border-[#8FBC8F]"
-            />
-            <button className="px-4 py-2 bg-[#8FBC8F] text-white rounded-md font-nitti text-sm hover:bg-[#7CA87C] transition-colors">
-              Áp dụng
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

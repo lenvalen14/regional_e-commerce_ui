@@ -50,6 +50,7 @@ export interface Order {
   status: 'PENDING' | 'CONFIRM' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
   orderDate: number; // timestamp
   method: string;
+  paymentMethod?: string;
 }
 
 export interface OrdersResponse {
@@ -152,6 +153,15 @@ export const orderApi = createApi({
       providesTags: ['Order'],
     }),
 
+    getOrdersByCustomer: builder.query<OrdersResponse, { page?: number; size?: number }>({
+      query: ({ page = 0, size = 10 }) => ({
+        url: `/order/user`,
+        method: "GET",
+        params: { page, size },
+      }),
+      providesTags: ['Order'],
+    }),
+
     // Get single order by ID
     getOrder: builder.query<{ data: Order }, string>({
       query: (orderId) => `/order/${orderId}`,
@@ -203,6 +213,7 @@ export const {
   useCreateOrderMutation,
   useGetOrdersQuery,
   useGetOrderQuery,
+  useGetOrdersByCustomerQuery,
   useUpdateOrderStatusMutation,
   useCancelOrderMutation,
   useDeleteOrderMutation,
