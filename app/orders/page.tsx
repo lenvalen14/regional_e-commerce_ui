@@ -1,12 +1,11 @@
 'use client';
 
-
 import { useState } from "react";
 import { SiteHeader } from "@/components/layout/Header";
 import { OrderTabs } from "@/components/orders/OrderTabs";
 import { OrderList } from "@/components/orders/OrderList";
 import { Truck, CheckCircle, Clock, XCircle, Package } from "lucide-react";
-import { useGetOrdersQuery } from "@/features/order/orderApi";
+import { useGetOrdersByCustomerQuery } from "@/features/order/orderApi";
 
 const getStatusInfo = (status: string) => {
   switch (status) {
@@ -27,9 +26,9 @@ const getStatusInfo = (status: string) => {
 
 export default function OrdersPage() {
   const [selectedTab, setSelectedTab] = useState("all");
-  const { data, isLoading, isError, error } = useGetOrdersQuery({ page: 0, size: 20, status: selectedTab === "all" ? undefined : selectedTab });
+  const { data, isLoading, isError, error } = useGetOrdersByCustomerQuery({ page: 0, size: 20 });
 
-  // Map dữ liệu từ BE về đúng props FE cần
+  // Map dữ liệu từ BE sang props cho FE
   const orders = (data?.data || []).map(order => ({
     id: order.orderId,
     date: order.orderDate ? new Date(order.orderDate).toISOString() : '',
@@ -43,8 +42,15 @@ export default function OrdersPage() {
   }));
 
   // Sắp xếp đơn hàng mới nhất lên đầu
-  const sortedOrders = [...orders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  const filteredOrders = sortedOrders;
+  const sortedOrders = [...orders].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // Lọc đơn theo tab
+  const filteredOrders =
+    selectedTab === "all"
+      ? sortedOrders
+      : sortedOrders.filter(order => order.status === selectedTab.toUpperCase());
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('vi-VN') + 'đ';
@@ -79,7 +85,15 @@ export default function OrdersPage() {
             <div className="text-center py-10 text-gray-500 font-nitti">Đang tải đơn hàng...</div>
           ) : showNoOrders ? (
             <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-              <svg className="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7l9-4 9 4M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" /></svg>
+              <svg
+                className="h-16 w-16 text-gray-400 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7l9-4 9 4M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7" />
+              </svg>
               <p className="font-nitti text-gray-600">Không có đơn hàng nào</p>
             </div>
           ) : isError ? null : (
@@ -90,9 +104,10 @@ export default function OrdersPage() {
               formatDate={formatDate}
             />
           )}
-          {/* Nếu là lỗi khác ngoài 404 thì mới hiện lỗi đỏ */}
           {!showNoOrders && isError && (
-            <div className="text-center py-10 text-red-500 font-nitti">Không thể tải đơn hàng. Vui lòng thử lại sau.</div>
+            <div className="text-center py-10 text-red-500 font-nitti">
+              Không thể tải đơn hàng. Vui lòng thử lại sau.
+            </div>
           )}
         </div>
       </div>
