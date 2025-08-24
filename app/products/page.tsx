@@ -10,87 +10,6 @@ import { useGetRegionsQuery } from "@/features/region";
 import { useGetCategoriesQuery } from "@/features/category/categoryApi";
 import { useGetProductsQuery } from "@/features/product/productApi";
 
-// const PRODUCTS = [
-//   {
-//     id: "cha-com",
-//     name: "Chả Cốm Hà Nội",
-//     region: "bac-bo",
-//     category: "mon-chinh",
-//     price: 120000,
-//     priceLabel: "120.000đ",
-//     image: "/images/com.jpg",
-//   },
-//   {
-//     id: "bun-bo",
-//     name: "Bún Bò Huế",
-//     region: "trung-bo",
-//     category: "mon-chinh",
-//     price: 95000,
-//     priceLabel: "95.000đ",
-//     image: "/images/bun-bo.jpg",
-//   },
-//   {
-//     id: "banh-trang",
-//     name: "Bánh Tráng Trộn",
-//     region: "nam-bo",
-//     category: "do-an-vat",
-//     price: 45000,
-//     priceLabel: "45.000đ",
-//     image: "/images/banh-trang.jpg",
-//   },
-//   {
-//     id: "che-ba-mau",
-//     name: "Chè Ba Màu",
-//     region: "nam-bo",
-//     category: "trang-mieng",
-//     price: 35000,
-//     priceLabel: "35.000đ",
-//     image: "/images/che-ba-mau.jpg",
-//   },
-//   {
-//     id: "nem-nuong",
-//     name: "Nem Nướng Nha Trang",
-//     region: "trung-bo",
-//     category: "do-an-vat",
-//     price: 85000,
-//     priceLabel: "85.000đ",
-//     image: "/images/nem-nuong.jpg",
-//   },
-//   {
-//     id: "banh-chung",
-//     name: "Bánh Chưng Truyền Thống",
-//     region: "bac-bo",
-//     category: "banh-keo",
-//     price: 150000,
-//     priceLabel: "150.000đ",
-//     image: "/images/banh-chung.jpg",
-//   },
-//   {
-//     id: "ca-phe-sua-da",
-//     name: "Cà Phê Sữa Đá",
-//     region: "nam-bo",
-//     category: "do-uong",
-//     price: 25000,
-//     priceLabel: "25.000đ",
-//     image: "/images/ca-phe.jpg",
-//   },
-//   {
-//     id: "tra-sen",
-//     name: "Trà Sen Hồ Tây",
-//     region: "bac-bo",
-//     category: "do-uong",
-//     price: 180000,
-//     priceLabel: "180.000đ",
-//     image: "/images/tra-sen.jpg",
-//   },
-// ];
-
-// const REGIONS = [
-//   { id: "all", name: "Tất cả" },
-//   { id: "bac-bo", name: "Miền Bắc" },
-//   { id: "trung-bo", name: "Miền Trung" },
-//   { id: "nam-bo", name: "Miền Nam" },
-// ];
 
 const PRICE_FILTERS = [
   { id: "1", label: "Dưới 50.000đ", min: 0, max: 50000 },
@@ -99,14 +18,6 @@ const PRICE_FILTERS = [
   { id: "4", label: "Trên 150.000đ", min: 150000, max: Infinity },
 ];
 
-// const CATEGORIES = [
-//   { id: "all", name: "Tất cả danh mục" },
-//   { id: "mon-chinh", name: "Món chính" },
-//   { id: "do-an-vat", name: "Đồ ăn vặt" },
-//   { id: "trang-mieng", name: "Tráng miệng" },
-//   { id: "banh-keo", name: "Bánh kẹo" },
-//   { id: "do-uong", name: "Đồ uống" },
-// ];
 
 export default function ProductsPage() {
 
@@ -130,6 +41,8 @@ export default function ProductsPage() {
 
   const { data: productData, isLoading: prodLoading, isError: prodError } = useGetProductsQuery({ page: 0, size: 20 });
   const products = productData?.data || [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 16;
 
 
   const searchParams = useSearchParams();
@@ -146,6 +59,9 @@ export default function ProductsPage() {
     .filter((p) =>
       selectedRegion === "all" ? true : p.region.regionId === selectedRegion
     );
+
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const paginatedProducts = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 
   if (selectedPrices.length > 0) {
@@ -260,12 +176,13 @@ export default function ProductsPage() {
               Danh Sách Đặc Sản
             </h1>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-12 gap-y-16">
-              {filtered.slice(0, 8).length === 0 && (
+              {paginatedProducts.length === 0 && (
                 <div className="col-span-full text-center text-[#888] font-nitti py-20">
                   Không tìm thấy sản phẩm phù hợp.
                 </div>
               )}
-              {filtered.slice(0, 8).map((item) => (
+              {/* {filtered.slice(0, 8).map((item) => ( */}
+              {paginatedProducts.map((item) => (
                 <Link
                   key={item.productId}
                   href={`/products/${item.productId}`}
@@ -286,6 +203,33 @@ export default function ProductsPage() {
                 </Link>
               ))}
             </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center mt-8 gap-2">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Trang trước
+                </button>
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(idx + 1)}
+                    className={`px-3 py-1 border rounded ${currentPage === idx + 1 ? 'bg-[#8FBC8F] text-white' : ''}`}
+                  >
+                    {idx + 1}
+                  </button>
+                ))}
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Trang sau
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

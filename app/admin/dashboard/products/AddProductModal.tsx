@@ -18,11 +18,11 @@ interface AddProductModalProps {
 
 export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductModalProps) {
 
-  const { data: categoryData } = useGetCategoriesQuery({ page: 0, size: 20 });
-  const categories = categoryData?.data.map(c => ({ id: c.categoryId, name: c.categoryName })) || [];
+  const { data: categoryData, isLoading: categoriesLoading } = useGetCategoriesQuery({ page: 0, size: 20 });
+  const categories = categoryData?.data || [];
 
-  const { data: regionData } = useGetRegionsQuery({ page: 0, size: 20 });
-  const regions = regionData?.data.map(r => ({ id: r.regionId, name: r.regionName })) || [];
+  const { data: regionData, isLoading: regionsLoading } = useGetRegionsQuery({ page: 0, size: 20 });
+  const regions = regionData?.data || [];
 
 
   const [formData, setFormData] = useState({
@@ -37,6 +37,7 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [images, setImages] = useState<File[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
 
   const [createProduct, { isLoading }] = useCreateProductMutation();
 
@@ -329,7 +330,7 @@ export default function AddProductModal({ isOpen, onClose, onAdd }: AddProductMo
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={createProductLoading}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               Hủy
             </Button>
             <Button

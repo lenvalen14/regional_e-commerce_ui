@@ -24,17 +24,6 @@ import { useGetCategoriesQuery } from "@/features/category/categoryApi"
 import { useGetRegionsQuery } from "@/features/region"
 import { RestoreProductModal } from "./RestoreProductModal"
 
-// Define Product interface
-// interface Product {
-//   id: number
-//   name: string
-//   category: string
-//   price: number
-//   stock: number
-//   status: string
-//   description: string
-//   region: string
-// }
 
 interface SearchFilters {
   searchTerm: string
@@ -43,56 +32,8 @@ interface SearchFilters {
   region: string
 }
 
-// Sample products data for Vietnamese specialties
-// const initialProductsData: Product[] = [
-//   {
-//     id: 1,
-//     name: "Bánh tráng nướng Tây Ninh",
-//     category: "Bánh kẹo",
-//     price: 45000,
-//     stock: 150,
-//     status: "In Stock",
-//     description: "Bánh tráng nướng đặc sản Tây Ninh với hương vị thơm ngon, giòn tan được làm từ gạo tẻ cao cấp",
-//     region: "Tây Ninh"
-//   },
-//   {
-//     id: 2,
-//     name: "Mắm ruốc Huế",
-//     category: "Gia vị",
-//     price: 85000,
-//     stock: 75,
-//     status: "In Stock",
-//     description: "Mắm ruốc truyền thống Huế với hương vị đậm đà, được ủ theo phương pháp cổ truyền",
-//     region: "Huế"
-//   },
-//   {
-//     id: 3,
-//     name: "Chà bông Đà Lạt",
-//     category: "Thực phẩm khô",
-//     price: 120000,
-//     stock: 0,
-//     status: "Out of Stock",
-//     description: "Chà bông heo thơm ngon Đà Lạt được chế biến từ thịt heo tươi ngon nhất",
-//     region: "Đà Lạt"
-//   },
-//   {
-//     id: 4,
-//     name: "Bánh pía Sóc Trăng",
-//     category: "Bánh kẹo",
-//     price: 65000,
-//     stock: 25,
-//     status: "Low Stock",
-//     description: "Bánh pía đậu xanh Sóc Trăng với lớp vỏ mỏng, nhân đậu xanh ngọt thơm",
-//     region: "Sóc Trăng"
-//   },
-// ]
-
 export default function ProductsPage() {
 
-  // const { data: productData, isLoading: prodLoading, isError: prodError, refetch } = useGetProductsQuery({ page: 0, size: 30 });
-  // const productsData = productData?.data || [];
-
-  // ...existing code...
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12; // Số sản phẩm mỗi trang
 
@@ -143,6 +84,7 @@ export default function ProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<ProductWithStatus[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<CreateProductData | null>(null)
   const [selectedProductForEdit, setSelectedProductForEdit] = useState<Product | null>(null)
+  const [selectedProductForDelete, setSelectedProductForDelete] = useState<Product | null>(null)
   const [filteredEditProducts, setFilteredEditProducts] = useState<Product[]>(productsWithStatus)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -289,8 +231,8 @@ export default function ProductsPage() {
   }
 
   // Delete product
-  const handleDeleteProduct = (product: ProductWithStatus) => {
-    setSelectedProduct(mapToCreateProductData(product))
+  const handleDeleteProduct = (product: Product) => {
+    setSelectedProductForDelete(product)
     setShowDeleteModal(true)
   }
 
@@ -495,7 +437,7 @@ export default function ProductsPage() {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onDelete={handleConfirmDelete}
-        product={selectedProductForEdit}
+        product={selectedProductForDelete}
         refetchProducts={refetch}
       />
 

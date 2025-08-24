@@ -11,16 +11,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Product, useSoftDeleteProductMutation } from "@/features/product/productApi"
 
-// interface Product {
-//   id: number
-//   name: string
-//   category: string
-//   price: number
-//   stock: number
-//   status: string
-//   description: string
-//   region: string
-// }
 
 interface DeleteProductModalProps {
   isOpen: boolean
