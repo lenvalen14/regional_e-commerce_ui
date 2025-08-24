@@ -20,15 +20,6 @@ interface ProductSearchProps {
   totalResults: number
 }
 
-// const categories = [
-//   "Tất cả danh mục",
-//   "Bánh kẹo",
-//   "Gia vị",
-//   "Thực phẩm khô",
-//   "Đồ uống",
-//   "Thực phẩm tươi sống",
-//   "Đặc sản vùng miền"
-// ]
 
 const statuses = [
   "Tất cả trạng thái",
@@ -37,21 +28,6 @@ const statuses = [
   "Out of Stock"
 ]
 
-// const regions = [
-//   "Tất cả vùng miền",
-//   "Hà Nội",
-//   "TP.HCM",
-//   "Đà Nẵng",
-//   "Huế",
-//   "Hội An",
-//   "Nha Trang",
-//   "Đà Lạt",
-//   "Cần Thơ",
-//   "An Giang",
-//   "Sóc Trăng",
-//   "Tây Ninh",
-//   "Phan Thiết"
-// ]
 
 export default function ProductSearch({ onSearch, onReset, totalResults }: ProductSearchProps) {
 
@@ -121,9 +97,9 @@ export default function ProductSearch({ onSearch, onReset, totalResults }: Produ
 
   const handleReset = () => {
     setSearchTerm("")
-    setCategory("Tất cả danh mục")
+    setCategory("all")
     setStatus("Tất cả trạng thái")
-    setRegion("Tất cả vùng miền")
+    setRegion("all")
     onReset()
   }
 

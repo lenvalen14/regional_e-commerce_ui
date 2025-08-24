@@ -13,63 +13,11 @@ import EditCategoryModal from "./EditCategoryModal"
 import DeleteCategoryModal from "./DeleteCategoryModal"
 import { Category, useDeleteCategoryMutation, useGetCategoriesQuery } from "@/features/category/categoryApi"
 
-// Define Category interface
-// interface Category {
-//   id: number
-//   name: string
-//   description: string
-//   productCount: number
-//   status: string
-//   image: string
-// }
 
 interface SearchFilters {
   searchTerm: string
 }
 
-// Sample categories data for Vietnamese specialties
-// const initialCategoriesData: Category[] = [
-//   {
-//     id: 1,
-//     name: "Bánh kẹo",
-//     description: "Các loại bánh và kẹo đặc sản",
-//     productCount: 45,
-//     status: "Active",
-//     image: "",
-//   },
-//   {
-//     id: 2,
-//     name: "Gia vị",
-//     description: "Gia vị và nước chấm truyền thống",
-//     productCount: 28,
-//     status: "Active",
-//     image: "",
-//   },
-//   {
-//     id: 3,
-//     name: "Thực phẩm khô",
-//     description: "Các loại thực phẩm sấy khô, chà bông",
-//     productCount: 32,
-//     status: "Active",
-//     image: "",
-//   },
-//   {
-//     id: 4,
-//     name: "Trái cây sấy",
-//     description: "Trái cây sấy dẻo các loại",
-//     productCount: 18,
-//     status: "Active",
-//     image: "",
-//   },
-//   {
-//     id: 5,
-//     name: "Nước mắm",
-//     description: "Nước mắm truyền thống các vùng miền",
-//     productCount: 12,
-//     status: "Inactive",
-//     image: "",
-//   },
-// ]
 
 export default function CategoriesPage() {
 

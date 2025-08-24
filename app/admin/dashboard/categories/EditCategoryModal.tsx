@@ -10,14 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, X } from "lucide-react"
 import { Category, useUpdateCategoryMutation } from "@/features/category/categoryApi"
 
-// interface Category {
-//   id: number
-//   name: string
-//   description: string
-//   productCount: number
-//   status: string
-//   image: string
-// }
 
 interface EditCategoryModalProps {
   isOpen: boolean
@@ -113,7 +105,7 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
               id="edit-name"
               placeholder="Nhập tên danh mục..."
               value={formData.categoryName}
-              onChange={(e) => handleInputChange("name", e.target.value)}
+              onChange={(e) => handleInputChange("categoryName", e.target.value)}
               required
             />
           </div>
@@ -129,23 +121,6 @@ export default function EditCategoryModal({ isOpen, onClose, onEdit, category }:
               rows={3}
             />
           </div>
-
-          {/* Category Status */}
-          {/* <div className="space-y-2">
-            <Label htmlFor="edit-status">Trạng thái</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => handleInputChange("status", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Hoạt động</SelectItem>
-                <SelectItem value="Inactive">Tạm dừng</SelectItem>
-              </SelectContent>
-            </Select>
-          </div> */}
 
           {/* Product Count Info */}
           <div className="space-y-2">
