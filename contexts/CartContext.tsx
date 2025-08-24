@@ -20,6 +20,7 @@ export interface CartItem {
   priceLabel: string;
   quantity: number;
   image: string;
+  stockQuantity?: number; // số lượng tồn kho
 }
 
 interface CartState {
@@ -190,7 +191,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         price: product.price || 0,
         priceLabel: `${(product.price || 0).toLocaleString()}đ`,
         quantity: item.quantity || 1,
-        image: imageUrl
+        image: imageUrl,
+        stockQuantity: product.stockQuantity ?? undefined
       };
     });
   };
@@ -244,8 +246,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const currentItem = state.items.find(item => item.id === id);
         if (currentItem) {
           await updateCartItemAPI({
-            id: currentItem.id,
-            data: { quantity }
+            id: currentItem.cartItemId!, 
+            data: { quantity, productId: currentItem.id } 
           }).unwrap();
 
           const updatedCartResult = await refetchCart();

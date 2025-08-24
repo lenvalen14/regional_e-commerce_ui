@@ -93,8 +93,12 @@ export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
                               updateQuantity(item.id, item.quantity + 1);
                             }}
                             className="w-6 h-6 rounded border border-[#bbb] hover:bg-[#8FBC8F] hover:text-white hover:border-[#8FBC8F] flex items-center justify-center transition-all duration-200 hover:scale-110"
-                            disabled={disableUpdate}
-                            title={disableUpdate ? "Vui lòng chờ..." : "Tăng số lượng"}
+                            disabled={disableUpdate || (typeof item.stockQuantity === 'number' && item.quantity >= item.stockQuantity)}
+                            title={disableUpdate
+                              ? "Vui lòng chờ..."
+                              : (typeof item.stockQuantity === 'number' && item.quantity >= item.stockQuantity)
+                                ? "Đã đạt giới hạn tồn kho"
+                                : "Tăng số lượng"}
                           >
                             <Plus className="h-3 w-3" />
                           </button>
