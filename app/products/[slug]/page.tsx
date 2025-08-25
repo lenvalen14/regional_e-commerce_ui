@@ -12,8 +12,7 @@ import { Check } from "lucide-react";
 import { ArticleComments } from "@/components/products/ArticleComments";
 import { useGetProductQuery } from "@/features/product/productApi";
 import {
-  useGetReviewCountByProductQuery,
-  useGetAverageRatingByProductQuery
+    useGetReviewsByProductQuery
 } from "@/features/review/reviewApi";
 
 
@@ -23,15 +22,16 @@ export default function ProductDetailPage() {
   const params = useParams();
   const { data, isLoading, isError } = useGetProductQuery(params?.slug as string);
   const product = data?.data;
-  const { data: reviewCountData } = useGetReviewCountByProductQuery(product?.productId!, {
-    skip: !product?.productId, // tránh gọi khi chưa có product
-  });
-  const { data: avgRatingData } = useGetAverageRatingByProductQuery(product?.productId!, {
-    skip: !product?.productId,
+  const { data: reviewData } = useGetReviewsByProductQuery({
+      productId: product?.productId!,
+      page: 0,
+      size: 500,
   });
 
-  const reviewCount = reviewCountData?.data ?? 0;
-  const averageRating = avgRatingData?.data ?? 0;
+  const reviews = reviewData?.reviews ?? [];
+
+  const reviewCount = reviews.length;
+  const averageRating = product?.rating ?? 0;
   // const product = PRODUCTS.find((p) => p.id === params?.slug);
   // const [variant, setVariant] = useState(VARIANTS[0]);
   const [quantity, setQuantity] = useState(1);

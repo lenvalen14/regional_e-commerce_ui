@@ -43,7 +43,7 @@ export default function ProductsPage() {
   const { data: productData, isLoading: prodLoading, isError: prodError } = useGetProductsQuery({ page: 0, size: 100 });
   const products = productData?.data || [];
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 16;
+  const pageSize = 8;
 
   const searchParams = useSearchParams();
   const router = useRouter();

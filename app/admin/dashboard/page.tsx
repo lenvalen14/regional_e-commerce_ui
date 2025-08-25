@@ -114,18 +114,24 @@ export default function DashboardPage() {
               <div className="text-3xl font-bold text-slate-800 mb-2">
                 {stats.totalUsers.value.toLocaleString()}
               </div>
+
               <div className="flex items-center text-sm">
-                {stats.totalUsers.change >= 0 ? (
-                  <div className="flex items-center text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                <div
+                  className={`flex items-center px-2 py-1 rounded-full ${
+                    stats.totalUsers.change >= 0
+                      ? "text-emerald-600 bg-emerald-50"
+                      : "text-red-600 bg-red-50"
+                  }`}
+                >
+                  {stats.totalUsers.change >= 0 ? (
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    +{stats.totalUsers.change} {stats.totalUsers.unit}
-                  </div>
-                ) : (
-                  <div className="flex items-center text-red-600 bg-red-50 px-2 py-1 rounded-full">
+                  ) : (
                     <TrendingDown className="h-3 w-3 mr-1" />
-                    {stats.totalUsers.change} {stats.totalUsers.unit}
-                  </div>
-                )}
+                  )}
+                  {stats.totalUsers.change >= 0
+                    ? `+${stats.totalUsers.change} ${stats.totalUsers.unit}`
+                    : `${stats.totalUsers.change} ${stats.totalUsers.unit} so với tháng trước`}
+                </div>
               </div>
             </CardContent>
           </Card>
